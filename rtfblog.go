@@ -8,13 +8,13 @@ import (
     "os"
 )
 
-func hello(val string) string {
+func handler(ctx *web.Context, path string) {
     input, err := ioutil.ReadFile("testdata/foo.md")
     if err != nil {
-        println(err.Error())
-        return "err"
+        ctx.NotFound("File Not Found\n" + err.Error())
+        return
     }
-    return string(blackfriday.MarkdownCommon(input))
+    ctx.WriteString(string(blackfriday.MarkdownCommon(input)))
 }
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
         return
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
-    web.Get("/(.*)", hello)
+    web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Run(":8080")
 }
