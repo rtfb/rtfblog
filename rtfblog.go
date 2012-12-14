@@ -1,6 +1,7 @@
 package main
 
 import (
+    "github.com/hoisie/mustache"
     "github.com/hoisie/web"
     "github.com/russross/blackfriday"
     "io/ioutil"
@@ -10,7 +11,7 @@ import (
 
 func handler(ctx *web.Context, path string) {
     if path == "" {
-        ctx.WriteString("foo")
+        ctx.WriteString(mustache.RenderFile("hello.mustache"))
         return
     } else {
         input, err := ioutil.ReadFile(path)
