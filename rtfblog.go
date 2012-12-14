@@ -9,12 +9,19 @@ import (
 )
 
 func handler(ctx *web.Context, path string) {
-    input, err := ioutil.ReadFile("testdata/foo.md")
-    if err != nil {
-        ctx.NotFound("File Not Found\n" + err.Error())
+    if path == "" {
+        ctx.WriteString("foo")
+        return
+    } else {
+        input, err := ioutil.ReadFile(path)
+        if err != nil {
+            ctx.NotFound("File Not Found\n" + err.Error())
+            return
+        }
+        ctx.WriteString(string(blackfriday.MarkdownCommon(input)))
         return
     }
-    ctx.WriteString(string(blackfriday.MarkdownCommon(input)))
+    ctx.Abort(500, "Server Error")
 }
 
 func main() {
