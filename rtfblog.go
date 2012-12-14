@@ -2,11 +2,20 @@ package main
 
 import (
     "github.com/hoisie/web"
+    "github.com/russross/blackfriday"
+    "io/ioutil"
     "log"
     "os"
 )
 
-func hello(val string) string { return "hello " + val }
+func hello(val string) string {
+    input, err := ioutil.ReadFile("testdata/foo.md")
+    if err != nil {
+        println(err.Error())
+        return "err"
+    }
+    return string(blackfriday.MarkdownCommon(input))
+}
 
 func main() {
     f, err := os.Create("server.log")
