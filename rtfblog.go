@@ -9,9 +9,20 @@ import (
     "os"
 )
 
+type Entry struct {
+    Title    string
+    Body     string
+}
+
 func handler(ctx *web.Context, path string) {
     if path == "" {
-        ctx.WriteString(mustache.RenderFile("hello.mustache"))
+        var data = []Entry {
+            {"Title1", "Body 1"},
+            {"Title2", "Body 2"},
+        }
+        ctx.WriteString(mustache.RenderFile("hello.mustache",
+                                            map[string]interface{}{
+                                            "entries": data}))
         return
     } else {
         input, err := ioutil.ReadFile(path)

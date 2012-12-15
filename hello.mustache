@@ -22,6 +22,13 @@
             <hr />
             <div class="span-17 colborder" id="content">
                 <p>{{{Content}}}</p>
+{{#entries}}
+<p>{{Title}}</p>
+<p>{{Body}}</p>
+{{/entries}}
+{{^entries}}
+<h2>No entries. This is most likely an error.</h2>
+{{/entries}}
             </div>
 
             <div class="span-6 last" id="sidebar">
