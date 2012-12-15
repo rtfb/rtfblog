@@ -34,5 +34,6 @@ func main() {
     logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
+    web.Config.StaticDir = "static"
     web.Run(":8080")
 }
