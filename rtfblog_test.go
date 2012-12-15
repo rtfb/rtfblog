@@ -36,6 +36,8 @@ var simpleTests = []struct {
     {"", "footer"},
     {"", "blueprint"},
     {"", "utf-8"},
+    {"", "gopher.png"},
+    {"", "vim_created.png"},
 }
 
 func TestMainPage(t *testing.T) {
