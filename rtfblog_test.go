@@ -1,8 +1,8 @@
 package main
 
 import (
-    "net/http"
     "io/ioutil"
+    "net/http"
     "strings"
     "testing"
     "time"
@@ -16,7 +16,7 @@ func curl(url string) string {
             return string(b)
         }
     }
-    return""
+    return ""
 }
 
 func mustContain(t *testing.T, page string, what string) {
