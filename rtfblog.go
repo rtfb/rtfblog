@@ -12,8 +12,8 @@ import (
 )
 
 type Entry struct {
-    Title    string
-    Body     string
+    Title string
+    Body  string
 }
 
 func readTextEntry(filename string) (entry *Entry, err error) {
