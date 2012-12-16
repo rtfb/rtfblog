@@ -17,6 +17,8 @@ type Entry struct {
     Url   string
 }
 
+var posts []*Entry
+
 func readTextEntry(filename string) (entry *Entry, err error) {
     f, err := os.Open(filename)
     if err != nil {
@@ -54,20 +56,18 @@ func readTextEntries(root string) (entries []*Entry, err error) {
 
 func handler(ctx *web.Context, path string) {
     if path == "" {
-        data, _ := readTextEntries("testdata")
         html := mustache.RenderFile("tmpl/main.html.mustache",
             map[string]interface{}{
-                "entries": data})
+                "entries": posts})
         ctx.WriteString(html)
         return
     } else {
-        data, _ := readTextEntries("testdata")
-        for _, e := range data {
+        for _, e := range posts {
             if e.Url == path {
                 html := mustache.RenderFile("tmpl/post.html.mustache",
                     map[string]interface{}{
                         "entry": e,
-                        "entries": data})
+                        "entries": posts})
                 ctx.WriteString(html)
                 return
             }
@@ -90,6 +90,12 @@ func main() {
         return
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
+    data, err := readTextEntries("testdata")
+    if err != nil {
+        println(err.Error())
+        return
+    }
+    posts = data
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"

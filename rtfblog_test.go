@@ -5,6 +5,7 @@ import (
     "io/ioutil"
     "strings"
     "testing"
+    "time"
 )
 
 func curl(url string) string {
@@ -42,6 +43,7 @@ var simpleTests = []struct {
 
 func TestMainPage(t *testing.T) {
     go main()
+    time.Sleep(50 * time.Millisecond)
     for _, test := range simpleTests {
         mustContain(t, curl(test.url), test.out)
     }
