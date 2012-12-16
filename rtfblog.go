@@ -52,7 +52,7 @@ func readTextEntries(root string) (entries []*Entry, err error) {
 func handler(ctx *web.Context, path string) {
     if path == "" {
         data, _ := readTextEntries("testdata")
-        html := mustache.RenderFile("hello.mustache",
+        html := mustache.RenderFile("tmpl/main.html.mustache",
             map[string]interface{}{
                 "entries": data})
         ctx.WriteString(html)
