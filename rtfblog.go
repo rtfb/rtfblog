@@ -54,9 +54,10 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
-func render(ctx *web.Context, tmpl string, key string, data interface{}) {
+func render(ctx *web.Context, tmpl string, title string, key string, data interface{}) {
     html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache",
         map[string]interface{}{
+            "PageTitle": title,
             "entries": posts,
             key:       data,
         })
@@ -65,12 +66,12 @@ func render(ctx *web.Context, tmpl string, key string, data interface{}) {
 
 func handler(ctx *web.Context, path string) {
     if path == "" {
-        render(ctx, "main", "", nil)
+        render(ctx, "main", "Velkam", "", nil)
         return
     } else {
         for _, e := range posts {
             if e.Url == path {
-                render(ctx, "post", "entry", e)
+                render(ctx, "post", e.Title, "entry", e)
                 return
             }
         }
