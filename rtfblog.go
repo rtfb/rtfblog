@@ -58,6 +58,17 @@ func handler(ctx *web.Context, path string) {
         ctx.WriteString(html)
         return
     } else {
+        data, _ := readTextEntries("testdata")
+        for _, e := range data {
+            if e.Url == path {
+                html := mustache.RenderFile("tmpl/post.html.mustache",
+                    map[string]interface{}{
+                        "entry": e,
+                        "entries": data})
+                ctx.WriteString(html)
+                return
+            }
+        }
         input, err := ioutil.ReadFile(path)
         if err != nil {
             ctx.NotFound("File Not Found\n" + err.Error())

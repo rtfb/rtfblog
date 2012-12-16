@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+        <!-- Import fancy-type plugin. -->
+        <title>{{#entry}}{{Title}}{{/entry}}</title>
+    </head>
+    <body>
+        <div class="container">
+            <div id="header">
+                <h1>Hello</h1>
+            </div>
+            <hr />
+            <div id="subheader">
+                <h3 class="alt">Subhello</h3>
+            </div>
+
+            <hr />
+            <div class="span-17 colborder" id="content">
+{{#entry}}
+<h3 class="strong">{{Title}}</h3>
+<hr />
+<div>{{{Body}}}</div>
+{{/entry}}
+            </div>
+
+            <div class="span-6 last" id="sidebar">
+                <p>Recent entries:</p>
+                <div>
+{{#entries}}
+<b>{{Title}}</b> <br />
+{{/entries}}
+                </div>
+                <br />
+                <br />
+                <img src="vim_created.png" />
+                <img src="gopher.png" />
+                <div class="info" style="text-align: center">
+                    Powered by <a href="http://golang.org/">Go</a>
+                </div>
+            </div>
+
+            <hr />
+            <div id="footer" />
+        </div>
+    </body>
+</html>
