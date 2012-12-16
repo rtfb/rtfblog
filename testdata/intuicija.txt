@@ -1,0 +1,45 @@
+Intuicijos pinklės
+
+Iš dalies į temą šalia to, ką vakar
+[rašė](http://www.delfi.lt/news/ringas/lit/rsadauskas-kvietkevicius-tartis-su-pilieciais-galima-tik-nesvarbiais-klausimais.d?id=59842119)
+Romas Sadauskas-Kvietkevičius, iš dalies šiaip dėl atsitiktinių sutapimų
+(Vaidotas Zemlys čia irgi
+[prisidėjo](https://plus.google.com/112784314334842289710/posts/jL3XCFPa11u)),
+šiandieną priminusių man kelis skaičiavimo pratimus, siūlau naują heštagą
+bijantiems #vajė. Na ir prie heštago, smegenų mankšta.
+
+Viena esminių problemų su nuomonėm apie #vajė, su ginčais, su referendumu ir
+šiaip visokeriopa betvarke žmonių galvose, yra ta, kad projektas savo dydžiu
+perlipa intuityvaus suvokimo ribas. Ir perlipa ne bet kaip, o labai piktybišku
+būdu: intuicija išlieka, bet jinai neteisinga.
+
+Mat kai reiškinys būna neintuityvus, tai dar tik pusė bėdos. Nu nėr tos
+intuicijos, nors tu ką, tai ir sunku apie tą reiškinį ar objektą samprotauti.
+Ir nuomonės tada nebūna, arba ji būna nuosaikesnė, ne tokia agresyvi. O čia
+blogiau, čia intuicija yra kur buvusi, tik ji veda kairėn.
+
+Štai jums keli pavyzdžiai tokių uždavinukų, kur intuicija mums visiems iškart
+kažką kužda. Ne visiems tą patį, ne visiems klaidingai, o kam klaidingai, tai
+ne visiems į tą pačią pusę. Kitaip tariant, intuicija už mus aklai spėlioja,
+nors apsimeta, kad ji tokia pat patikima, kaip iš akies lyginant dviejų žmonių
+ūgį. Pažaiskite, pagalvokite apie šitus uždavinukus intuityviai, o paskui
+paskaičiuokite iš tikro.
+
+* Įsivaizduokite, kad Žemę ties pusiauju apjuosėm diržu ir smarkiai suveržėm,
+  kad gerai priglustų. Tada diržą perkirpom ir įterpėm į jį papildomai vieną
+  metrą ir prisabačinom steipleriu. Kiek tas metru prailgintas diržas
+  atsipalaiduos nuo žemės paviršiaus?
+
+* Kiek bus dešimt kartų po šimtą gramų?
+
+* Paimkite krepšinio ir lauko teniso kamuolius. Jie reprezentuos Žemę ir
+  Mėnulį (fun fact: krepšinio ir lauko teniso kamuolių dydžių santykis beveik
+  identiškas Žemės ir Mėnulio!). Su šitų modeliukų pagalba, vizualiai
+  parodykite kokiu atstumu Mėnulis skrieja nuo Žemės.
+
+* Kiek CO2 išsiskiria sudegus vienam kilogramui benzino?
+
+* Jeigu turit po ranka iPadą ir iPhoną, paimkit juos vienu metu į rankas ir
+  pakilnokit ant delnų. Jeigu neturit, tikriausiai vis tiek esat čiupinėję,
+  prisiminkit kaip jie svėrė ranką. Ar jie sveria vienodai? Katras sunkesnis?
+  Kiek?
