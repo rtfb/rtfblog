@@ -32,7 +32,14 @@
             </div>
 
             <div class="span-6 last" id="sidebar">
-                <p>Sidebar</p>
+                <p>Recent entries:</p>
+                <div>
+{{#entries}}
+<b>{{Title}}</b> <br />
+{{/entries}}
+                </div>
+                <br />
+                <br />
                 <img src="vim_created.png" />
                 <img src="gopher.png" />
                 <div class="info" style="text-align: center">
