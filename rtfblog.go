@@ -54,21 +54,23 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
+func render(ctx *web.Context, tmpl string, key string, data interface{}) {
+    html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache",
+        map[string]interface{}{
+            "entries": posts,
+            key:       data,
+        })
+    ctx.WriteString(html)
+}
+
 func handler(ctx *web.Context, path string) {
     if path == "" {
-        html := mustache.RenderFile("tmpl/main.html.mustache",
-            map[string]interface{}{
-                "entries": posts})
-        ctx.WriteString(html)
+        render(ctx, "main", "", nil)
         return
     } else {
         for _, e := range posts {
             if e.Url == path {
-                html := mustache.RenderFile("tmpl/post.html.mustache",
-                    map[string]interface{}{
-                        "entry": e,
-                        "entries": posts})
-                ctx.WriteString(html)
+                render(ctx, "post", "entry", e)
                 return
             }
         }
