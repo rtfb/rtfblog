@@ -21,7 +21,7 @@
             <hr />
             <div class="span-17 colborder" id="content">
 {{#entries}}
-<h3 class="strong">{{Title}}</h3>
+<h3 class="strong"><a href="{{Url}}">{{Title}}</a></h3>
 <hr />
 <div>{{{Body}}}</div>
 {{/entries}}
@@ -34,7 +34,7 @@
                 <p>Recent entries:</p>
                 <div>
 {{#entries}}
-<b>{{Title}}</b> <br />
+<b><a href="{{Url}}">{{Title}}</a></b> <br />
 {{/entries}}
                 </div>
                 <br />

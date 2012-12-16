@@ -14,6 +14,7 @@ import (
 type Entry struct {
     Title string
     Body  string
+    Url   string
 }
 
 func readTextEntry(filename string) (entry *Entry, err error) {
@@ -29,6 +30,8 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     lines := strings.Split(string(b), "\n")
     entry = new(Entry)
     entry.Title = lines[0]
+    base := filepath.Base(filename)
+    entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
     text := strings.Join(lines[2:], "\n")
     entry.Body = string(blackfriday.MarkdownCommon([]byte(text)))
     return
