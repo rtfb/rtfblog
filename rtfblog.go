@@ -20,9 +20,10 @@ func handler(ctx *web.Context, path string) {
             {"Title1", "Body 1"},
             {"Title2", "Body 2"},
         }
-        ctx.WriteString(mustache.RenderFile("hello.mustache",
-                                            map[string]interface{}{
-                                            "entries": data}))
+        html := mustache.RenderFile("hello.mustache",
+            map[string]interface{}{
+                "entries": data})
+        ctx.WriteString(html)
         return
     } else {
         input, err := ioutil.ReadFile(path)
