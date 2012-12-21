@@ -1,6 +1,7 @@
 package main
 
 import (
+    "code.google.com/p/go-html-transform/html/transform"
     "io/ioutil"
     "net/http"
     "strings"
@@ -50,5 +51,32 @@ func TestStartServer(t *testing.T) {
 func TestMainPage(t *testing.T) {
     for _, test := range simpleTests {
         mustContain(t, curl(test.url), test.out)
+    }
+}
+
+func TestBasicStructure(t *testing.T) {
+    html := curl("")
+    doc, err := transform.NewDoc(html)
+
+    if err != nil {
+        t.Error("Error parsing document!");
+        return
+    }
+
+    var blocks = []string {
+        "#header", "#subheader", "#content", "#footer",
+    }
+
+    for _, block := range blocks {
+        q := transform.NewSelectorQuery(block)
+        node := q.Apply(doc)
+
+        if len(node) == 0 {
+            t.Errorf("Node not found: %q", block)
+        }
+
+        if len(node) > 1 {
+            t.Errorf("Too many matches (%d) for node: %q", len(node), block)
+        }
     }
 }
