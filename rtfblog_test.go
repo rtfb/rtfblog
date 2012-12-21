@@ -41,9 +41,13 @@ var simpleTests = []struct {
     {"", "vim_created.png"},
 }
 
-func TestMainPage(t *testing.T) {
+
+func TestStartServer(t *testing.T) {
     go main()
     time.Sleep(50 * time.Millisecond)
+}
+
+func TestMainPage(t *testing.T) {
     for _, test := range simpleTests {
         mustContain(t, curl(test.url), test.out)
     }
