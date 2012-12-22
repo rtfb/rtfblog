@@ -66,6 +66,7 @@ func TestBasicStructure(t *testing.T) {
 }
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
+    posts = nil
     html := curl("")
     mustContain(t, html, "No entries")
 }
