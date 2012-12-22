@@ -27,28 +27,27 @@ func mustContain(t *testing.T, page string, what string) {
     }
 }
 
-var simpleTests = []struct {
-    url string
-    out string
-}{
-    {"", "container"},
-    {"", "header"},
-    {"", "subheader"},
-    {"", "content"},
-    {"", "sidebar"},
-    {"", "footer"},
-    {"", "blueprint"},
-    {"", "utf-8"},
-    {"", "gopher.png"},
-    {"", "vim_created.png"},
-}
-
 func TestStartServer(t *testing.T) {
     go main()
     time.Sleep(50 * time.Millisecond)
 }
 
 func TestMainPage(t *testing.T) {
+    var simpleTests = []struct {
+        url string
+        out string
+    }{
+        {"", "container"},
+        {"", "header"},
+        {"", "subheader"},
+        {"", "content"},
+        {"", "sidebar"},
+        {"", "footer"},
+        {"", "blueprint"},
+        {"", "utf-8"},
+        {"", "gopher.png"},
+        {"", "vim_created.png"},
+    }
     for _, test := range simpleTests {
         mustContain(t, curl(test.url), test.out)
     }
