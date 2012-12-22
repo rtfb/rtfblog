@@ -99,12 +99,16 @@ func runServer() {
     web.Run(":8080")
 }
 
-func main() {
-    data, err := readTextEntries("testdata")
+func loadData(set string) []*Entry {
+    data, err := readTextEntries(set)
     if err != nil {
         println(err.Error())
-        return
+        return nil
     }
-    posts = data
+    return data
+}
+
+func main() {
+    posts = loadData("testdata")
     runServer()
 }

@@ -71,15 +71,9 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
-    data, err := readTextEntries("testdata")
-    if err != nil {
-        println(err.Error())
-        return
-    }
-    posts = data
-    html := curl("")
+    posts = loadData("testdata")
     what := "No entries"
-    if strings.Contains(html, what) {
+    if strings.Contains(curl(""), what) {
         t.Errorf("Test page should not contain %q", what)
     }
 }
