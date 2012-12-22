@@ -65,6 +65,25 @@ func TestBasicStructure(t *testing.T) {
     }
 }
 
+func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
+    html := curl("")
+    mustContain(t, html, "No entries")
+}
+
+func TestNonEmptyDatasetHasEntries(t *testing.T) {
+    data, err := readTextEntries("testdata")
+    if err != nil {
+        println(err.Error())
+        return
+    }
+    posts = data
+    html := curl("")
+    what := "No entries"
+    if strings.Contains(html, what) {
+        t.Errorf("Test page should not contain %q", what)
+    }
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     html := curl("")
     doc, err := transform.NewDoc(html)
