@@ -6,6 +6,7 @@ import (
     "github.com/russross/blackfriday"
     "io/ioutil"
     "log"
+    "net/mail"
     "os"
     "path/filepath"
     "strings"
@@ -24,18 +25,19 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     if err != nil {
         return nil, err
     }
-    b, err := ioutil.ReadAll(f)
+    msg, err := mail.ReadMessage(f)
     if err != nil {
         return nil, err
     }
-
-    lines := strings.Split(string(b), "\n")
     entry = new(Entry)
-    entry.Title = lines[0]
+    entry.Title = msg.Header.Get("subject")
     base := filepath.Base(filename)
     entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
-    text := strings.Join(lines[2:], "\n")
-    entry.Body = string(blackfriday.MarkdownCommon([]byte(text)))
+    b, err := ioutil.ReadAll(msg.Body)
+    if err != nil {
+        return nil, err
+    }
+    entry.Body = string(blackfriday.MarkdownCommon(b))
     return
 }
 
