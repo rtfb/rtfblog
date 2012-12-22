@@ -69,14 +69,12 @@ func query(t *testing.T, url string, query string) []*h5.Node {
     html := curl("")
     doc, err := transform.NewDoc(html)
     if err != nil {
-        t.Error("Error parsing document!")
-        t.FailNow()
+        t.Fatal("Error parsing document!")
     }
     q := transform.NewSelectorQuery(query)
     node := q.Apply(doc)
     if len(node) == 0 {
-        t.Errorf("Node not found: %q", query)
-        t.FailNow()
+        t.Fatalf("Node not found: %q", query)
     }
     return node
 }
@@ -84,8 +82,7 @@ func query(t *testing.T, url string, query string) []*h5.Node {
 func query1(t *testing.T, url string, q string) []*h5.Node {
     node := query(t, url, q)
     if len(node) > 1 {
-        t.Errorf("Too many matches (%d) for node: %q", len(node), q)
-        t.FailNow()
+        t.Fatalf("Too many matches (%d) for node: %q", len(node), q)
     }
     return node
 }
