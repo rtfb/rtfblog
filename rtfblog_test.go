@@ -1,6 +1,7 @@
 package main
 
 import (
+    "code.google.com/p/go-html-transform/h5"
     "code.google.com/p/go-html-transform/html/transform"
     "io/ioutil"
     "net/http"
@@ -55,28 +56,38 @@ func TestMainPage(t *testing.T) {
 }
 
 func TestBasicStructure(t *testing.T) {
-    html := curl("")
-    doc, err := transform.NewDoc(html)
-
-    if err != nil {
-        t.Error("Error parsing document!");
-        return
-    }
-
-    var blocks = []string {
+    var blocks = []string{
         "#header", "#subheader", "#content", "#footer",
     }
-
     for _, block := range blocks {
-        q := transform.NewSelectorQuery(block)
-        node := q.Apply(doc)
-
-        if len(node) == 0 {
-            t.Errorf("Node not found: %q", block)
-        }
-
-        if len(node) > 1 {
-            t.Errorf("Too many matches (%d) for node: %q", len(node), block)
+        node := query1(t, "", block)
+        if node[0].Data() != "div" {
+            t.Errorf("<div> expected, but <%q> found!", node[0].Data())
         }
     }
+}
+
+func query(t *testing.T, url string, query string) []*h5.Node {
+    html := curl("")
+    doc, err := transform.NewDoc(html)
+    if err != nil {
+        t.Error("Error parsing document!")
+        t.FailNow()
+    }
+    q := transform.NewSelectorQuery(query)
+    node := q.Apply(doc)
+    if len(node) == 0 {
+        t.Errorf("Node not found: %q", query)
+        t.FailNow()
+    }
+    return node
+}
+
+func query1(t *testing.T, url string, q string) []*h5.Node {
+    node := query(t, url, q)
+    if len(node) > 1 {
+        t.Errorf("Too many matches (%d) for node: %q", len(node), q)
+        t.FailNow()
+    }
+    return node
 }
