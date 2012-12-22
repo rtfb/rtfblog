@@ -79,7 +79,7 @@ func TestNonEmptyDatasetHasEntries(t *testing.T) {
     }
 }
 
-func TestEntryHasAuthor(t *testing.T) {
+func TestEntryListHasAuthor(t *testing.T) {
     nodes := query(t, "", "#author")
     for _, node := range nodes {
         if node.Data() != "div" {
@@ -90,6 +90,18 @@ func TestEntryHasAuthor(t *testing.T) {
         }
         if node.Children[0].Data() != "rtfb" {
             t.Fatalf("'rtfb' expected, but '%q' found!", node.Children[0].Data())
+        }
+    }
+}
+
+func TestEveryEntryHasAuthor(t *testing.T) {
+    for _, e := range posts {
+        node := query1(t, e.Url, "#author")
+        if node.Data() != "div" {
+            t.Fatalf("<div> expected, but <%q> found!", node.Data())
+        }
+        if len(node.Children) == 0 {
+            t.Fatalf("No author specified in author div!")
         }
     }
 }
