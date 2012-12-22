@@ -59,8 +59,8 @@ func TestBasicStructure(t *testing.T) {
     }
     for _, block := range blocks {
         node := query1(t, "", block)
-        if node[0].Data() != "div" {
-            t.Errorf("<div> expected, but <%q> found!", node[0].Data())
+        if node.Data() != "div" {
+            t.Errorf("<div> expected, but <%q> found!", node.Data())
         }
     }
 }
@@ -108,10 +108,10 @@ func query(t *testing.T, url string, query string) []*h5.Node {
     return node
 }
 
-func query1(t *testing.T, url string, q string) []*h5.Node {
-    node := query(t, url, q)
-    if len(node) > 1 {
-        t.Fatalf("Too many matches (%d) for node: %q", len(node), q)
+func query1(t *testing.T, url string, q string) *h5.Node {
+    nodes := query(t, url, q)
+    if len(nodes) > 1 {
+        t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
     }
-    return node
+    return nodes[0]
 }
