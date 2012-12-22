@@ -58,8 +58,8 @@ func render(ctx *web.Context, tmpl string, title string, key string, data interf
     html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache",
         map[string]interface{}{
             "PageTitle": title,
-            "entries": posts,
-            key:       data,
+            "entries":   posts,
+            key:         data,
         })
     ctx.WriteString(html)
 }

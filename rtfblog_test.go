@@ -43,7 +43,6 @@ var simpleTests = []struct {
     {"", "vim_created.png"},
 }
 
-
 func TestStartServer(t *testing.T) {
     go main()
     time.Sleep(50 * time.Millisecond)
