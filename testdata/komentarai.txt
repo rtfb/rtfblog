@@ -1,3 +1,4 @@
+Author: rtfb
 Subject: Komentarai laikinai išjungti
 
 Su sąlyga, kad siaubingai puola spamozaurai, komentarus laikinai išjungiau.

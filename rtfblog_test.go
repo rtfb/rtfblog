@@ -78,6 +78,21 @@ func TestNonEmptyDatasetHasEntries(t *testing.T) {
     }
 }
 
+func TestEntryHasAuthor(t *testing.T) {
+    nodes := query(t, "", "#author")
+    for _, node := range nodes {
+        if node.Data() != "div" {
+            t.Fatalf("<div> expected, but <%q> found!", node.Data())
+        }
+        if len(node.Children) == 0 {
+            t.Fatalf("No author specified in author div!")
+        }
+        if node.Children[0].Data() != "rtfb" {
+            t.Fatalf("'rtfb' expected, but '%q' found!", node.Children[0].Data())
+        }
+    }
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     html := curl("")
     doc, err := transform.NewDoc(html)

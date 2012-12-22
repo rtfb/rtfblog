@@ -13,9 +13,10 @@ import (
 )
 
 type Entry struct {
-    Title string
-    Body  string
-    Url   string
+    Author string
+    Title  string
+    Body   string
+    Url    string
 }
 
 var posts []*Entry
@@ -31,6 +32,7 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     }
     entry = new(Entry)
     entry.Title = msg.Header.Get("subject")
+    entry.Author = msg.Header.Get("author")
     base := filepath.Base(filename)
     entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
     b, err := ioutil.ReadAll(msg.Body)
