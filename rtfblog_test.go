@@ -5,6 +5,7 @@ import (
     "code.google.com/p/go-html-transform/html/transform"
     "io/ioutil"
     "net/http"
+    "regexp"
     "strings"
     "testing"
     "time"
@@ -84,9 +85,18 @@ func TestEntryListHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
-        if node.Children[0].Data() != "rtfb" {
-            t.Fatalf("'rtfb' expected, but '%q' found!", node.Children[0].Data())
-        }
+        checkAuthorSection(t, node.Children[0].Data())
+    }
+}
+
+func checkAuthorSection(t *testing.T, text string) {
+    re := "[0-9]{4}-[0-9]{2}-[0-9]{2}, by rtfb"
+    m, err := regexp.MatchString(re, text)
+    if err != nil {
+        t.Fatalf("Failed to parse author section %q!", text)
+    }
+    if !m {
+        t.Fatalf("Author section %q doesn't match %q!", text, re)
     }
 }
 
@@ -98,6 +108,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
+        checkAuthorSection(t, node.Children[0].Data())
     }
 }
 

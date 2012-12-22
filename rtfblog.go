@@ -15,6 +15,7 @@ import (
 type Entry struct {
     Author string
     Title  string
+    Date   string
     Body   string
     Url    string
 }
@@ -33,6 +34,7 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     entry = new(Entry)
     entry.Title = msg.Header.Get("subject")
     entry.Author = msg.Header.Get("author")
+    entry.Date = msg.Header.Get("isodate")
     base := filepath.Base(filename)
     entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
     b, err := ioutil.ReadAll(msg.Body)
