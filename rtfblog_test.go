@@ -64,13 +64,13 @@ func TestBasicStructure(t *testing.T) {
 }
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
-    posts = nil
+    dataset = ""
     html := curl("")
     mustContain(t, html, "No entries")
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
-    posts = loadData("testdata")
+    dataset = "testdata"
     what := "No entries"
     if strings.Contains(curl(""), what) {
         t.Errorf("Test page should not contain %q", what)
@@ -91,6 +91,7 @@ func TestEntryListHasAuthor(t *testing.T) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
+    posts := loadData("testdata")
     for _, e := range posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")

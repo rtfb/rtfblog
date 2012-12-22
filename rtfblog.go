@@ -1,8 +1,8 @@
 package main
 
 import (
-    "github.com/lye/mustache"
     "github.com/hoisie/web"
+    "github.com/lye/mustache"
     "github.com/russross/blackfriday"
     "io/ioutil"
     "log"
@@ -19,7 +19,7 @@ type Entry struct {
     Url    string
 }
 
-var posts []*Entry
+var dataset string
 
 func readTextEntry(filename string) (entry *Entry, err error) {
     f, err := os.Open(filename)
@@ -58,24 +58,27 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
-func render(ctx *web.Context, tmpl string, title string, key string, data interface{}) {
-    html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache",
-        map[string]interface{}{
-            "PageTitle": title,
-            "entries":   posts,
-            key:         data,
-        })
+func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
+    html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache", data)
     ctx.WriteString(html)
 }
 
 func handler(ctx *web.Context, path string) {
+    posts := loadData(dataset)
+    var basicData = map[string]interface{}{
+        "PageTitle": "",
+        "entries":   posts,
+    }
     if path == "" {
-        render(ctx, "main", "Velkam", "", nil)
+        basicData["PageTitle"] = "Velkam"
+        render(ctx, "main", basicData)
         return
     } else {
         for _, e := range posts {
             if e.Url == path {
-                render(ctx, "post", e.Title, "entry", e)
+                basicData["PageTitle"] = e.Title
+                basicData["entry"] = e
+                render(ctx, "post", basicData)
                 return
             }
         }
@@ -104,6 +107,9 @@ func runServer() {
 }
 
 func loadData(set string) []*Entry {
+    if set == "" {
+        return nil
+    }
     data, err := readTextEntries(set)
     if err != nil {
         println(err.Error())
@@ -113,6 +119,6 @@ func loadData(set string) []*Entry {
 }
 
 func main() {
-    posts = loadData("testdata")
+    dataset = "testdata"
     runServer()
 }
