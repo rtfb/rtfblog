@@ -95,7 +95,7 @@ func TestEntryHasAuthor(t *testing.T) {
 }
 
 func query(t *testing.T, url string, query string) []*h5.Node {
-    html := curl("")
+    html := curl(url)
     doc, err := transform.NewDoc(html)
     if err != nil {
         t.Fatal("Error parsing document!")
