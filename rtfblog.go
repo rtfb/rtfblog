@@ -86,21 +86,25 @@ func handler(ctx *web.Context, path string) {
     ctx.Abort(500, "Server Error")
 }
 
-func main() {
+func runServer() {
     f, err := os.Create("server.log")
     if err != nil {
         println(err.Error())
         return
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
+    web.Get("/(.*)", handler)
+    web.SetLogger(logger)
+    web.Config.StaticDir = "static"
+    web.Run(":8080")
+}
+
+func main() {
     data, err := readTextEntries("testdata")
     if err != nil {
         println(err.Error())
         return
     }
     posts = data
-    web.Get("/(.*)", handler)
-    web.SetLogger(logger)
-    web.Config.StaticDir = "static"
-    web.Run(":8080")
+    runServer()
 }
