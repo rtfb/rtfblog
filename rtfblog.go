@@ -1,7 +1,7 @@
 package main
 
 import (
-    "github.com/hoisie/mustache"
+    "github.com/lye/mustache"
     "github.com/hoisie/web"
     "github.com/russross/blackfriday"
     "io/ioutil"
