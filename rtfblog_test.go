@@ -56,7 +56,7 @@ func TestMainPage(t *testing.T) {
 
 func TestBasicStructure(t *testing.T) {
     var blocks = []string{
-        "#header", "#subheader", "#content", "#footer",
+        "#header", "#subheader", "#content", "#footer", "#sidebar",
     }
     for _, block := range blocks {
         node := query1(t, "", block)
