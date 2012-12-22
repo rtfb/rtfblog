@@ -59,9 +59,7 @@ func TestBasicStructure(t *testing.T) {
     }
     for _, block := range blocks {
         node := query1(t, "", block)
-        if node.Data() != "div" {
-            t.Errorf("<div> expected, but <%q> found!", node.Data())
-        }
+        assertElem(t, node, "div")
     }
 }
 
@@ -82,9 +80,7 @@ func TestNonEmptyDatasetHasEntries(t *testing.T) {
 func TestEntryListHasAuthor(t *testing.T) {
     nodes := query(t, "", "#author")
     for _, node := range nodes {
-        if node.Data() != "div" {
-            t.Fatalf("<div> expected, but <%q> found!", node.Data())
-        }
+        assertElem(t, node, "div")
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
@@ -97,9 +93,7 @@ func TestEntryListHasAuthor(t *testing.T) {
 func TestEveryEntryHasAuthor(t *testing.T) {
     for _, e := range posts {
         node := query1(t, e.Url, "#author")
-        if node.Data() != "div" {
-            t.Fatalf("<div> expected, but <%q> found!", node.Data())
-        }
+        assertElem(t, node, "div")
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
@@ -126,4 +120,10 @@ func query1(t *testing.T, url string, q string) *h5.Node {
         t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
     }
     return nodes[0]
+}
+
+func assertElem(t *testing.T, node *h5.Node, elem string) {
+    if node.Data() != elem {
+        t.Errorf("<%s> expected, but <%s> found!", elem, node.Data())
+    }
 }
