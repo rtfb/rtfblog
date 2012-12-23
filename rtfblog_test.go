@@ -85,18 +85,28 @@ func TestEntryListHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
-        checkAuthorSection(t, node.Children[0].Data())
+        checkAuthorSection(t, node)
     }
 }
 
-func checkAuthorSection(t *testing.T, text string) {
-    re := "[0-9]{4}-[0-9]{2}-[0-9]{2}, by rtfb"
-    m, err := regexp.MatchString(re, text)
-    if err != nil {
-        t.Fatalf("Failed to parse author section %q!", text)
+func checkAuthorSection(t *testing.T, node *h5.Node) {
+    date := node.Children[0].Data()
+    dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
+    m := dateRe.FindString(date)
+    if m == "" {
+        t.Fatal("No date found in author section!")
     }
-    if !m {
-        t.Fatalf("Author section %q doesn't match %q!", text, re)
+    doc, err := transform.NewDoc(node.String())
+    if err != nil {
+        t.Fatal("Error parsing author section!")
+    }
+    q := transform.NewSelectorQuery("b")
+    n2 := q.Apply(doc)
+    if len(n2) != 1 {
+        t.Fatalf("Author node not found in section: %q", node.String())
+    }
+    if n2[0].Children == nil {
+        t.Fatalf("Author node not found in section: %q", node.String())
     }
 }
 
@@ -108,7 +118,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
-        checkAuthorSection(t, node.Children[0].Data())
+        checkAuthorSection(t, node)
     }
 }
 
