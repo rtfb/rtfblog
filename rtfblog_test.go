@@ -6,10 +6,27 @@ import (
     "io/ioutil"
     "net/http"
     "regexp"
+    "runtime/debug"
     "strings"
     "testing"
     "time"
 )
+
+type T struct {
+    *testing.T
+}
+
+func (t T) failIf(cond bool, msg string, params ...interface{}) {
+    if cond {
+        println("============================================")
+        println("STACK:")
+        println("======")
+        debug.PrintStack()
+        println("--------")
+        println("FAILURE:")
+        t.T.Fatalf(msg, params...)
+    }
+}
 
 func curl(url string) string {
     if r, err := http.Get("http://localhost:8080/" + url); err == nil {
@@ -85,29 +102,21 @@ func TestEntryListHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
-        checkAuthorSection(t, node)
+        checkAuthorSection(T{t}, node)
     }
 }
 
-func checkAuthorSection(t *testing.T, node *h5.Node) {
+func checkAuthorSection(t T, node *h5.Node) {
     date := node.Children[0].Data()
     dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
     m := dateRe.FindString(date)
-    if m == "" {
-        t.Fatal("No date found in author section!")
-    }
+    t.failIf(m == "", "No date found in author section!")
     doc, err := transform.NewDoc(node.String())
-    if err != nil {
-        t.Fatal("Error parsing author section!")
-    }
+    t.failIf(err != nil, "Error parsing author section!")
     q := transform.NewSelectorQuery("b")
     n2 := q.Apply(doc)
-    if len(n2) != 1 {
-        t.Fatalf("Author node not found in section: %q", node.String())
-    }
-    if n2[0].Children == nil {
-        t.Fatalf("Author node not found in section: %q", node.String())
-    }
+    t.failIf(len(n2) != 1, "Author node not found in section: %q", node.String())
+    t.failIf(n2[0].Children == nil, "Author node not found in section: %q", node.String())
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
@@ -118,7 +127,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
         if len(node.Children) == 0 {
             t.Fatalf("No author specified in author div!")
         }
-        checkAuthorSection(t, node)
+        checkAuthorSection(T{t}, node)
     }
 }
 
