@@ -12,15 +12,41 @@ import (
     "strings"
 )
 
+type Tag struct {
+    TagUrl  string
+    TagName string
+}
+
 type Entry struct {
     Author string
     Title  string
     Date   string
     Body   string
     Url    string
+    Tags   []*Tag
 }
 
 var dataset string
+
+func (e *Entry) HasTags() bool {
+    if len(e.Tags) > 0 {
+        return true
+    }
+    return false
+}
+
+func parseTags(tagList string) (tags []*Tag) {
+    for _, t := range strings.Split(tagList, ", ") {
+        if t == "" {
+            continue
+        }
+        tag := new(Tag)
+        tag.TagUrl = "/tag/" + strings.ToLower(t)
+        tag.TagName = t
+        tags = append(tags, tag)
+    }
+    return
+}
 
 func readTextEntry(filename string) (entry *Entry, err error) {
     f, err := os.Open(filename)
@@ -35,6 +61,7 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     entry.Title = msg.Header.Get("subject")
     entry.Author = msg.Header.Get("author")
     entry.Date = msg.Header.Get("isodate")
+    entry.Tags = parseTags(msg.Header.Get("tags"))
     base := filepath.Base(filename)
     entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
     b, err := ioutil.ReadAll(msg.Body)

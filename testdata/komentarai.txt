@@ -1,5 +1,6 @@
 IsoDate: 2010-11-07
 Author: rtfb
+Tags: Administrativia, Spamas
 Subject: Komentarai laikinai išjungti
 
 Su sąlyga, kad siaubingai puola spamozaurai, komentarus laikinai išjungiau.

@@ -106,6 +106,25 @@ func TestEntryListHasAuthor(t *testing.T) {
     }
 }
 
+func TestEntriesHaveTagsInList(t *testing.T) {
+    nodes := query(t, "", "#tags")
+    for _, node := range nodes {
+        assertElem(t, node, "div")
+        if len(node.Children) == 0 {
+            t.Fatalf("No tags specified in tags div!")
+        }
+        checkTagsSection(T{t}, node)
+    }
+}
+
+func checkTagsSection(t T, node *h5.Node) {
+    doc, err := transform.NewDoc(node.String())
+    t.failIf(err != nil, "Error parsing tags section!")
+    q := transform.NewSelectorQuery("a")
+    n2 := q.Apply(doc)
+    t.failIf(len(n2) == 0, "Tags node not found in section: %q", node.String())
+}
+
 func checkAuthorSection(t T, node *h5.Node) {
     date := node.Children[0].Data()
     dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")

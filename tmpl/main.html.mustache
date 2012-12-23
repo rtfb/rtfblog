@@ -26,6 +26,18 @@
 {{> author}}
 <hr />
 <div>{{{Body}}}</div>
+    {{#HasTags}}
+    <div id="tags">
+    Tags:
+    {{/HasTags}}
+        {{#Tags}}
+        <a href="{{TagUrl}}">{{TagName}}</a>
+        {{/Tags}}
+    {{#HasTags}}
+    <br />
+    <br />
+    </div>
+    {{/HasTags}}
 {{/entries}}
 {{^entries}}
 <h2>No entries. This is most likely an error.</h2>
