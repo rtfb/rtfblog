@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "github.com/hoisie/web"
     "github.com/lye/mustache"
     "github.com/russross/blackfriday"
@@ -18,12 +19,13 @@ type Tag struct {
 }
 
 type Entry struct {
-    Author string
-    Title  string
-    Date   string
-    Body   string
-    Url    string
-    Tags   []*Tag
+    Author  string
+    Title   string
+    Date    string
+    Body    string
+    Url     string
+    Tags    []*Tag
+    TagsStr string
 }
 
 var dataset string
@@ -33,6 +35,15 @@ func (e *Entry) HasTags() bool {
         return true
     }
     return false
+}
+
+func (e *Entry) renderTags() string {
+    parts := make([]string, 0)
+    for _, t := range e.Tags {
+        part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagUrl, t.TagName)
+        parts = append(parts, part)
+    }
+    return strings.Join(parts, ", ")
 }
 
 func parseTags(tagList string) (tags []*Tag) {
@@ -62,6 +73,7 @@ func readTextEntry(filename string) (entry *Entry, err error) {
     entry.Author = msg.Header.Get("author")
     entry.Date = msg.Header.Get("isodate")
     entry.Tags = parseTags(msg.Header.Get("tags"))
+    entry.TagsStr = entry.renderTags()
     base := filepath.Base(filename)
     entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
     b, err := ioutil.ReadAll(msg.Body)

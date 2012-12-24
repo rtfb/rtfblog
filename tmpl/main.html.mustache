@@ -26,18 +26,26 @@
 {{> author}}
 <hr />
 <div>{{{Body}}}</div>
+    <div class="container">
     {{#HasTags}}
-    <div id="tags">
-    Tags:
+    <div class="span-11 border" id="tags">
+    <b>Tags:</b>
     {{/HasTags}}
-        {{#Tags}}
-        <a href="{{TagUrl}}">{{TagName}}</a>
-        {{/Tags}}
+    {{{TagsStr}}}
     {{#HasTags}}
     <br />
     <br />
     </div>
     {{/HasTags}}
+    {{^HasTags}}
+    <div class="span-11 border">
+        &nbsp;
+    </div>
+    {{/HasTags}}
+    <div class="span-6">
+        <p>0 comments</p>
+    </div>
+    </div>
 {{/entries}}
 {{^entries}}
 <h2>No entries. This is most likely an error.</h2>
