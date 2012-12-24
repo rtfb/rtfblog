@@ -166,6 +166,14 @@ func TestTagFormattingInPostPage(t *testing.T) {
     }
 }
 
+func TestPostPageHasCommentsSection(t *testing.T) {
+    posts := loadData("testdata")
+    for _, p := range posts {
+        node := query1(t, p.Url, "#comment")
+        assertElem(t, node, "div")
+    }
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
@@ -193,7 +201,7 @@ func query1(t *testing.T, url string, q string) *h5.Node {
 }
 
 func assertElem(t *testing.T, node *h5.Node, elem string) {
-    if node.Data() != elem {
+    if strings.TrimSpace(node.Data()) != elem {
         t.Errorf("<%s> expected, but <%s> found!", elem, node.Data())
     }
 }
