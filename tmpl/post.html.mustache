@@ -26,6 +26,26 @@
 {{> author}}
 <hr />
 <div>{{{Body}}}</div>
+    <div class="container">
+    {{#HasTags}}
+    <div class="span-11" id="tags">
+    <b>Tags:</b>
+    {{/HasTags}}
+    {{{TagsStr}}}
+    {{#HasTags}}
+    <br />
+    <br />
+    </div>
+    {{/HasTags}}
+    {{^HasTags}}
+    <div class="span-11">
+        &nbsp;
+    </div>
+    {{/HasTags}}
+    <div class="span-6">
+        &nbsp;
+    </div>
+    </div>
 {{/entry}}
             </div>
 

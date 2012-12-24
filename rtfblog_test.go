@@ -111,7 +111,7 @@ func TestEntriesHaveTagsInList(t *testing.T) {
     for _, node := range nodes {
         assertElem(t, node, "div")
         if len(node.Children) == 0 {
-            t.Fatalf("No tags specified in tags div!")
+            t.Fatalf("Empty tags div found!")
         }
         checkTagsSection(T{t}, node)
     }
@@ -150,18 +150,38 @@ func TestEveryEntryHasAuthor(t *testing.T) {
     }
 }
 
+func TestTagFormattingInPostPage(t *testing.T) {
+    posts := loadData("testdata")
+    for _, e := range posts {
+        nodes := query0(t, e.Url, "#tags")
+        if len(nodes) > 0 {
+            for _, node := range nodes {
+                assertElem(t, node, "div")
+                if len(node.Children) == 0 {
+                    t.Fatalf("Empty tags div found!")
+                }
+                checkTagsSection(T{t}, node)
+            }
+        }
+    }
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
+    nodes := query0(t, url, query)
+    if len(nodes) == 0 {
+        t.Fatalf("No nodes not found: %q", query)
+    }
+    return nodes
+}
+
+func query0(t *testing.T, url string, query string) []*h5.Node {
     html := curl(url)
     doc, err := transform.NewDoc(html)
     if err != nil {
         t.Fatal("Error parsing document!")
     }
     q := transform.NewSelectorQuery(query)
-    node := q.Apply(doc)
-    if len(node) == 0 {
-        t.Fatalf("Node not found: %q", query)
-    }
-    return node
+    return q.Apply(doc)
 }
 
 func query1(t *testing.T, url string, q string) *h5.Node {
