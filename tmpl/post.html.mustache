@@ -4,9 +4,13 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
         <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
+        <link rel="stylesheet" href="/css/pagedown.css" type="text/css" />
         <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
         <!-- Import fancy-type plugin. -->
         <title>{{{PageTitle}}}</title>
+        <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
+        <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
+        <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
     </head>
     <body>
         <div class="container">
@@ -52,7 +56,14 @@
             <div><input class="text" name="name" placeholder="Name" type="text" /></div>
             <div><input class="text" name="email" placeholder="Email (will stay private)" type="text" /></div>
             <div><input class="text" name="website" placeholder="Web site" type="text" /></div>
-            <div><textarea class="span-17" placeholder="Have a say" name="comment_text"></textarea></div>
+
+            <div class="wmd-panel">
+            <div id="wmd-preview" class="wmd-panel wmd-preview">
+            </div>
+            <div id="wmd-button-bar">
+            </div>
+            <textarea class="wmd-input span-17" placeholder="Have a say" id="wmd-input"></textarea>
+            </div>
         </form>
     </div>
 {{/entry}}
@@ -77,5 +88,12 @@
             <hr />
             <div id="footer" />
         </div>
+        <script type="text/javascript">
+        (function () {
+             var converter = new Markdown.getSanitizingConverter();
+             var editor = new Markdown.Editor(converter);
+             editor.run();
+             })();
+        </script>
     </body>
 </html>
