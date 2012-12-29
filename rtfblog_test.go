@@ -139,7 +139,7 @@ func checkAuthorSection(t T, node *h5.Node) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
-    posts := loadData("testdata")
+    posts := loadData("testdata", "")
     for _, e := range posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")
@@ -151,7 +151,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
 }
 
 func TestTagFormattingInPostPage(t *testing.T) {
-    posts := loadData("testdata")
+    posts := loadData("testdata", "")
     for _, e := range posts {
         nodes := query0(t, e.Url, "#tags")
         if len(nodes) > 0 {
@@ -167,7 +167,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 }
 
 func TestPostPageHasCommentsSection(t *testing.T) {
-    posts := loadData("testdata")
+    posts := loadData("testdata", "")
     for _, p := range posts {
         node := query1(t, p.Url, "#comment")
         assertElem(t, node, "div")

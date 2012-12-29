@@ -1,16 +1,20 @@
 package main
 
 import (
+    "database/sql"
     "fmt"
     "github.com/hoisie/web"
     "github.com/lye/mustache"
+    _ "github.com/mattn/go-sqlite3"
     "github.com/russross/blackfriday"
     "io/ioutil"
     "log"
     "net/mail"
     "os"
+    "path"
     "path/filepath"
     "strings"
+    "time"
 )
 
 type Tag struct {
@@ -28,6 +32,7 @@ type Entry struct {
 }
 
 var dataset string
+var dbName string
 
 func (e *Entry) HasTags() bool {
     if len(e.Tags) > 0 {
@@ -97,13 +102,66 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
+func readDb(dbName string) (entries []*Entry, err error) {
+    db, err := sql.Open("sqlite3", dbName)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer db.Close()
+    rows, err := db.Query(`select a.disp_name, p.id, p.title, p.date,
+                                  p.body, p.url
+                           from author as a, post as p
+                           where a.id=p.author_id`)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer rows.Close()
+    for rows.Next() {
+        entry := new(Entry)
+        var id int
+        var unixDate int64
+        rows.Scan(&entry.Author, &id, &entry.Title, &unixDate, &entry.Body, &entry.Url)
+        entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
+        entry.Tags = queryTags(db, id)
+        entries = append(entries, entry)
+    }
+    return
+}
+
+func queryTags(db *sql.DB, postId int) []*Tag {
+    stmt, err := db.Prepare(`select t.name, t.url
+                             from tag as t, tagmap as tm
+                             where t.id = tm.tag_id
+                                   and tm.post_id = ?`)
+    if err != nil {
+        fmt.Println(err.Error())
+        return nil
+    }
+    defer stmt.Close()
+    rows, err := stmt.Query(postId)
+    if err != nil {
+        fmt.Println(err.Error())
+        return nil
+    }
+    defer rows.Close()
+    tags := make([]*Tag, 0)
+    for rows.Next() {
+        tag := new(Tag)
+        rows.Scan(&tag.TagName, &tag.TagUrl)
+        tags = append(tags, tag)
+    }
+    return tags
+}
+
 func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
     html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache", data)
     ctx.WriteString(html)
 }
 
 func handler(ctx *web.Context, path string) {
-    posts := loadData(dataset)
+    posts := loadData(dataset, dbName)
     var basicData = map[string]interface{}{
         "PageTitle": "",
         "entries":   posts,
@@ -145,7 +203,7 @@ func runServer() {
     web.Run(":8080")
 }
 
-func loadData(set string) []*Entry {
+func loadData(set string, db string) []*Entry {
     if set == "" {
         return nil
     }
@@ -154,10 +212,19 @@ func loadData(set string) []*Entry {
         println(err.Error())
         return nil
     }
-    return data
+    if dbName == "" {
+        return data
+    }
+    d2, err2 := readDb(path.Join(set, dbName))
+    if err2 != nil {
+        println(err2.Error())
+        return nil
+    }
+    return append(data, d2...)
 }
 
 func main() {
     dataset = "testdata"
+    dbName = "foo.db"
     runServer()
 }
