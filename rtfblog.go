@@ -1,6 +1,7 @@
 package main
 
 import (
+    "crypto/md5"
     "database/sql"
     "fmt"
     "github.com/hoisie/web"
@@ -22,13 +23,24 @@ type Tag struct {
     TagName string
 }
 
+type Comment struct {
+    Name      string
+    Email     string
+    EmailHash string
+    Website   string
+    Ip        string
+    Body      string
+    Time      string
+}
+
 type Entry struct {
-    Author string
-    Title  string
-    Date   string
-    Body   string
-    Url    string
-    Tags   []*Tag
+    Author   string
+    Title    string
+    Date     string
+    Body     string
+    Url      string
+    Tags     []*Tag
+    Comments []*Comment
 }
 
 var dataset string
@@ -39,6 +51,10 @@ func (e *Entry) HasTags() bool {
         return true
     }
     return false
+}
+
+func (e *Entry) HasComments() bool {
+    return len(e.Comments) > 0
 }
 
 func (e *Entry) TagsStr() string {
@@ -125,6 +141,7 @@ func readDb(dbName string) (entries []*Entry, err error) {
         rows.Scan(&entry.Author, &id, &entry.Title, &unixDate, &entry.Body, &entry.Url)
         entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
         entry.Tags = queryTags(db, id)
+        entry.Comments = queryComments(db, id)
         entries = append(entries, entry)
     }
     return
@@ -153,6 +170,40 @@ func queryTags(db *sql.DB, postId int) []*Tag {
         tags = append(tags, tag)
     }
     return tags
+}
+
+func queryComments(db *sql.DB, postId int) []*Comment {
+    stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
+                                    c.timestamp, c.body
+                             from commenter as a, comment as c
+                             where a.id = c.commenter_id
+                                   and c.post_id = ?`)
+    if err != nil {
+        fmt.Println(err.Error())
+        return nil
+    }
+    defer stmt.Close()
+    data, err := stmt.Query(postId)
+    if err != nil {
+        fmt.Println(err.Error())
+        return nil
+    }
+    defer data.Close()
+    comments := make([]*Comment, 0)
+    for data.Next() {
+        comment := new(Comment)
+        var unixDate int64
+        var body string
+        data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
+            &unixDate, &body)
+        hash := md5.New()
+        hash.Write([]byte(strings.ToLower(comment.Email)))
+        comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
+        comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
+        comment.Body = string(blackfriday.MarkdownCommon([]byte(body)))
+        comments = append(comments, comment)
+    }
+    return comments
 }
 
 func render(ctx *web.Context, tmpl string, data map[string]interface{}) {

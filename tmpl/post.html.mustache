@@ -11,6 +11,30 @@
         <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
+        <style type="text/css">
+            #body-container {
+                background: #eee;
+            }
+            #comment-container {
+                position: relative;
+            }
+            #commenter-avatar {
+                float: left;
+                margin-right: 8px;
+            }
+            #commenter {
+                position: relative;
+                vertical-align: bottom;
+                line-height: 1.1em;
+                margin-bottom: 0.5em;
+            }
+            .dimmed {
+                color: gray;
+            }
+            p {
+                margin: 0 0 0.5em;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -49,6 +73,42 @@
     <div class="span-6">
         &nbsp;
     </div>
+    </div>
+
+    <div class="container" id="comments">
+        {{#HasComments}}
+        <div class="span-11">
+        <b>Comments:</b>
+        </div>
+        <div class="span-17">
+            <hr />
+        </div>
+        <div class="span-17">
+            {{#Comments}}
+            <div id="comment-container">
+                <img src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" id="commenter-avatar" />
+                <div id="commenter">
+                    <p><b>{{Name}}</b><br />
+                    <span class="dimmed">{{Time}}</span><br />
+                    </p>
+                </div>
+            </div>
+            <div id="body-container">
+                {{{Body}}}
+            </div>
+            <br />
+            <hr />
+            {{/Comments}}
+        </div>
+        {{/HasComments}}
+        {{^HasComments}}
+        <div class="span-11">
+            &nbsp;
+        </div>
+        <div class="span-6">
+            <p>No comments yet</p>
+        </div>
+        {{/HasComments}}
     </div>
 
     <form action="comment_submit" method="post" id="comment">

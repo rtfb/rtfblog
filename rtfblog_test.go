@@ -150,6 +150,50 @@ func TestEveryEntryHasAuthor(t *testing.T) {
     }
 }
 
+func TestCommentsFormattingInPostPage(t *testing.T) {
+    posts := loadData("testdata", "")
+    for _, p := range posts {
+        nodes := query0(t, p.Url, "#comments")
+        if len(nodes) > 0 {
+            for _, node := range nodes {
+                assertElem(t, node, "div")
+                if emptyChildren(node) {
+                    t.Fatalf("Empty comments div found!")
+                }
+                checkCommentsSection(T{t}, node)
+            }
+        }
+    }
+}
+
+func checkCommentsSection(t T, node *h5.Node) {
+    doc, err := transform.NewDoc(node.String())
+    t.failIf(err != nil, "Error parsing comments section!")
+    noComments := transform.NewSelectorQuery("p").Apply(doc)
+    comments := transform.NewSelectorQuery("b").Apply(doc)
+    t.failIf(len(noComments) == 0 && len(comments) == 0,
+        "Comments node not found in section: %q", node.String())
+    if len(comments) > 0 {
+        headers := transform.NewSelectorQuery("#comment-container").Apply(doc)
+        t.failIf(len(headers) == 0,
+            "Comment header not found in section: %q", node.String())
+        bodies := transform.NewSelectorQuery("#body-container").Apply(doc)
+        t.failIf(len(bodies) == 0,
+            "Comment body not found in section: %q", node.String())
+    }
+}
+
+func emptyChildren(node *h5.Node) bool {
+    if len(node.Children) == 0 {
+        return true
+    }
+    sum := ""
+    for _, ch := range node.Children {
+        sum += ch.Data()
+    }
+    return strings.TrimSpace(sum) == ""
+}
+
 func TestTagFormattingInPostPage(t *testing.T) {
     posts := loadData("testdata", "")
     for _, e := range posts {
