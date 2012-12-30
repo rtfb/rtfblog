@@ -138,7 +138,10 @@ func readDb(dbName string) (entries []*Entry, err error) {
         entry := new(Entry)
         var id int
         var unixDate int64
-        rows.Scan(&entry.Author, &id, &entry.Title, &unixDate, &entry.Body, &entry.Url)
+        var bodyMarkdown string
+        rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
+            &bodyMarkdown, &entry.Url)
+        entry.Body = string(blackfriday.MarkdownCommon([]byte(bodyMarkdown)))
         entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
         entry.Tags = queryTags(db, id)
         entry.Comments = queryComments(db, id)
