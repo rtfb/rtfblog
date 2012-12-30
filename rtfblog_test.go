@@ -89,6 +89,7 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
     dataset = "testdata"
+    dbName = "foo.db"
     what := "No entries"
     if strings.Contains(curl(""), what) {
         t.Errorf("Test page should not contain %q", what)
@@ -139,7 +140,7 @@ func checkAuthorSection(t T, node *h5.Node) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
-    posts := loadData("testdata", "")
+    posts := loadData("testdata", "foo.db")
     for _, e := range posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")
@@ -151,7 +152,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
 }
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
-    posts := loadData("testdata", "")
+    posts := loadData("testdata", "foo.db")
     for _, p := range posts {
         nodes := query0(t, p.Url, "#comments")
         if len(nodes) > 0 {
@@ -195,7 +196,7 @@ func emptyChildren(node *h5.Node) bool {
 }
 
 func TestTagFormattingInPostPage(t *testing.T) {
-    posts := loadData("testdata", "")
+    posts := loadData("testdata", "foo.db")
     for _, e := range posts {
         nodes := query0(t, e.Url, "#tags")
         if len(nodes) > 0 {
@@ -211,7 +212,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 }
 
 func TestPostPageHasCommentEditor(t *testing.T) {
-    posts := loadData("testdata", "")
+    posts := loadData("testdata", "foo.db")
     for _, p := range posts {
         node := query1(t, p.Url, "#comment")
         assertElem(t, node, "form")

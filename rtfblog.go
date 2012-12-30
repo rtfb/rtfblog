@@ -8,12 +8,9 @@ import (
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
     "github.com/russross/blackfriday"
-    "io/ioutil"
     "log"
-    "net/mail"
     "os"
     "path"
-    "path/filepath"
     "strings"
     "time"
 )
@@ -64,58 +61,6 @@ func (e *Entry) TagsStr() string {
         parts = append(parts, part)
     }
     return strings.Join(parts, ", ")
-}
-
-func parseTags(tagList string) (tags []*Tag) {
-    for _, t := range strings.Split(tagList, ", ") {
-        if t == "" {
-            continue
-        }
-        tag := new(Tag)
-        tag.TagUrl = "/tag/" + strings.ToLower(t)
-        tag.TagName = t
-        tags = append(tags, tag)
-    }
-    return
-}
-
-func readTextEntry(filename string) (entry *Entry, err error) {
-    f, err := os.Open(filename)
-    if err != nil {
-        return nil, err
-    }
-    msg, err := mail.ReadMessage(f)
-    if err != nil {
-        return nil, err
-    }
-    entry = new(Entry)
-    entry.Title = msg.Header.Get("subject")
-    entry.Author = msg.Header.Get("author")
-    entry.Date = msg.Header.Get("isodate")
-    entry.Tags = parseTags(msg.Header.Get("tags"))
-    base := filepath.Base(filename)
-    entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
-    b, err := ioutil.ReadAll(msg.Body)
-    if err != nil {
-        return nil, err
-    }
-    entry.Body = string(blackfriday.MarkdownCommon(b))
-    return
-}
-
-func readTextEntries(root string) (entries []*Entry, err error) {
-    filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-        if strings.ToLower(filepath.Ext(path)) != ".txt" {
-            return nil
-        }
-        entry, _ := readTextEntry(path)
-        if entry == nil {
-            return nil
-        }
-        entries = append(entries, entry)
-        return nil
-    })
-    return
 }
 
 func readDb(dbName string) (entries []*Entry, err error) {
@@ -233,12 +178,7 @@ func handler(ctx *web.Context, path string) {
                 return
             }
         }
-        input, err := ioutil.ReadFile(path)
-        if err != nil {
-            ctx.NotFound("File Not Found\n" + err.Error())
-            return
-        }
-        ctx.WriteString(string(blackfriday.MarkdownCommon(input)))
+        ctx.NotFound("Page not found: " + path)
         return
     }
     ctx.Abort(500, "Server Error")
@@ -335,23 +275,15 @@ func runServer() {
 }
 
 func loadData(set string, db string) []*Entry {
-    if set == "" {
+    if set == "" || dbName == "" {
         return nil
     }
-    data, err := readTextEntries(set)
+    data, err := readDb(path.Join(set, dbName))
     if err != nil {
         println(err.Error())
         return nil
     }
-    if dbName == "" {
-        return data
-    }
-    d2, err2 := readDb(path.Join(set, dbName))
-    if err2 != nil {
-        println(err2.Error())
-        return nil
-    }
-    return append(data, d2...)
+    return data
 }
 
 func main() {

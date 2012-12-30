@@ -1,11 +1,16 @@
 package main
 
 import (
+    "bytes"
     "database/sql"
     "fmt"
     _ "github.com/mattn/go-sqlite3"
+    "net/mail"
     "os"
+    "path"
+    "path/filepath"
     "strings"
+    "time"
 )
 
 func usage() {
@@ -14,7 +19,7 @@ func usage() {
         os.Args[0] + " <command> [params...]",
         "",
         "possible commands:",
-        "\tinit <file.db> -- init clean db with schema",
+        "\tinit <file.db> <data dir> -- init clean db with schema",
     }
     for _, s := range help {
         println(s)
@@ -116,13 +121,108 @@ func populate(fileName string) {
     xaction.Commit()
 }
 
+func populate2(fileName string, data []*Entry) {
+    db, err := sql.Open("sqlite3", fileName)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    xaction, err := db.Begin()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    for _, e := range data {
+        stmt, _ := xaction.Prepare("insert into post(author_id, title, date, url, body) values(?, ?, ?, ?, ?)")
+        defer stmt.Close()
+        date, _ := time.Parse("2006-01-02", e.Date)
+        result, _ := stmt.Exec(1, e.Title, date.Unix(), e.Url, e.Body)
+        postId, _ := result.LastInsertId()
+        for _, t := range e.Tags {
+            stmt, _ = xaction.Prepare("insert into tag(name, url) values(?, ?)")
+            defer stmt.Close()
+            result, _ = stmt.Exec(t.TagName, t.TagUrl)
+            tagId, _ := result.LastInsertId()
+            stmt, _ = xaction.Prepare("insert into tagmap(tag_id, post_id) values(?, ?)")
+            defer stmt.Close()
+            stmt.Exec(tagId, postId)
+        }
+    }
+    xaction.Commit()
+}
+
+type Tag struct {
+    TagUrl  string
+    TagName string
+}
+
+type Entry struct {
+    Author string
+    Title  string
+    Date   string
+    Body   string
+    Url    string
+    Tags   []*Tag
+}
+
+func parseTags(tagList string) (tags []*Tag) {
+    for _, t := range strings.Split(tagList, ", ") {
+        if t == "" {
+            continue
+        }
+        tag := new(Tag)
+        tag.TagUrl = "/tag/" + strings.ToLower(t)
+        tag.TagName = t
+        tags = append(tags, tag)
+    }
+    return
+}
+
+func readTextEntry(filename string) (entry *Entry, err error) {
+    f, err := os.Open(filename)
+    if err != nil {
+        return nil, err
+    }
+    msg, err := mail.ReadMessage(f)
+    if err != nil {
+        return nil, err
+    }
+    entry = new(Entry)
+    entry.Title = msg.Header.Get("subject")
+    entry.Author = msg.Header.Get("author")
+    entry.Date = msg.Header.Get("isodate")
+    entry.Tags = parseTags(msg.Header.Get("tags"))
+    base := filepath.Base(filename)
+    entry.Url = base[:strings.LastIndex(base, filepath.Ext(filename))]
+    buf := new(bytes.Buffer)
+    buf.ReadFrom(msg.Body)
+    entry.Body = buf.String()
+    return
+}
+
+func readTextEntries(root string) (entries []*Entry, err error) {
+    filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+        if strings.ToLower(filepath.Ext(path)) != ".txt" {
+            return nil
+        }
+        entry, _ := readTextEntry(path)
+        if entry == nil {
+            return nil
+        }
+        entries = append(entries, entry)
+        return nil
+    })
+    return
+}
+
 func main() {
-    if len(os.Args) < 3 {
+    if len(os.Args) < 4 {
         usage()
         return
     }
     cmd := os.Args[1]
     file := os.Args[2]
+    dir := os.Args[3]
     if cmd != "init" {
         fmt.Println("Unknown command %q", cmd)
         usage()
@@ -132,6 +232,19 @@ func main() {
         fmt.Println("File name is supposed to have a .db extensios, but was %q", file)
         return
     }
-    init_db(file)
-    populate(file)
+    /* TODO:
+       if !exists(dir) {
+           fmt.Println("Data dir %q does not exist!", dir)
+           return
+       }
+    */
+    dbFile := path.Join(dir, file)
+    init_db(dbFile)
+    populate(dbFile)
+    data, err := readTextEntries(dir)
+    if err != nil {
+        println(err.Error())
+        return
+    }
+    populate2(dbFile, data)
 }
