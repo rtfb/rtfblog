@@ -241,6 +241,82 @@ func handler(ctx *web.Context, path string) {
     ctx.Abort(500, "Server Error")
 }
 
+func getCommenterId(xaction *sql.Tx, ctx *web.Context) (id int64, err error) {
+    name := ctx.Params["name"]
+    email := ctx.Params["email"]
+    website := ctx.Params["website"]
+    ip := ctx.Request.RemoteAddr
+    query, _ := xaction.Prepare(`select c.id from commenter as c
+                                 where c.name = ?
+                                   and c.email = ?
+                                   and c.www = ?`)
+    defer query.Close()
+    err = query.QueryRow(name, email, website).Scan(&id)
+    switch err {
+    case nil:
+        return
+    case sql.ErrNoRows:
+        insertCommenter, _ := xaction.Prepare(`insert into commenter
+                                               (name, email, www, ip)
+                                               values (?, ?, ?, ?)`)
+        defer insertCommenter.Close()
+        result, err := insertCommenter.Exec(name, email, website, ip)
+        if err != nil {
+            fmt.Println("Failed to insert commenter: " + err.Error())
+        }
+        return result.LastInsertId()
+    default:
+        fmt.Println("err")
+        fmt.Println(err.Error())
+        return -1, sql.ErrNoRows
+    }
+    return -1, sql.ErrNoRows
+}
+
+func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
+    query, _ := xaction.Prepare(`select p.id from post as p
+                                 where p.url = ?`)
+    defer query.Close()
+    err = query.QueryRow(url).Scan(&id)
+    return
+}
+
+func comment_handler(ctx *web.Context) {
+    db, err := sql.Open("sqlite3", path.Join(dataset, dbName))
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer db.Close()
+    xaction, err := db.Begin()
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    commenterId, err := getCommenterId(xaction, ctx)
+    if err != nil {
+        fmt.Println("getCommenterId failed: " + err.Error())
+        ctx.Abort(500, "Server Error")
+        return
+    }
+    referer := ctx.Request.Header["Referer"][0]
+    refUrl := referer[strings.LastIndex(referer, "/")+1:]
+    postId, err := getPostId(xaction, refUrl)
+    if err != nil {
+        fmt.Println("getPostId failed: " + err.Error())
+        ctx.Abort(500, "Server Error")
+        return
+    }
+    stmt, _ := xaction.Prepare(`insert into comment(commenter_id, post_id,
+                                                    timestamp, body)
+                                values(?, ?, ?, ?)`)
+    defer stmt.Close()
+    body := ctx.Request.Form["text"][0]
+    stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    xaction.Commit()
+    ctx.Redirect(301, "/"+refUrl)
+}
+
 func runServer() {
     f, err := os.Create("server.log")
     if err != nil {
@@ -248,6 +324,7 @@ func runServer() {
         return
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
+    web.Post("/comment_submit", comment_handler)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"
