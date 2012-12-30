@@ -105,6 +105,14 @@ func populate(fileName string) {
     defer stmt.Close()
     stmt.Exec(1, 1, 1)
     stmt.Exec(2, 2, 1)
+    stmt, _ = xaction.Prepare("insert into commenter(id, name, email, www, ip) values(?, ?, ?, ?, ?)")
+    defer stmt.Close()
+    stmt.Exec(1, "Vytautas Šaltenis", "Vytautas.Shaltenis@gmail.com", "http://rtfb.lt", "127.0.0.1")
+    stmt.Exec(2, "Vardenis Pavardenis", "niekas@niekur.com", "http://delfi.lt", "127.0.0.1")
+    stmt, _ = xaction.Prepare("insert into comment(id, commenter_id, post_id, timestamp, body) values(?, ?, ?, ?, ?)")
+    defer stmt.Close()
+    stmt.Exec(1, 2, 1, 1356872181, "Nu ir nerašyk, _niekam_ čia neįdomu tavo pisulkos.")
+    stmt.Exec(2, 1, 1, 1356879181, "O tu čia tada **nekomentuok** ten kur neparašyta nieko. Eik [ten](http://google.com/)")
     xaction.Commit()
 }
 
