@@ -59,6 +59,7 @@ func init_db(fileName string) {
             id integer not null primary key,
             commenter_id integer not null references commenter(id) on delete cascade on update cascade,
             post_id integer not null references post(id) on delete cascade on update cascade,
+            timestamp long,
             body text
         )`,
     }
