@@ -51,8 +51,8 @@
     </div>
     </div>
 
-    <div class="container" id="comment">
-        <form>
+    <form action="comment_submit" method="post" id="comment">
+    <div class="container">
             <div><input class="text" name="name" placeholder="Name" type="text" /></div>
             <div><input class="text" name="email" placeholder="Email (will stay private)" type="text" /></div>
             <div><input class="text" name="website" placeholder="Web site" type="text" /></div>
@@ -62,10 +62,11 @@
             </div>
             <div id="wmd-button-bar">
             </div>
-            <textarea class="wmd-input span-17" placeholder="Have a say" id="wmd-input"></textarea>
+            <textarea class="wmd-input span-17" name="text" placeholder="Have a say" id="wmd-input"></textarea>
             </div>
-        </form>
     </div>
+    <div><input type="submit" value="Submit" /></div>
+    </form>
 {{/entry}}
             </div>
 

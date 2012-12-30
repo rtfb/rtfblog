@@ -166,11 +166,11 @@ func TestTagFormattingInPostPage(t *testing.T) {
     }
 }
 
-func TestPostPageHasCommentsSection(t *testing.T) {
+func TestPostPageHasCommentEditor(t *testing.T) {
     posts := loadData("testdata", "")
     for _, p := range posts {
         node := query1(t, p.Url, "#comment")
-        assertElem(t, node, "div")
+        assertElem(t, node, "form")
     }
 }
 
