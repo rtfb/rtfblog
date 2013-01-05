@@ -46,10 +46,7 @@ var dataset string
 var dbName string
 
 func (e *Entry) HasTags() bool {
-    if len(e.Tags) > 0 {
-        return true
-    }
-    return false
+    return len(e.Tags) > 0
 }
 
 func (e *Entry) HasComments() bool {
