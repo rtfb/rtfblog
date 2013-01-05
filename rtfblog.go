@@ -28,6 +28,7 @@ type Comment struct {
     Ip        string
     Body      string
     Time      string
+    CommentId string
 }
 
 type Entry struct {
@@ -122,7 +123,7 @@ func queryTags(db *sql.DB, postId int) []*Tag {
 
 func queryComments(db *sql.DB, postId int) []*Comment {
     stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
-                                    c.timestamp, c.body
+                                    c.id, c.timestamp, c.body
                              from commenter as a, comment as c
                              where a.id = c.commenter_id
                                    and c.post_id = ?`)
@@ -143,7 +144,7 @@ func queryComments(db *sql.DB, postId int) []*Comment {
         var unixDate int64
         var body string
         data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
-            &unixDate, &body)
+            &comment.CommentId, &unixDate, &body)
         hash := md5.New()
         hash.Write([]byte(strings.ToLower(comment.Email)))
         comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))

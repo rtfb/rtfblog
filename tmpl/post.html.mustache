@@ -28,7 +28,7 @@
                 line-height: 1.1em;
                 margin-bottom: 0.5em;
             }
-            .dimmed {
+            a.dimmed {
                 color: gray;
             }
             p {
@@ -89,7 +89,7 @@
                 <img src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" id="commenter-avatar" />
                 <div id="commenter">
                     <p><b>{{Name}}</b><br />
-                    <span class="dimmed">{{Time}}</span><br />
+                    <a class="dimmed" href="#comment-{{CommentId}}">{{Time}}</a><br />
                     </p>
                 </div>
             </div>
