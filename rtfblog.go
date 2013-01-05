@@ -164,6 +164,8 @@ func handler(ctx *web.Context, path string) {
         "PageTitle": "",
         "entries":   posts,
     }
+    value, found := ctx.GetSecureCookie("adminlogin")
+    basicData["AdminLogin"] = found && value == "yesplease"
     if path == "" {
         basicData["PageTitle"] = "Velkam"
         render(ctx, "main", basicData)
@@ -171,6 +173,10 @@ func handler(ctx *web.Context, path string) {
     } else if path == "login" {
         basicData["PageTitle"] = "Login"
         render(ctx, "login", basicData)
+        return
+    } else if path == "logout" {
+        ctx.SetSecureCookie("adminlogin", "", 0)
+        ctx.Redirect(301, "/")
         return
     } else {
         for _, e := range posts {
@@ -229,8 +235,10 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
 
 func login_handler(ctx *web.Context) {
     uname := ctx.Request.Form["uname"][0]
-    passwd := ctx.Request.Form["passwd"][0]
-    println(fmt.Sprintf("uname=%q, passwd=%q", uname, passwd))
+    //passwd := ctx.Request.Form["passwd"][0]
+    if uname == "admin" {
+        ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
+    }
     ctx.Redirect(301, "/")
 }
 
@@ -282,6 +290,7 @@ func runServer() {
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"
+    web.Config.CookieSecret = "foobarbaz" // XXX: don't forget to change that!
     web.Run(":8080")
 }
 
