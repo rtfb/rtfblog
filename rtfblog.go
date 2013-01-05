@@ -234,7 +234,7 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
 }
 
 func login_handler(ctx *web.Context) {
-    uname := ctx.Request.Form["uname"][0]
+    uname := ctx.Params["uname"]
     //passwd := ctx.Request.Form["passwd"][0]
     if uname == "admin" {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
@@ -272,7 +272,7 @@ func comment_handler(ctx *web.Context) {
                                                     timestamp, body)
                                 values(?, ?, ?, ?)`)
     defer stmt.Close()
-    body := ctx.Request.Form["text"][0]
+    body := ctx.Params["text"]
     stmt.Exec(commenterId, postId, time.Now().Unix(), body)
     xaction.Commit()
     ctx.Redirect(301, "/"+refUrl)
