@@ -4,15 +4,16 @@ import (
     "crypto/md5"
     "database/sql"
     "fmt"
-    "github.com/hoisie/web"
-    "github.com/lye/mustache"
-    _ "github.com/mattn/go-sqlite3"
-    "github.com/russross/blackfriday"
     "log"
     "os"
     "path"
     "strings"
     "time"
+
+    "github.com/hoisie/web"
+    "github.com/lye/mustache"
+    _ "github.com/mattn/go-sqlite3"
+    "github.com/russross/blackfriday"
 )
 
 type Tag struct {

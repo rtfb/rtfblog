@@ -4,13 +4,14 @@ import (
     "bytes"
     "database/sql"
     "fmt"
-    _ "github.com/mattn/go-sqlite3"
     "net/mail"
     "os"
     "path"
     "path/filepath"
     "strings"
     "time"
+
+    _ "github.com/mattn/go-sqlite3"
 )
 
 func usage() {

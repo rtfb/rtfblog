@@ -1,8 +1,6 @@
 package main
 
 import (
-    "code.google.com/p/go-html-transform/h5"
-    "code.google.com/p/go-html-transform/html/transform"
     "io/ioutil"
     "net/http"
     "regexp"
@@ -10,6 +8,9 @@ import (
     "strings"
     "testing"
     "time"
+
+    "code.google.com/p/go-html-transform/h5"
+    "code.google.com/p/go-html-transform/html/transform"
 )
 
 type T struct {
