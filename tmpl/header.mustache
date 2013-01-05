@@ -1,0 +1,13 @@
+<div class="span-20">
+<a href="/"><h1>Home</h1></a>
+</div>
+{{#AdminLogin}}
+<div style="text-align: right" class="span-3" id="logout">
+    <a href="/logout">Logout</a>
+</div>
+{{/AdminLogin}}
+{{^AdminLogin}}
+<div style="text-align: right" class="span-3" id="login">
+    <a href="/login">Login</a>
+</div>
+{{/AdminLogin}}
