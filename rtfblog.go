@@ -171,6 +171,10 @@ func handler(ctx *web.Context, path string) {
         basicData["PageTitle"] = "Velkam"
         render(ctx, "main", basicData)
         return
+    } else if path == "login" {
+        basicData["PageTitle"] = "Login"
+        render(ctx, "login", basicData)
+        return
     } else {
         for _, e := range posts {
             if e.Url == path {
@@ -226,6 +230,13 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
     return
 }
 
+func login_handler(ctx *web.Context) {
+    uname := ctx.Request.Form["uname"][0]
+    passwd := ctx.Request.Form["passwd"][0]
+    println(fmt.Sprintf("uname=%q, passwd=%q", uname, passwd))
+    ctx.Redirect(301, "/")
+}
+
 func comment_handler(ctx *web.Context) {
     db, err := sql.Open("sqlite3", path.Join(dataset, dbName))
     if err != nil {
@@ -270,6 +281,7 @@ func runServer() {
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Post("/comment_submit", comment_handler)
+    web.Post("/login_submit", login_handler)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"

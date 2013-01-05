@@ -220,6 +220,11 @@ func TestPostPageHasCommentEditor(t *testing.T) {
     }
 }
 
+func TestLoginPage(t *testing.T) {
+    node := query1(t, "login", "#login_form")
+    assertElem(t, node, "form")
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {

@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+        <!-- Import fancy-type plugin. -->
+        <title>{{{PageTitle}}}</title>
+    </head>
+    <body>
+        <div class="container">
+            <div id="header">
+                <br />
+                <h1>Login</h1>
+            </div>
+            <hr />
+
+            <div id="content">
+                <form action="login_submit" method="post" id="login_form">
+                    <div><input class="text" name="uname" placeholder="Username" type="text" /></div>
+                    <div><input class="text" name="passwd" placeholder="Password" type="password" /></div>
+                    <div><input type="submit" value="Login" /></div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
