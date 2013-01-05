@@ -158,6 +158,11 @@ func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
     ctx.WriteString(html)
 }
 
+func xtractReferer(ctx *web.Context) string {
+    referer := ctx.Request.Header["Referer"][0]
+    return referer[strings.LastIndex(referer, "/")+1:]
+}
+
 func handler(ctx *web.Context, path string) {
     posts := loadData(dataset, dbName)
     var basicData = map[string]interface{}{
@@ -171,17 +176,13 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "main", basicData)
         return
     } else if path == "login" {
-        referer := ctx.Request.Header["Referer"][0]
-        refUrl := referer[strings.LastIndex(referer, "/")+1:]
-        basicData["RedirectTo"] = refUrl
+        basicData["RedirectTo"] = xtractReferer(ctx)
         basicData["PageTitle"] = "Login"
         render(ctx, "login", basicData)
         return
     } else if path == "logout" {
         ctx.SetSecureCookie("adminlogin", "", 0)
-        referer := ctx.Request.Header["Referer"][0]
-        refUrl := referer[strings.LastIndex(referer, "/")+1:]
-        ctx.Redirect(301, "/"+refUrl)
+        ctx.Redirect(301, "/"+xtractReferer(ctx))
         return
     } else {
         for _, e := range posts {
@@ -266,8 +267,7 @@ func comment_handler(ctx *web.Context) {
         ctx.Abort(500, "Server Error")
         return
     }
-    referer := ctx.Request.Header["Referer"][0]
-    refUrl := referer[strings.LastIndex(referer, "/")+1:]
+    refUrl := xtractReferer(ctx)
     postId, err := getPostId(xaction, refUrl)
     if err != nil {
         fmt.Println("getPostId failed: " + err.Error())
