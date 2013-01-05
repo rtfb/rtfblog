@@ -171,12 +171,17 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "main", basicData)
         return
     } else if path == "login" {
+        referer := ctx.Request.Header["Referer"][0]
+        refUrl := referer[strings.LastIndex(referer, "/")+1:]
+        basicData["RedirectTo"] = refUrl
         basicData["PageTitle"] = "Login"
         render(ctx, "login", basicData)
         return
     } else if path == "logout" {
         ctx.SetSecureCookie("adminlogin", "", 0)
-        ctx.Redirect(301, "/")
+        referer := ctx.Request.Header["Referer"][0]
+        refUrl := referer[strings.LastIndex(referer, "/")+1:]
+        ctx.Redirect(301, "/"+refUrl)
         return
     } else {
         for _, e := range posts {
@@ -239,7 +244,8 @@ func login_handler(ctx *web.Context) {
     if uname == "admin" {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
     }
-    ctx.Redirect(301, "/")
+    redir := ctx.Params["redirect_to"]
+    ctx.Redirect(301, "/"+redir)
 }
 
 func comment_handler(ctx *web.Context) {
