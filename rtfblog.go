@@ -53,6 +53,10 @@ func (e *Entry) HasComments() bool {
     return len(e.Comments) > 0
 }
 
+func (e *Entry) NumComments() int {
+    return len(e.Comments)
+}
+
 func (e *Entry) TagsStr() string {
     parts := make([]string, 0)
     for _, t := range e.Tags {
