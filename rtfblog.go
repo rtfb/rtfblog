@@ -283,9 +283,14 @@ func comment_handler(ctx *web.Context) {
                                 values(?, ?, ?, ?)`)
     defer stmt.Close()
     body := ctx.Params["text"]
-    stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    if err != nil {
+        fmt.Println("Failed to insert comment: " + err.Error())
+    }
+    commentId, _ := result.LastInsertId()
     xaction.Commit()
-    ctx.Redirect(301, "/"+refUrl)
+    redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
+    ctx.Redirect(301, redir)
 }
 
 func runServer() {
