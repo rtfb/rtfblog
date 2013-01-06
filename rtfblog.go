@@ -44,6 +44,7 @@ type Entry struct {
 
 var dataset string
 var dbName string
+var testLoader func() []*Entry
 
 func (e *Entry) HasTags() bool {
     return len(e.Tags) > 0
@@ -314,6 +315,9 @@ func runServer() {
 }
 
 func loadData(set string, db string) []*Entry {
+    if testLoader != nil {
+        return testLoader()
+    }
     if set == "" || dbName == "" {
         return nil
     }

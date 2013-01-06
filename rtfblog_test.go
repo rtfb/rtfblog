@@ -225,6 +225,20 @@ func TestLoginPage(t *testing.T) {
     assertElem(t, node, "form")
 }
 
+func TestAllLoadedPostsAppearOnMainPage(t *testing.T) {
+    testLoader = func() []*Entry {
+        return []*Entry{&Entry{"", "LD", "", "B", "labadena", []*Tag{&Tag{"u", "n"}}, nil},
+            &Entry{},
+            &Entry{},
+            &Entry{},
+            &Entry{},
+            &Entry{},
+        }
+    }
+    nodes := query0(t, "", "#post")
+    T{t}.failIf(len(nodes) != 6, "Not all posts have been rendered!")
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
