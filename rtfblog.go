@@ -163,7 +163,11 @@ func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
 }
 
 func xtractReferer(ctx *web.Context) string {
-    referer := ctx.Request.Header["Referer"][0]
+    referers := ctx.Request.Header["Referer"]
+    if len(referers) == 0 {
+        return ""
+    }
+    referer := referers[0]
     return referer[strings.LastIndex(referer, "/")+1:]
 }
 
