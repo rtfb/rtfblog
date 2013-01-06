@@ -88,7 +88,11 @@
             <div id="comment-container">
                 <img src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" id="commenter-avatar" />
                 <div id="commenter">
-                    <p><b>{{Name}}</b><br />
+                    <p><b>{{Name}}</b>
+                    {{#AdminLogin}}
+                    &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt;
+                    {{/AdminLogin}}
+                    <br />
                     <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
                     </p>
                 </div>
@@ -96,6 +100,15 @@
             <div id="body-container">
                 {{{Body}}}
             </div>
+            {{#AdminLogin}}
+            <div id="comment-admin" style="text-align: right">
+                <a href="/delete_comment#id-{{CommentId}}"
+                    onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')">
+                    <img src="delete.gif" />Delete!</a>
+                <a href="/edit_comment#id-{{CommentId}}">
+                    <img src="edit.gif" />Edit...</a>
+            </div>
+            {{/AdminLogin}}
             <br />
             <hr />
             {{/Comments}}
