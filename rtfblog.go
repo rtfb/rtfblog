@@ -6,7 +6,6 @@ import (
     "fmt"
     "log"
     "os"
-    "path"
     "strings"
     "time"
 
@@ -43,7 +42,6 @@ type Entry struct {
 }
 
 var dataset string
-var dbName string
 var testLoader func() []*Entry
 
 func (e *Entry) HasTags() bool {
@@ -173,7 +171,7 @@ func xtractReferer(ctx *web.Context) string {
 }
 
 func handler(ctx *web.Context, path string) {
-    posts := loadData(dataset, dbName)
+    posts := loadData(dataset)
     var basicData = map[string]interface{}{
         "PageTitle": "",
         "entries":   posts,
@@ -259,7 +257,7 @@ func login_handler(ctx *web.Context) {
 }
 
 func comment_handler(ctx *web.Context) {
-    db, err := sql.Open("sqlite3", path.Join(dataset, dbName))
+    db, err := sql.Open("sqlite3", dataset)
     if err != nil {
         fmt.Println(err.Error())
         return
@@ -314,14 +312,14 @@ func runServer() {
     web.Run(":8080")
 }
 
-func loadData(set string, db string) []*Entry {
+func loadData(db string) []*Entry {
     if testLoader != nil {
         return testLoader()
     }
-    if set == "" || dbName == "" {
+    if db == "" {
         return nil
     }
-    data, err := readDb(path.Join(set, dbName))
+    data, err := readDb(db)
     if err != nil {
         println(err.Error())
         return nil
@@ -330,7 +328,6 @@ func loadData(set string, db string) []*Entry {
 }
 
 func main() {
-    dataset = "testdata"
-    dbName = "foo.db"
+    dataset = "testdata/foo.db"
     runServer()
 }
