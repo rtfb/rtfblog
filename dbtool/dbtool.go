@@ -172,7 +172,7 @@ func parseTags(tagList string) (tags []*Tag) {
             continue
         }
         tag := new(Tag)
-        tag.TagUrl = "/tag/" + strings.ToLower(t)
+        tag.TagUrl = strings.ToLower(t)
         tag.TagName = t
         tags = append(tags, tag)
     }
