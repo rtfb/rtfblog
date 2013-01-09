@@ -256,6 +256,26 @@ func login_handler(ctx *web.Context) {
     ctx.Redirect(301, "/"+redir)
 }
 
+func moderate_comment_handler(ctx *web.Context) {
+    action := ctx.Params["action"]
+    redir := ctx.Params["redirect_to"]
+    id := ctx.Params["id"]
+    if action == "delete" {
+        db, err := sql.Open("sqlite3", dataset)
+        if err != nil {
+            fmt.Println(err.Error())
+            return
+        }
+        defer db.Close()
+        _, err = db.Exec(`delete from comment where id=?`, id)
+        if err != nil {
+            fmt.Println(err.Error())
+            return
+        }
+    }
+    ctx.Redirect(301, "/"+redir)
+}
+
 func comment_handler(ctx *web.Context) {
     db, err := sql.Open("sqlite3", dataset)
     if err != nil {
@@ -305,6 +325,7 @@ func runServer() {
     logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Post("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
+    web.Get("/moderate_comment", moderate_comment_handler)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"

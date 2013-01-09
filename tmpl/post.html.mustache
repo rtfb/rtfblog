@@ -102,10 +102,10 @@
             </div>
             {{#AdminLogin}}
             <div id="comment-admin" style="text-align: right">
-                <a href="/delete_comment#id-{{CommentId}}"
+                <a href="/moderate_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
                     onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')">
                     <img src="delete.gif" />Delete!</a>
-                <a href="/edit_comment#id-{{CommentId}}">
+                <a href="/moderate_comment?id={{CommentId}}&action=edit&redirect_to={{Url}}">
                     <img src="edit.gif" />Edit...</a>
             </div>
             {{/AdminLogin}}
