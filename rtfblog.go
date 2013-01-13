@@ -182,6 +182,10 @@ func handler(ctx *web.Context, path string) {
         basicData["PageTitle"] = "Velkam"
         render(ctx, "main", basicData)
         return
+    } else if path == "admin" {
+        basicData["PageTitle"] = "Admin Console"
+        render(ctx, "admin", basicData)
+        return
     } else if path == "login" {
         basicData["RedirectTo"] = xtractReferer(ctx)
         basicData["PageTitle"] = "Login"
@@ -256,6 +260,33 @@ func login_handler(ctx *web.Context) {
     ctx.Redirect(301, "/"+redir)
 }
 
+func load_comments_handler(ctx *web.Context) {
+    post := ctx.Params["post"]
+    db, err := sql.Open("sqlite3", dataset)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer db.Close()
+    xaction, err := db.Begin()
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    postId, err := getPostId(xaction, post)
+    if err != nil {
+        fmt.Println("getPostId failed: " + err.Error())
+        ctx.Abort(500, "Server Error")
+        return
+    }
+    comments := queryComments(db, postId)
+    result := ""
+    for _, c := range comments {
+        result += fmt.Sprintf("<option value=\"%s\">%s</option>", c.Name, c.Body)
+    }
+    ctx.WriteString(result)
+}
+
 func moderate_comment_handler(ctx *web.Context) {
     action := ctx.Params["action"]
     redir := ctx.Params["redirect_to"]
@@ -326,6 +357,7 @@ func runServer() {
     logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Post("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
+    web.Get("/load_comments", load_comments_handler)
     web.Get("/moderate_comment", moderate_comment_handler)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)

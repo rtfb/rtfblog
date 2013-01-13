@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
+        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
+        <!-- Import fancy-type plugin. -->
+        <title>{{{PageTitle}}}</title>
+    </head>
+    <body>
+        <div class="container">
+            <div id="header">
+                <br />
+                {{> header}}
+            </div>
+            <hr />
+            <div id="subheader">
+                <h3 class="alt">Subhello</h3>
+            </div>
+
+            <hr />
+            <div class="span-17 colborder" id="content">
+                <label for="post_dropdown">Post:</label>
+                <select id="post_dropdown" onchange="retrieveComments(this.value);">
+                    <option value="" style="display:none;" selected></option>
+{{#entries}}
+                    <option value="{{Url}}">{{Title}}</option>
+{{/entries}}
+                </select>
+                <br />
+                <label for="comments_dropdown">Comments:</label>
+                <select id="comments_dropdown">
+                </select>
+            </div>
+
+            <div class="span-6 last" id="sidebar">
+                <p>Recent entries:</p>
+                <div>
+{{#entries}}
+<b><a href="{{Url}}">{{Title}}</a></b> <br />
+{{/entries}}
+                </div>
+                <br />
+                <br />
+                <img src="vim_created.png" />
+                <img src="gopher.png" />
+                <div class="info" style="text-align: center">
+                    Powered by <a href="http://golang.org/">Go</a>
+                </div>
+            </div>
+
+            <hr />
+            <div id="footer" />
+        </div>
+        <script type="text/javascript">
+        function retrieveComments(postUrl) {
+            var xhr;
+            try {
+                xhr = new ActiveXObject('Msxml2.XMLHTTP');
+            }
+            catch (e) {
+                try {
+                    xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                }
+                catch (e2) {
+                    try {
+                        xhr = new XMLHttpRequest();
+                    }
+                    catch (e3) {
+                        xhr = false;
+                    }
+                }
+            }
+
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState == 4) {
+                    if(xhr.status == 200) {
+                        document.getElementById('comments_dropdown').innerHTML = xhr.responseText;
+                    }
+                    else {
+                        document.getElementById('comments_dropdown').innerHTML = xhr.status;
+                    }
+                }
+            };
+
+            try {
+                xhr.open("GET", "load_comments?post=" + postUrl, true);
+                xhr.send(null);
+            }
+            catch (err) {
+                alert("exc: " + err);
+            }
+        }
+        </script>
+    </body>
+</html>
