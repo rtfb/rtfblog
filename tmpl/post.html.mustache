@@ -143,21 +143,7 @@
 {{/entry}}
             </div>
 
-            <div class="span-6 last" id="sidebar">
-                <p>Recent entries:</p>
-                <div>
-{{#entries}}
-<b><a href="{{Url}}">{{Title}}</a></b> <br />
-{{/entries}}
-                </div>
-                <br />
-                <br />
-                <img src="vim_created.png" />
-                <img src="gopher.png" />
-                <div class="info" style="text-align: center">
-                    Powered by <a href="http://golang.org/">Go</a>
-                </div>
-            </div>
+            {{> sidebar}}
 
             <hr />
             <div id="footer" />
