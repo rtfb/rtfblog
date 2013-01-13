@@ -5,6 +5,7 @@ import (
     "database/sql"
     "fmt"
     "log"
+    "net/http"
     "os"
     "strings"
     "time"
@@ -348,6 +349,10 @@ func comment_handler(ctx *web.Context) {
     ctx.Redirect(301, redir)
 }
 
+func serve_favicon(ctx *web.Context) {
+    http.ServeFile(ctx, ctx.Request, "static/snifter.png")
+}
+
 func runServer() {
     f, err := os.Create("server.log")
     if err != nil {
@@ -359,6 +364,7 @@ func runServer() {
     web.Post("/login_submit", login_handler)
     web.Get("/load_comments", load_comments_handler)
     web.Get("/moderate_comment", moderate_comment_handler)
+    web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
     web.Config.StaticDir = "static"
