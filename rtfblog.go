@@ -3,6 +3,7 @@ package main
 import (
     "crypto/md5"
     "database/sql"
+    "encoding/json"
     "fmt"
     "log"
     "net/http"
@@ -263,29 +264,18 @@ func login_handler(ctx *web.Context) {
 
 func load_comments_handler(ctx *web.Context) {
     post := ctx.Params["post"]
-    db, err := sql.Open("sqlite3", dataset)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
+    posts := loadData(dataset)
+    for _, p := range posts {
+        if p.Url == post {
+            b, err := json.Marshal(p)
+            if err != nil {
+                fmt.Println(err.Error())
+                return
+            }
+            ctx.WriteString(string(b))
+            return
+        }
     }
-    defer db.Close()
-    xaction, err := db.Begin()
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    postId, err := getPostId(xaction, post)
-    if err != nil {
-        fmt.Println("getPostId failed: " + err.Error())
-        ctx.Abort(500, "Server Error")
-        return
-    }
-    comments := queryComments(db, postId)
-    result := ""
-    for _, c := range comments {
-        result += fmt.Sprintf("<option value=\"%s\">%s</option>", c.Name, c.Body)
-    }
-    ctx.WriteString(result)
 }
 
 func moderate_comment_handler(ctx *web.Context) {

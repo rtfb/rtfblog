@@ -32,6 +32,9 @@
                 <label for="comments_dropdown">Comments:</label>
                 <select id="comments_dropdown">
                 </select>
+                <br />
+                <label for="post_body">Post text:</label>
+                <textarea id="post_body"></textarea>
             </div>
 
             {{> sidebar}}
@@ -40,6 +43,15 @@
             <div id="footer" />
         </div>
         <script type="text/javascript">
+        function makeCommentList(post) {
+            var result = "";
+            for (i in post.Comments) {
+                var c = post.Comments[i];
+                result += "<option value=\"" + c.Name + "\">" + c.RawBody + "</option>";
+            }
+            return result;
+        }
+
         function retrieveComments(postUrl) {
             var xhr;
             try {
@@ -62,7 +74,9 @@
             xhr.onreadystatechange = function() {
                 if(xhr.readyState == 4) {
                     if(xhr.status == 200) {
-                        document.getElementById('comments_dropdown').innerHTML = xhr.responseText;
+                        var post = JSON.parse(xhr.responseText);
+                        document.getElementById('post_body').innerHTML = post.RawBody;
+                        document.getElementById('comments_dropdown').innerHTML = makeCommentList(post);
                     }
                     else {
                         document.getElementById('comments_dropdown').innerHTML = xhr.status;
