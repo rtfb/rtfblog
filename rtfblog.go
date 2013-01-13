@@ -83,7 +83,7 @@ func readDb(dbName string) (entries []*Entry, err error) {
     defer rows.Close()
     for rows.Next() {
         entry := new(Entry)
-        var id int
+        var id int64
         var unixDate int64
         var bodyMarkdown string
         rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
@@ -97,7 +97,7 @@ func readDb(dbName string) (entries []*Entry, err error) {
     return
 }
 
-func queryTags(db *sql.DB, postId int) []*Tag {
+func queryTags(db *sql.DB, postId int64) []*Tag {
     stmt, err := db.Prepare(`select t.name, t.url
                              from tag as t, tagmap as tm
                              where t.id = tm.tag_id
@@ -122,7 +122,7 @@ func queryTags(db *sql.DB, postId int) []*Tag {
     return tags
 }
 
-func queryComments(db *sql.DB, postId int) []*Comment {
+func queryComments(db *sql.DB, postId int64) []*Comment {
     stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
                                     c.id, c.timestamp, c.body
                              from commenter as a, comment as c
