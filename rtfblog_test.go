@@ -226,7 +226,7 @@ func TestLoginPage(t *testing.T) {
 
 func TestAllLoadedPostsAppearOnMainPage(t *testing.T) {
     testLoader = func() []*Entry {
-        return []*Entry{&Entry{"", "LD", "", "B", "labadena", []*Tag{&Tag{"u", "n"}}, nil},
+        return []*Entry{&Entry{"", "LD", "", "B", "labadena", "RB", []*Tag{&Tag{"u", "n"}}, nil},
             &Entry{},
             &Entry{},
             &Entry{},

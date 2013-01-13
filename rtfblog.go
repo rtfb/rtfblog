@@ -28,6 +28,7 @@ type Comment struct {
     Website   string
     Ip        string
     Body      string
+    RawBody   string
     Time      string
     CommentId string
 }
@@ -37,6 +38,7 @@ type Entry struct {
     Title    string
     Date     string
     Body     string
+    RawBody  string
     Url      string
     Tags     []*Tag
     Comments []*Comment
@@ -86,10 +88,9 @@ func readDb(dbName string) (entries []*Entry, err error) {
         entry := new(Entry)
         var id int64
         var unixDate int64
-        var bodyMarkdown string
         rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
-            &bodyMarkdown, &entry.Url)
-        entry.Body = string(blackfriday.MarkdownCommon([]byte(bodyMarkdown)))
+            &entry.RawBody, &entry.Url)
+        entry.Body = string(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
         entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
         entry.Tags = queryTags(db, id)
         entry.Comments = queryComments(db, id)
@@ -144,14 +145,13 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
     for data.Next() {
         comment := new(Comment)
         var unixDate int64
-        var body string
         data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
-            &comment.CommentId, &unixDate, &body)
+            &comment.CommentId, &unixDate, &comment.RawBody)
         hash := md5.New()
         hash.Write([]byte(strings.ToLower(comment.Email)))
         comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
         comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-        comment.Body = string(blackfriday.MarkdownCommon([]byte(body)))
+        comment.Body = string(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
         comments = append(comments, comment)
     }
     return comments
