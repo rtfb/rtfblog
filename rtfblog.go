@@ -309,6 +309,7 @@ func comment_handler(ctx *web.Context) {
     result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
     if err != nil {
         fmt.Println("Failed to insert comment: " + err.Error())
+        ctx.Abort(500, "Server Error")
     }
     commentId, _ := result.LastInsertId()
     xaction.Commit()
