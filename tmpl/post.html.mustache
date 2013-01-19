@@ -12,7 +12,7 @@
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
         <style type="text/css">
-            #body-container {
+            .body-container {
                 background: #eee;
             }
             #comment-container {
@@ -97,16 +97,41 @@
                     </p>
                 </div>
             </div>
-            <div id="body-container">
+            <div class="body-container" id="comment-text-{{CommentId}}"
+            {{#AdminLogin}}
+                    onclick="toggleEdit('{{CommentId}}')"
+            {{/AdminLogin}}
+                    >
                 {{{Body}}}
             </div>
             {{#AdminLogin}}
+            <textarea style="display: none;" id="edit-comment-{{CommentId}}">
+{{{RawBody}}}
+            </textarea>
+            <input
+                type="button"
+                style="display: none;"
+                id="submit-comment-{{CommentId}}"
+                onclick="submit({{CommentId}}, '{{Url}}')"
+                value="Submit"
+                />
+            <input
+                type="button"
+                style="display: none;"
+                id="cancel-edit-comment-{{CommentId}}"
+                onclick="cancel({{CommentId}})"
+                value="Cancel"
+                />
             <div id="comment-admin" style="text-align: right">
                 <a href="/moderate_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
                     onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')">
                     <img src="delete.gif" />Delete!</a>
-                <a href="/moderate_comment?id={{CommentId}}&action=edit&redirect_to={{Url}}">
-                    <img src="edit.gif" />Edit...</a>
+                <input
+                    type="button"
+                    id="edit-comment-button-{{CommentId}}"
+                    onclick="toggleEdit({{CommentId}})"
+                    value="Edit"
+                    />
             </div>
             {{/AdminLogin}}
             <br />
@@ -154,6 +179,43 @@
              var editor = new Markdown.Editor(converter);
              editor.run();
              })();
+
+        function showElement(id, visible) {
+            elem = document.getElementById(id);
+            elem.style.display = visible ? 'inline-block' : 'none';
+            return elem;
+        }
+
+        function toggleEdit(id) {
+            d = document.getElementById('comment-text-' + id);
+            var w = d.offsetWidth;
+            var h = d.offsetHeight;
+
+            if (h < 50)
+                h = 50;
+
+            d.style.display = 'none';
+            e = showElement('edit-comment-' + id, true);
+            e.style.width = w + "px";
+            e.style.height = h + "px";
+
+            showElement('submit-comment-' + id, true);
+            showElement('cancel-edit-comment-' + id, true);
+            showElement('edit-comment-button-' + id, false);
+        }
+
+        function submit(id, redirectTo) {
+            window.location.href = "/moderate_comment?id=" + id
+                                   + "&action=edit&redirect_to=" + redirectTo;
+        }
+
+        function cancel(id) {
+            showElement('comment-text-' + id, true);
+            showElement('edit-comment-' + id, false);
+            showElement('submit-comment-' + id, false);
+            showElement('cancel-edit-comment-' + id, false);
+            showElement('edit-comment-button-' + id, true);
+        }
         </script>
     </body>
 </html>
