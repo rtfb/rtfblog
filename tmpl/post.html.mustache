@@ -2,12 +2,11 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
-        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
-        <link rel="stylesheet" href="/css/pagedown.css" type="text/css" />
-        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
-        <!-- Import fancy-type plugin. -->
         <title>{{{PageTitle}}}</title>
+        <link rel="stylesheet" href="/css/base.css">
+        <link rel="stylesheet" href="/css/skeleton.css">
+        <link rel="stylesheet" href="/css/layout.css">
+        <link rel="stylesheet" href="/css/pagedown.css">
         <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
@@ -48,7 +47,7 @@
             </div>
 
             <hr />
-            <div class="span-17 colborder" id="content">
+            <div class="twelve columns content" id="content">
 {{#entry}}
 <h3 class="strong"><a href="{{Url}}">{{Title}}</a></h3>
 {{> author}}
@@ -56,7 +55,7 @@
 <div>{{{Body}}}</div>
     <div class="container">
     {{#HasTags}}
-    <div class="span-11" id="tags">
+    <div class="ten columns alpha" id="tags">
     <b>Tags:</b>
     {{/HasTags}}
     {{{TagsStr}}}
@@ -66,24 +65,24 @@
     </div>
     {{/HasTags}}
     {{^HasTags}}
-    <div class="span-11">
+    <div class="ten columns alpha">
         &nbsp;
     </div>
     {{/HasTags}}
-    <div class="span-6">
+    <div class="two columns omega">
         &nbsp;
     </div>
     </div>
 
     <div class="container" id="comments">
         {{#HasComments}}
-        <div class="span-11">
+        <div class="ten columns alpha">
         <b>Comments:</b>
         </div>
-        <div class="span-17">
+        <div class="twelve columns">
             <hr />
         </div>
-        <div class="span-17">
+        <div class="twelve columns">
             {{#Comments}}
             <div id="comment-container">
                 <img src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" id="commenter-avatar" />
@@ -140,28 +139,41 @@
         </div>
         {{/HasComments}}
         {{^HasComments}}
-        <div class="span-11">
+        <div class="ten columns alpha">
             &nbsp;
         </div>
-        <div class="span-6">
+        <div class="two columns omega">
             <p>No comments yet</p>
         </div>
         {{/HasComments}}
     </div>
 
     <form action="comment_submit" method="post" id="comment">
-    <div class="container">
-            <div><input class="text" name="name" placeholder="Name" type="text" /></div>
-            <div><input class="text" name="email" placeholder="Email (will stay private)" type="text" /></div>
-            <div><input class="text" name="website" placeholder="Web site" type="text" /></div>
+    <div class="twelve columns container">
+        <div class="row clearfix">
+            <div class="four columns">
+                <div><input class="text" name="name" placeholder="Name" type="text" /></div>
+                <div><input class="text" name="email" placeholder="Email (will stay private)" type="text" /></div>
+                <div><input class="text" name="website" placeholder="Web site" type="text" /></div>
+            </div>
+        </div>
 
-            <div class="wmd-panel">
-            <div id="wmd-preview" class="wmd-panel wmd-preview">
+        <div class="wmd-panel container">
+            <div class="row">
+                <div id="wmd-preview" class="wmd-preview twelve columns">
+                </div>
             </div>
-            <div id="wmd-button-bar">
+            <div class="row">
+                <div id="wmd-button-bar">
+                </div>
             </div>
-            <textarea class="wmd-input span-17" name="text" placeholder="Have a say" id="wmd-input"></textarea>
-            </div>
+            <textarea
+                class="wmd-input twelve columns"
+                name="text"
+                placeholder="Have a say"
+                id="wmd-input"
+                ></textarea>
+        </div>
     </div>
     <div><input type="submit" value="Submit" /></div>
     </form>

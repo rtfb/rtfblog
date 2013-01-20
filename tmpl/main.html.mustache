@@ -2,11 +2,10 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
-        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
-        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
-        <!-- Import fancy-type plugin. -->
         <title>{{{PageTitle}}}</title>
+        <link rel="stylesheet" href="/css/base.css">
+        <link rel="stylesheet" href="/css/skeleton.css">
+        <link rel="stylesheet" href="/css/layout.css">
     </head>
     <body>
         <div class="container">
@@ -20,7 +19,7 @@
             </div>
 
             <hr />
-            <div class="span-17 colborder" id="content">
+            <div class="twelve columns content" id="content">
 {{#entries}}
 <h3 class="strong" id="post"><a href="{{Url}}">{{Title}}</a></h3>
 {{> author}}
@@ -28,7 +27,7 @@
 <div>{{{Body}}}</div>
     <div class="container">
     {{#HasTags}}
-    <div class="span-11 border" id="tags">
+    <div class="ten columns alpha" id="tags">
     <b>Tags:</b>
     {{/HasTags}}
     {{{TagsStr}}}
@@ -38,11 +37,11 @@
     </div>
     {{/HasTags}}
     {{^HasTags}}
-    <div class="span-11 border">
+    <div class="ten columns alpha">
         &nbsp;
     </div>
     {{/HasTags}}
-    <div class="span-6">
+    <div class="two columns omega">
         <a href="{{Url}}#comments">{{NumComments}} comments</a>
     </div>
     </div>
