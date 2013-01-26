@@ -98,7 +98,6 @@
                     <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
                     </p>
                 </div>
-            </div>
             <div class="body-container" id="comment-text-{{CommentId}}"
             {{#AdminLogin}}
                     onclick="toggleEdit('{{CommentId}}')"
@@ -138,6 +137,7 @@
                     onclick="toggleEdit({{CommentId}})"
                     value="Edit"
                     />
+            </div>
             </div>
             {{/AdminLogin}}
             <br />
