@@ -107,9 +107,11 @@
                 {{{Body}}}
             </div>
             {{#AdminLogin}}
-            <textarea style="display: none;" id="edit-comment-{{CommentId}}">
-{{{RawBody}}}
-            </textarea>
+            <div class="twelve columns">
+            <textarea style="display: none; width: 100%;" id="edit-comment-{{CommentId}}">
+{{{RawBody}}}</textarea>
+            </div>
+            <div class="eight columns alpha">
             <input
                 type="button"
                 style="display: none;"
@@ -124,7 +126,9 @@
                 onclick="cancel({{CommentId}})"
                 value="Cancel"
                 />
-            <div id="comment-admin" style="text-align: right">
+                &nbsp;
+            </div>
+            <div id="comment-admin" style="text-align: right" class="four columns omega">
                 <a href="/moderate_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
                     onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')">
                     <img src="delete.gif" />Delete!</a>
@@ -211,7 +215,6 @@
 
             d.style.display = 'none';
             e = showElement('edit-comment-' + id, true);
-            e.style.width = w + "px";
             e.style.height = h + "px";
 
             showElement('submit-comment-' + id, true);
