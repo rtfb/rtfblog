@@ -5,6 +5,10 @@
         <link rel="stylesheet" href="/css/base.css">
         <link rel="stylesheet" href="/css/skeleton.css">
         <link rel="stylesheet" href="/css/layout.css">
+        <link rel="stylesheet" href="/css/pagedown.css">
+        <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
+        <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
+        <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
         <title>{{{PageTitle}}}</title>
     </head>
     <body>
@@ -32,8 +36,23 @@
                 <select id="comments_dropdown">
                 </select>
                 <br />
-                <label for="post_body">Post text:</label>
-                <textarea style="width: 80%" id="post_body"></textarea>
+                <label for="wmd-input">Post text:</label>
+                <div class="wmd-panel container">
+                    <div class="row">
+                        <div id="wmd-preview" class="wmd-preview twelve columns">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="wmd-button-bar">
+                        </div>
+                    </div>
+                    <textarea
+                        class="wmd-input twelve columns"
+                        name="text"
+                        placeholder="Have a say"
+                        id="wmd-input"
+                        ></textarea>
+                </div>
             </div>
 
             {{> sidebar}}
@@ -42,6 +61,12 @@
             <div id="footer" />
         </div>
         <script type="text/javascript">
+        (function () {
+             var converter = new Markdown.getSanitizingConverter();
+             var editor = new Markdown.Editor(converter);
+             editor.run();
+             })();
+
         function makeCommentList(post) {
             var result = "";
             for (i in post.Comments) {
@@ -74,7 +99,7 @@
                 if(xhr.readyState == 4) {
                     if(xhr.status == 200) {
                         var post = JSON.parse(xhr.responseText);
-                        document.getElementById('post_body').innerHTML = post.RawBody;
+                        document.getElementById('wmd-input').innerHTML = post.RawBody;
                         document.getElementById('comments_dropdown').innerHTML = makeCommentList(post);
                     }
                     else {
