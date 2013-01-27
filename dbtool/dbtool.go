@@ -103,6 +103,17 @@ func populate(fileName string) {
     stmt, _ = xaction.Prepare("insert into post(id, author_id, title, date, url, body) values(?, ?, ?, ?, ?, ?)")
     defer stmt.Close()
     stmt.Exec(1, 1, "Labadėna", 123456, "labadena", "Nieko aš čia nerašysiu.")
+    imgpost := `This is a post with a figure.
+
+halfimage:
+
+![hi][halfimg]
+
+([Full size][fullimg])
+
+[fullimg]: /no-dox.png
+[halfimg]: /no-dox-halfsize.png`
+    stmt.Exec(2, 1, "Iliustruotas", 1359308741, "iliustruotas", imgpost)
     stmt, _ = xaction.Prepare("insert into tag(id, name, url) values(?, ?, ?)")
     defer stmt.Close()
     stmt.Exec(1, "Testas", "testas")
