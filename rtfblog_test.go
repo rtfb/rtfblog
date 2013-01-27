@@ -264,7 +264,7 @@ func query1(t *testing.T, url string, q string) *h5.Node {
 }
 
 func assertElem(t *testing.T, node *h5.Node, elem string) {
-    if strings.TrimSpace(node.Data()) != elem {
+    if !strings.HasPrefix(node.Data(), elem) {
         t.Errorf("<%s> expected, but <%s> found!", elem, node.Data())
     }
 }
