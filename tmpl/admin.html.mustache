@@ -2,10 +2,9 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
-        <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
-        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]-->
-        <!-- Import fancy-type plugin. -->
+        <link rel="stylesheet" href="/css/base.css">
+        <link rel="stylesheet" href="/css/skeleton.css">
+        <link rel="stylesheet" href="/css/layout.css">
         <title>{{{PageTitle}}}</title>
     </head>
     <body>
@@ -20,7 +19,7 @@
             </div>
 
             <hr />
-            <div class="span-17 colborder" id="content">
+            <div class="twelve columns content" id="content">
                 <label for="post_dropdown">Post:</label>
                 <select id="post_dropdown" onchange="retrieveComments(this.value);">
                     <option value="" style="display:none;" selected></option>
@@ -34,7 +33,7 @@
                 </select>
                 <br />
                 <label for="post_body">Post text:</label>
-                <textarea id="post_body"></textarea>
+                <textarea style="width: 80%" id="post_body"></textarea>
             </div>
 
             {{> sidebar}}
