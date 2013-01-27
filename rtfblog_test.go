@@ -155,14 +155,15 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
     posts := loadData("testdata/foo.db")
     for _, p := range posts {
         nodes := query0(t, p.Url, "#comments")
-        if len(nodes) > 0 {
-            for _, node := range nodes {
-                assertElem(t, node, "div")
-                if emptyChildren(node) {
-                    t.Fatalf("Empty comments div found!")
-                }
-                checkCommentsSection(T{t}, node)
+        if len(nodes) != 1 {
+            t.Fatal("There should be only one comments section!")
+        }
+        for _, node := range nodes {
+            assertElem(t, node, "div")
+            if emptyChildren(node) {
+                t.Fatalf("Empty comments div found!")
             }
+            checkCommentsSection(T{t}, node)
         }
     }
 }
