@@ -169,17 +169,15 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
 }
 
 func checkCommentsSection(t T, node *h5.Node) {
-    doc, err := transform.NewDoc(node.String())
-    t.failIf(err != nil, "Error parsing comments section!")
-    noComments := transform.NewSelectorQuery("p").Apply(doc)
-    comments := transform.NewSelectorQuery("b").Apply(doc)
+    noComments := transform.NewSelectorQuery("p").Apply(node)
+    comments := transform.NewSelectorQuery("b").Apply(node)
     t.failIf(len(noComments) == 0 && len(comments) == 0,
         "Comments node not found in section: %q", node.String())
     if len(comments) > 0 {
-        headers := transform.NewSelectorQuery("#comment-container").Apply(doc)
+        headers := transform.NewSelectorQuery("#comment-container").Apply(node)
         t.failIf(len(headers) == 0,
             "Comment header not found in section: %q", node.String())
-        bodies := transform.NewSelectorQuery(".body-container").Apply(doc)
+        bodies := transform.NewSelectorQuery(".body-container").Apply(node)
         t.failIf(len(bodies) == 0,
             "Comment body not found in section: %q", node.String())
     }
