@@ -106,11 +106,17 @@
                 {{{Body}}}
             </div>
             {{#AdminLogin}}
+            <form action="moderate_comment?action=edit&redirect_to={{Url}}" method="post" id="edit-comment-form">
             <div class="twelve columns">
-            <textarea style="display: none; width: 100%;" id="edit-comment-{{CommentId}}">
+            <textarea style="display: none; width: 100%;" id="edit-comment-{{CommentId}}" name="text">
 {{{RawBody}}}</textarea>
             </div>
             <div class="eight columns alpha">
+            <input
+                type="hidden"
+                name="id"
+                value="{{CommentId}}"
+                />
             <input
                 type="button"
                 style="display: none;"
@@ -138,6 +144,7 @@
                     value="Edit"
                     />
             </div>
+            </form>
             </div>
             {{/AdminLogin}}
             <br />

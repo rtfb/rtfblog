@@ -298,6 +298,27 @@ func delete_comment_handler(ctx *web.Context) {
     ctx.Redirect(301, "/"+redir)
 }
 
+func moderate_comment_handler(ctx *web.Context) {
+    action := ctx.Params["action"]
+    redir := ctx.Params["redirect_to"]
+    text := ctx.Params["text"]
+    id := ctx.Params["id"]
+    if action == "edit" {
+        db, err := sql.Open("sqlite3", dataset)
+        if err != nil {
+            fmt.Println(err.Error())
+            return
+        }
+        defer db.Close()
+        _, err = db.Exec(`update comment set body=? where id=?`, text, id)
+        if err != nil {
+            fmt.Println(err.Error())
+            return
+        }
+    }
+    ctx.Redirect(301, "/"+redir)
+}
+
 func comment_handler(ctx *web.Context) {
     db, err := sql.Open("sqlite3", dataset)
     if err != nil {
@@ -354,6 +375,7 @@ func runServer() {
     web.Post("/login_submit", login_handler)
     web.Get("/load_comments", load_comments_handler)
     web.Get("/delete_comment", delete_comment_handler)
+    web.Post("/moderate_comment", moderate_comment_handler)
     web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
