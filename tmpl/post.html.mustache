@@ -98,53 +98,59 @@
                     <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
                     </p>
                 </div>
-            <div class="body-container" id="comment-text-{{CommentId}}"
-            {{#AdminLogin}}
+                <div class="body-container" id="comment-text-{{CommentId}}"
+                    {{#AdminLogin}}
                     onclick="toggleEdit('{{CommentId}}')"
-            {{/AdminLogin}}
+                    {{/AdminLogin}}
                     >
-                {{{Body}}}
-            </div>
-            {{#AdminLogin}}
-            <form action="moderate_comment?action=edit&redirect_to={{Url}}" method="post" id="edit-comment-form">
-            <div class="twelve columns">
-            <textarea style="display: none; width: 100%;" id="edit-comment-{{CommentId}}" name="text">
-{{{RawBody}}}</textarea>
-            </div>
-            <div class="eight columns alpha">
-            <input
-                type="hidden"
-                name="id"
-                value="{{CommentId}}"
-                />
-            <input
-                type="button"
-                style="display: none;"
-                id="submit-comment-{{CommentId}}"
-                onclick="submit({{CommentId}}, '{{Url}}')"
-                value="Submit"
-                />
-            <input
-                type="button"
-                style="display: none;"
-                id="cancel-edit-comment-{{CommentId}}"
-                onclick="cancel({{CommentId}})"
-                value="Cancel"
-                />
-                &nbsp;
-            </div>
-            <div id="comment-admin" style="text-align: right" class="four columns omega">
-                <a href="/delete_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
-                    onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')">
-                    <img src="delete.gif" />Delete!</a>
-                <input
-                    type="button"
-                    id="edit-comment-button-{{CommentId}}"
-                    onclick="toggleEdit({{CommentId}})"
-                    value="Edit"
-                    />
-            </div>
-            </form>
+                    {{{Body}}}
+                </div>
+                {{#AdminLogin}}
+                <form action="moderate_comment?action=edit&redirect_to={{Url}}"
+                    method="post"
+                    id="edit-comment-form"
+                    >
+                    <div class="twelve columns">
+                        <textarea
+                            style="display: none; width: 100%;"
+                            id="edit-comment-{{CommentId}}"
+                            name="text"
+                            >{{{RawBody}}}</textarea>
+                    </div>
+                    <div class="eight columns alpha">
+                        <input
+                            type="hidden"
+                            name="id"
+                            value="{{CommentId}}"
+                            />
+                        <input
+                            type="button"
+                            style="display: none;"
+                            id="submit-comment-{{CommentId}}"
+                            onclick="submit({{CommentId}}, '{{Url}}')"
+                            value="Submit"
+                            />
+                        <input
+                            type="button"
+                            style="display: none;"
+                            id="cancel-edit-comment-{{CommentId}}"
+                            onclick="cancel({{CommentId}})"
+                            value="Cancel"
+                            />
+                        &nbsp;
+                    </div>
+                    <div id="comment-admin" style="text-align: right" class="four columns omega">
+                        <a href="/delete_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
+                            onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')"
+                            ><img src="delete.gif" />Delete!</a>
+                        <input
+                            type="button"
+                            id="edit-comment-button-{{CommentId}}"
+                            onclick="toggleEdit({{CommentId}})"
+                            value="Edit"
+                            />
+                    </div>
+                </form>
             </div>
             {{/AdminLogin}}
             <br />
