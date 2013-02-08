@@ -69,6 +69,18 @@ func (e *Entry) TagsStr() string {
     return strings.Join(parts, ", ")
 }
 
+func (e *Entry) TagsWithUrls() string {
+    parts := make([]string, 0)
+    for _, t := range e.Tags {
+        part := fmt.Sprintf("%s", t.TagName)
+        if t.TagUrl != t.TagName {
+            part = fmt.Sprintf("%s>%s", t.TagName, t.TagUrl)
+        }
+        parts = append(parts, part)
+    }
+    return strings.Join(parts, ", ")
+}
+
 func readDb(dbName string) (entries []*Entry, err error) {
     db, err := sql.Open("sqlite3", dbName)
     if err != nil {
@@ -196,6 +208,19 @@ func handler(ctx *web.Context, path string) {
     } else if path == "logout" {
         ctx.SetSecureCookie("adminlogin", "", 0)
         ctx.Redirect(301, "/"+xtractReferer(ctx))
+        return
+    } else if path == "edit_post" {
+        basicData["PageTitle"] = "Edit Post"
+        post := ctx.Params["post"]
+        for _, e := range posts {
+            if e.Url == post {
+                basicData["Title"] = e.Title
+                basicData["Url"] = e.Url
+                basicData["TagsWithUrls"] = e.TagsWithUrls()
+                basicData["RawBody"] = e.RawBody
+            }
+        }
+        render(ctx, "edit_post", basicData)
         return
     } else {
         for _, e := range posts {

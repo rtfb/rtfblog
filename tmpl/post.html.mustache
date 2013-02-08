@@ -36,6 +36,11 @@
             p {
                 margin: 0 0 0.5em;
             }
+            input[type="button"].inline {
+                margin-bottom: 0px;
+                padding: 4px 10px;
+                vertical-align: text-bottom;
+            }
         </style>
     </head>
     <body>
@@ -52,7 +57,17 @@
             <hr />
             <div class="twelve columns content" id="content">
 {{#entry}}
-<h3 class="strong"><a href="{{Url}}">{{Title}}</a></h3>
+<h3 class="strong"><a href="{{Url}}">{{Title}}</a>
+{{#AdminLogin}}
+<input
+    type="button"
+    id="edit-post-button"
+    class="inline"
+    onclick="location.href = '/edit_post?post={{Url}}'"
+    value="Edit"
+    />
+{{/AdminLogin}}
+</h3>
 {{> author}}
 <hr />
 <div>{{{Body}}}</div>

@@ -23,26 +23,38 @@
             </div>
 
             <hr />
-            <input
-                type="button"
-                id="new-post-button"
-                onclick="location.href = '/edit_post'"
-                value="New Post"
-                />
-            <br />
-
+            <form
+                action="submit_post"
+                method="post"
+                id="edit-post-form"
+                >
             <div class="twelve columns content" id="content">
-                <label for="post_dropdown">Post:</label>
-                <select id="post_dropdown" onchange="retrieveComments(this.value);">
-                    <option value="" style="display:none;" selected></option>
-{{#entries}}
-                    <option value="{{Url}}">{{Title}}</option>
-{{/entries}}
-                </select>
+                <label for="post_title">Title:</label>
+                <input
+                    id="post_title"
+                    type="text"
+                    class="text"
+                    name="title"
+                    value="{{Title}}"
+                    />
                 <br />
-                <label for="comments_dropdown">Comments:</label>
-                <select id="comments_dropdown">
-                </select>
+                <label for="post_url">Url:</label>
+                <input
+                    id="post_url"
+                    type="text"
+                    class="text"
+                    name="url"
+                    value="{{Url}}"
+                    />
+                <br />
+                <label for="post_tags">Tags:</label>
+                <input
+                    id="post_tags"
+                    type="text"
+                    class="text"
+                    name="tags"
+                    value="{{TagsWithUrls}}"
+                    />
                 <br />
                 <label for="wmd-input">Post text:</label>
                 <div class="wmd-panel container">
@@ -57,11 +69,16 @@
                     <textarea
                         class="wmd-input twelve columns"
                         name="text"
-                        placeholder="Have a say"
                         id="wmd-input"
-                        ></textarea>
+                        >{{{RawBody}}}</textarea>
                 </div>
+                <input
+                    type="submit"
+                    id="submit-post-edit"
+                    value="Submit"
+                    />
             </div>
+            </form>
 
             {{> sidebar}}
 
@@ -109,6 +126,7 @@
                         var post = JSON.parse(xhr.responseText);
                         document.getElementById('wmd-input').innerHTML = post.RawBody;
                         document.getElementById('comments_dropdown').innerHTML = makeCommentList(post);
+                        document.getElementById('post-url').value = post.Url;
                     }
                     else {
                         document.getElementById('comments_dropdown').innerHTML = xhr.status;
