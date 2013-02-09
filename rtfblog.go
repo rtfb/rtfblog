@@ -344,6 +344,117 @@ func moderate_comment_handler(ctx *web.Context) {
     ctx.Redirect(301, "/"+redir)
 }
 
+func submit_post_handler(ctx *web.Context) {
+    title := ctx.Params["title"]
+    url := ctx.Params["url"]
+    tagsWithUrls := ctx.Params["tags"]
+    text := ctx.Params["text"]
+    db, err := sql.Open("sqlite3", dataset)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer db.Close()
+    xaction, err := db.Begin()
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    postId, err := getPostId(xaction, url)
+    if err != nil {
+        if err == sql.ErrNoRows {
+            insertPostSql, _ := xaction.Prepare(`insert into post
+                                                 (author_id, title, date,
+                                                  url, body)
+                                                 values (?, ?, ?, ?, ?)`)
+            defer insertPostSql.Close()
+            authorId := 1 // XXX: it's only me now
+            date := time.Now().Unix()
+            result, err := insertPostSql.Exec(authorId, title, date, url, text)
+            if err != nil {
+                fmt.Println("Failed to insert post: " + err.Error())
+                ctx.Abort(500, "Server Error")
+                return
+            }
+            postId, _ = result.LastInsertId()
+        } else {
+            fmt.Println("getPostId failed: " + err.Error())
+            ctx.Abort(500, "Server Error")
+            return
+        }
+    }
+    updateStmt, _ := xaction.Prepare(`update post set title=?, url=?, body=?
+                                      where id=?`)
+    defer updateStmt.Close()
+    _, err = updateStmt.Exec(title, url, text, postId)
+    if err != nil {
+        fmt.Println(err.Error())
+        ctx.Abort(500, "Server Error")
+        return
+    }
+    updateTags(xaction, tagsWithUrls, postId)
+    xaction.Commit()
+    ctx.Redirect(301, "/"+url)
+}
+
+func explodeTags(tagsWithUrls string) []*Tag {
+    tags := make([]*Tag, 0)
+    for _, t := range strings.Split(tagsWithUrls, ",") {
+        if t == "" {
+            continue
+        }
+        tag, url := t, strings.ToLower(t)
+        if strings.Contains(t, ">") {
+            arr := strings.Split(t, ">")
+            tag, url = arr[0], arr[1]
+        }
+        tags = append(tags, &Tag{url, tag})
+    }
+    return tags
+}
+
+func updateTags(xaction *sql.Tx, tagsWithUrls string, postId int64) {
+    delStmt, _ := xaction.Prepare("delete from tagmap where post_id=?")
+    defer delStmt.Close()
+    delStmt.Exec(postId)
+    for _, t := range explodeTags(tagsWithUrls) {
+        tagId, _ := insertOrGetTagId(xaction, t)
+        updateTagMap(xaction, postId, tagId)
+    }
+}
+
+func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
+    query, _ := xaction.Prepare("select id from tag where url=?")
+    defer query.Close()
+    err = query.QueryRow(tag.TagUrl).Scan(&tagId)
+    switch err {
+    case nil:
+        return
+    case sql.ErrNoRows:
+        insertTagSql, _ := xaction.Prepare(`insert into tag
+                                            (name, url)
+                                            values (?, ?)`)
+        defer insertTagSql.Close()
+        result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
+        if err != nil {
+            fmt.Println("Failed to insert commenter: " + err.Error())
+        }
+        return result.LastInsertId()
+    default:
+        fmt.Printf("err: %s", err.Error())
+        return -1, sql.ErrNoRows
+    }
+    return -1, sql.ErrNoRows
+}
+
+func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
+    stmt, _ := xaction.Prepare(`insert into tagmap
+                                (tag_id, post_id)
+                                values (?, ?)`)
+    defer stmt.Close()
+    stmt.Exec(tagId, postId)
+}
+
 func comment_handler(ctx *web.Context) {
     db, err := sql.Open("sqlite3", dataset)
     if err != nil {
@@ -401,6 +512,7 @@ func runServer() {
     web.Get("/load_comments", load_comments_handler)
     web.Get("/delete_comment", delete_comment_handler)
     web.Post("/moderate_comment", moderate_comment_handler)
+    web.Post("/submit_post", submit_post_handler)
     web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
