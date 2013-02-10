@@ -52,8 +52,10 @@ type Entry struct {
     Comments []*Comment
 }
 
-var dataset string
-var testLoader func() []*Entry
+var (
+    dataset    string
+    testLoader func() []*Entry
+)
 
 func (e *Entry) HasTags() bool {
     return len(e.Tags) > 0
