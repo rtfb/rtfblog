@@ -31,11 +31,11 @@
             <hr />
             <div class="twelve columns content" id="content">
 {{#entries}}
-<h3 class="strong" id="post"><a href="{{Url}}">{{Title}}</a>
+<h3 id="post" class="strong"><a href="{{Url}}">{{Title}}</a>
 {{#AdminLogin}}
 <input
-    type="button"
     id="edit-post-button"
+    type="button"
     class="inline"
     onclick="location.href = '/edit_post?post={{Url}}'"
     value="Edit"
@@ -47,7 +47,7 @@
 <div>{{{Body}}}</div>
     <div class="container">
     {{#HasTags}}
-    <div class="ten columns alpha" id="tags">
+    <div id="tags" class="ten columns alpha">
     <b>Tags:</b>
     {{/HasTags}}
     {{{TagsStr}}}

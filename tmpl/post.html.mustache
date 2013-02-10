@@ -60,8 +60,8 @@
 <h3 class="strong"><a href="{{Url}}">{{Title}}</a>
 {{#AdminLogin}}
 <input
-    type="button"
     id="edit-post-button"
+    type="button"
     class="inline"
     onclick="location.href = '/edit_post?post={{Url}}'"
     value="Edit"
@@ -103,7 +103,7 @@
         <div class="twelve columns">
             {{#Comments}}
             <div id="comment-container">
-                <img src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" id="commenter-avatar" />
+                <img id="commenter-avatar" src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
                 <div id="commenter">
                     <p><b>{{Name}}</b>
                     {{#AdminLogin}}
@@ -113,7 +113,8 @@
                     <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
                     </p>
                 </div>
-                <div class="body-container" id="comment-text-{{CommentId}}"
+                <div id="comment-text-{{CommentId}}"
+                    class="body-container"
                     {{#AdminLogin}}
                     onclick="toggleEdit('{{CommentId}}')"
                     {{/AdminLogin}}
@@ -121,14 +122,15 @@
                     {{{Body}}}
                 </div>
                 {{#AdminLogin}}
-                <form action="moderate_comment?action=edit&redirect_to={{Url}}"
-                    method="post"
+                <form
                     id="edit-comment-form"
+                    action="moderate_comment?action=edit&redirect_to={{Url}}"
+                    method="post"
                     >
                     <div class="twelve columns">
                         <textarea
-                            style="display: none; width: 100%;"
                             id="edit-comment-{{CommentId}}"
+                            style="display: none; width: 100%;"
                             name="text"
                             >{{{RawBody}}}</textarea>
                     </div>
@@ -139,16 +141,16 @@
                             value="{{CommentId}}"
                             />
                         <input
+                            id="submit-comment-{{CommentId}}"
                             type="button"
                             style="display: none;"
-                            id="submit-comment-{{CommentId}}"
                             onclick="submit({{CommentId}}, '{{Url}}')"
                             value="Submit"
                             />
                         <input
+                            id="cancel-edit-comment-{{CommentId}}"
                             type="button"
                             style="display: none;"
-                            id="cancel-edit-comment-{{CommentId}}"
                             onclick="cancel({{CommentId}})"
                             value="Cancel"
                             />
@@ -159,8 +161,8 @@
                             onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')"
                             ><img src="delete.gif" />Delete!</a>
                         <input
-                            type="button"
                             id="edit-comment-button-{{CommentId}}"
+                            type="button"
                             onclick="toggleEdit({{CommentId}})"
                             value="Edit"
                             />
@@ -183,7 +185,7 @@
         {{/HasComments}}
     </div>
 
-    <form action="comment_submit" method="post" id="comment">
+    <form id="comment" action="comment_submit" method="post">
     <div class="twelve columns container">
         <div class="row clearfix">
             <div class="four columns">
@@ -203,10 +205,10 @@
                 </div>
             </div>
             <textarea
+                id="wmd-input"
                 class="wmd-input twelve columns"
                 name="text"
                 placeholder="Have a say"
-                id="wmd-input"
                 ></textarea>
         </div>
     </div>

@@ -42,9 +42,9 @@
 
             <hr />
             <form
+                id="edit-post-form"
                 action="submit_post"
                 method="post"
-                id="edit-post-form"
                 >
             <div class="twelve columns content" id="content">
                 <label for="post_title">Title:</label>
@@ -89,14 +89,14 @@
                         </div>
                     </div>
                     <textarea
+                        id="wmd-input"
                         class="wmd-input twelve columns"
                         name="text"
-                        id="wmd-input"
                         >{{{RawBody}}}</textarea>
                 </div>
                 <input
-                    type="submit"
                     id="submit-post-edit"
+                    type="submit"
                     value="Submit"
                     />
                 <input id="fileid" type="file" name="file" style="visibility:hidden" />
