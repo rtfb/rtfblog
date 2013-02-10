@@ -1,11 +1,14 @@
 package main
 
 import (
+    "bufio"
     "crypto/md5"
     "database/sql"
     "encoding/json"
     "fmt"
+    "io"
     "log"
+    "mime/multipart"
     "net/http"
     "os"
     "strings"
@@ -15,6 +18,10 @@ import (
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
     "github.com/russross/blackfriday"
+)
+
+const (
+    MAX_FILE_SIZE = 50 * 1024 * 1024 // bytes
 )
 
 type Tag struct {
@@ -455,6 +462,48 @@ func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
     stmt.Exec(tagId, postId)
 }
 
+func upload_image_handler(ctx *web.Context) {
+    mr, _ := ctx.Request.MultipartReader()
+    files := ""
+    part, err := mr.NextPart()
+    for err == nil {
+        if name := part.FormName(); name != "" {
+            if part.FileName() != "" {
+                fmt.Printf("filename: %s\n", part.FileName())
+                files += fmt.Sprintf("[foo]: /%s", part.FileName())
+                handleUpload(ctx.Request, part)
+            }
+        }
+        part, err = mr.NextPart()
+    }
+    ctx.WriteString(files)
+    return
+}
+
+func handleUpload(r *http.Request, p *multipart.Part) {
+    defer func() {
+        if rec := recover(); rec != nil {
+            log.Println(rec)
+        }
+    }()
+    lr := &io.LimitedReader{R: p, N: MAX_FILE_SIZE + 1}
+    filename := "static/" + p.FileName()
+    fo, err := os.Create(filename)
+    if err != nil {
+        fmt.Printf("err writing %q!, err = %s", filename, err.Error())
+    }
+    defer fo.Close()
+    w := bufio.NewWriter(fo)
+    _, err = io.Copy(w, lr)
+    if err != nil {
+        fmt.Printf("err writing %q!, err = %s", filename, err.Error())
+    }
+    if err = w.Flush(); err != nil {
+        fmt.Printf("err flushing writer for %q!, err = %s", filename, err.Error())
+    }
+    return
+}
+
 func comment_handler(ctx *web.Context) {
     db, err := sql.Open("sqlite3", dataset)
     if err != nil {
@@ -513,6 +562,7 @@ func runServer() {
     web.Get("/delete_comment", delete_comment_handler)
     web.Post("/moderate_comment", moderate_comment_handler)
     web.Post("/submit_post", submit_post_handler)
+    web.Post("/upload_images", upload_image_handler)
     web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)

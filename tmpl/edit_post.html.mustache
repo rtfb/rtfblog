@@ -9,7 +9,25 @@
         <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
+        <script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
         <title>{{{PageTitle}}}</title>
+        <style>
+        #upload-progress-section p {
+            display: block;
+            width: 240px;
+            padding: 2px 5px;
+            margin: 2px 0;
+            border: 1px inset #446;
+            border-radius: 5px;
+            background: #eee url("progress.png") 100% 0 repeat-y;
+        }
+        #upload-progress-section p.success {
+            background: #0c0 none 0 0 no-repeat;
+        }
+        #upload-progress-section p.failed {
+            background: #c00 none 0 0 no-repeat;
+        }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -56,7 +74,11 @@
                     value="{{TagsWithUrls}}"
                     />
                 <br />
-                <label for="wmd-input">Post text:</label>
+
+                <div id="upload-progress-section"></div>
+                <input type="button" value="Upload File" onclick="$('#fileid').click();" />
+
+                <label class="twelve columns" for="wmd-input">Post text:</label>
                 <div class="wmd-panel container">
                     <div class="row">
                         <div id="wmd-preview" class="wmd-preview twelve columns">
@@ -77,6 +99,7 @@
                     id="submit-post-edit"
                     value="Submit"
                     />
+                <input id="fileid" type="file" name="file" style="visibility:hidden" />
             </div>
             </form>
 
@@ -141,6 +164,56 @@
             catch (err) {
                 alert("exc: " + err);
             }
+        }
+
+        (function() {
+            var postTextarea = document.getElementById('wmd-input');
+            var uploadNo = 0;
+            var uploadSection = $('div#upload-progress-section');
+
+            $('input#fileid').change(function() {
+                var filename = $(this).val().split('\\').pop();
+                if (!filename)
+                    return;
+                var formData = new FormData($('form')[0]);
+                uploadSection.append(mkUploadHtml(filename, uploadNo));
+                $.ajax({
+                    url: 'upload_images',
+                    type: 'POST',
+                    xhr: function() {
+                        myXhr = $.ajaxSettings.xhr();
+                        if (myXhr.upload) {
+                            var progrFunc = function(e) {
+                                if (e.lengthComputable) {
+                                    var p = $('#progress_' + uploadNo)[0];
+                                    var pc = parseInt(100 - (e.loaded / e.total * 100));
+                                    p.style.backgroundPosition = pc + "% 0";
+                                }
+                            }
+                            myXhr.upload.addEventListener('progress', progrFunc, false);
+                        }
+                        return myXhr;
+                    },
+                    beforeSend: function() {
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        postTextarea.innerHTML += "\n" + data;
+                    },
+                    error: function() {
+                        $('#progress_' + uploadNo).html(xhr.responseText);
+                    },
+                    data: formData,
+                    //Options to tell JQuery not to process data or worry about content-type
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+                uploadNo += 1;
+            });
+        })();
+
+        function mkUploadHtml(filename, uploadNo) {
+            return '<p id="progress_' + (uploadNo + 1) + '">' + filename + '</p>';
         }
         </script>
     </body>
