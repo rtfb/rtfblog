@@ -216,7 +216,7 @@ func handler(ctx *web.Context, path string) {
         return
     } else if path == "logout" {
         ctx.SetSecureCookie("adminlogin", "", 0)
-        ctx.Redirect(301, "/"+xtractReferer(ctx))
+        ctx.Redirect(http.StatusFound, "/"+xtractReferer(ctx))
         return
     } else if path == "edit_post" {
         basicData["PageTitle"] = "Edit Post"
@@ -243,7 +243,7 @@ func handler(ctx *web.Context, path string) {
         ctx.NotFound("Page not found: " + path)
         return
     }
-    ctx.Abort(500, "Server Error")
+    ctx.Abort(http.StatusInternalServerError, "Server Error")
 }
 
 func getCommenterId(xaction *sql.Tx, ctx *web.Context) (id int64, err error) {
@@ -293,7 +293,7 @@ func login_handler(ctx *web.Context) {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
     }
     redir := ctx.Params["redirect_to"]
-    ctx.Redirect(301, "/"+redir)
+    ctx.Redirect(http.StatusFound, "/"+redir)
 }
 
 func load_comments_handler(ctx *web.Context) {
@@ -329,7 +329,7 @@ func delete_comment_handler(ctx *web.Context) {
             return
         }
     }
-    ctx.Redirect(301, "/"+redir)
+    ctx.Redirect(http.StatusFound, "/"+redir)
 }
 
 func moderate_comment_handler(ctx *web.Context) {
@@ -350,7 +350,7 @@ func moderate_comment_handler(ctx *web.Context) {
             return
         }
     }
-    ctx.Redirect(301, "/"+redir)
+    ctx.Redirect(http.StatusFound, "/"+redir)
 }
 
 func submit_post_handler(ctx *web.Context) {
@@ -382,13 +382,13 @@ func submit_post_handler(ctx *web.Context) {
             result, err := insertPostSql.Exec(authorId, title, date, url, text)
             if err != nil {
                 fmt.Println("Failed to insert post: " + err.Error())
-                ctx.Abort(500, "Server Error")
+                ctx.Abort(http.StatusInternalServerError, "Server Error")
                 return
             }
             postId, _ = result.LastInsertId()
         } else {
             fmt.Println("getPostId failed: " + err.Error())
-            ctx.Abort(500, "Server Error")
+            ctx.Abort(http.StatusInternalServerError, "Server Error")
             return
         }
     }
@@ -398,12 +398,12 @@ func submit_post_handler(ctx *web.Context) {
     _, err = updateStmt.Exec(title, url, text, postId)
     if err != nil {
         fmt.Println(err.Error())
-        ctx.Abort(500, "Server Error")
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
     updateTags(xaction, tagsWithUrls, postId)
     xaction.Commit()
-    ctx.Redirect(301, "/"+url)
+    ctx.Redirect(http.StatusFound, "/"+url)
 }
 
 func explodeTags(tagsWithUrls string) []*Tag {
@@ -522,14 +522,14 @@ func comment_handler(ctx *web.Context) {
     commenterId, err := getCommenterId(xaction, ctx)
     if err != nil {
         fmt.Println("getCommenterId failed: " + err.Error())
-        ctx.Abort(500, "Server Error")
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
     refUrl := xtractReferer(ctx)
     postId, err := getPostId(xaction, refUrl)
     if err != nil {
         fmt.Println("getPostId failed: " + err.Error())
-        ctx.Abort(500, "Server Error")
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
     stmt, _ := xaction.Prepare(`insert into comment(commenter_id, post_id,
@@ -540,12 +540,12 @@ func comment_handler(ctx *web.Context) {
     result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
     if err != nil {
         fmt.Println("Failed to insert comment: " + err.Error())
-        ctx.Abort(500, "Server Error")
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
     }
     commentId, _ := result.LastInsertId()
     xaction.Commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
-    ctx.Redirect(301, redir)
+    ctx.Redirect(http.StatusFound, redir)
 }
 
 func serve_favicon(ctx *web.Context) {
