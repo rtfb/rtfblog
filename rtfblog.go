@@ -409,6 +409,7 @@ func submit_post_handler(ctx *web.Context) {
 func explodeTags(tagsWithUrls string) []*Tag {
     tags := make([]*Tag, 0)
     for _, t := range strings.Split(tagsWithUrls, ",") {
+        t = strings.TrimSpace(t)
         if t == "" {
             continue
         }
