@@ -19,7 +19,10 @@ func usage() {
         os.Args[0] + " <command> [params...]",
         "",
         "possible commands:",
-        "\tinit <../path/to/file.db> <data dir> -- init clean db with schema",
+        "\tinit <../path/to/file.db> <source data>",
+        "\t\t-- init clean db with schema.",
+        "\t\t   <source data> can be either a directory,",
+        "\t\t   or a path to B2Evolution DB dump",
     }
     for _, s := range help {
         println(s)
@@ -233,7 +236,7 @@ func main() {
     }
     cmd := os.Args[1]
     file := os.Args[2]
-    dir := os.Args[3]
+    srcData := os.Args[3]
     if cmd != "init" {
         fmt.Println("Unknown command %q", cmd)
         usage()
@@ -251,11 +254,26 @@ func main() {
     */
     dbFile, _ := filepath.Abs(file)
     init_db(dbFile)
-    populate(dbFile)
-    data, err := readTextEntries(dir)
+    srcFile, err := os.Open(srcData)
     if err != nil {
-        println(err.Error())
+        fmt.Println(err)
         return
     }
-    populate2(dbFile, data)
+    defer srcFile.Close()
+    fi, err := srcFile.Stat()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    if fi.IsDir() {
+        populate(dbFile)
+        data, err := readTextEntries(srcData)
+        if err != nil {
+            println(err.Error())
+            return
+        }
+        populate2(dbFile, data)
+    } else {
+        fmt.Printf("Import from B2Evo DB not implemented yet\n")
+    }
 }
