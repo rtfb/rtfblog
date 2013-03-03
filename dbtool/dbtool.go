@@ -246,12 +246,6 @@ func main() {
         fmt.Println("File name is supposed to have a .db extension, but was %q", file)
         return
     }
-    /* TODO:
-       if !exists(dir) {
-           fmt.Println("Data dir %q does not exist!", dir)
-           return
-       }
-    */
     dbFile, _ := filepath.Abs(file)
     init_db(dbFile)
     srcFile, err := os.Open(srcData)
