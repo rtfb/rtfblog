@@ -22,7 +22,7 @@ func usage() {
         "\tinit <../path/to/file.db> <source data>",
         "\t\t-- init clean db with schema.",
         "\t\t   <source data> can be either a directory,",
-        "\t\t   or a path to B2Evolution DB dump",
+        "\t\t   or a path to DB dump configuration file.",
     }
     for _, s := range help {
         println(s)
@@ -270,6 +270,6 @@ func main() {
         }
         populate2(dbFile, data)
     } else {
-        fmt.Printf("Import from B2Evo DB not implemented yet\n")
+        importLegacyDb(file, srcData)
     }
 }

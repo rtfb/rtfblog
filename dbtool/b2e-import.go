@@ -1,0 +1,310 @@
+package main
+
+import (
+    "database/sql"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "strings"
+    "time"
+
+    _ "github.com/mattn/go-sqlite3"
+    _ "github.com/ziutek/mymysql/godrv"
+)
+
+// evo_categories
+type Category struct {
+    id        int64
+    parent_id int64
+    name      string
+    url       string
+}
+
+// evo_items__item
+type Post struct {
+    id        int64
+    id_sqlite int64
+    date      time.Time
+    body      string
+    title     string
+    url       string
+}
+
+// evo_comments
+type Comment struct {
+    postId        int64
+    postId_sqlite int64
+    authorId      sql.NullInt64
+    author        sql.NullString
+    authorEmail   sql.NullString
+    authorUrl     sql.NullString
+    authorIp      sql.NullString
+    date          time.Time
+    content       string
+}
+
+// evo_users
+type User struct {
+    id        int64
+    id_sqlite int64
+    login     string
+    firstname string
+    lastname  string
+    nickname  string
+    email     string
+    url       string
+    ip        string
+}
+
+type DbConfig map[string]string
+
+func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
+    rows, err := mconn.Query(`select post_ID, post_datecreated, post_content,
+                                     post_title, post_urltitle
+                              from evo_items__item
+                              where post_creator_user_ID=?`, 15)
+    //posts := make([]*Post, 0, 10)
+    for rows.Next() {
+        var p Post
+        err = rows.Scan(&p.id, &p.date, &p.body, &p.title, &p.url)
+        if err != nil {
+            fmt.Printf("err: %s\n" + err.Error())
+        }
+        posts = append(posts, &p)
+    }
+    fmt.Printf("#posts: %d\n", len(posts))
+    xaction, err := sconn.Begin()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    for _, p := range posts {
+        stmt, err := xaction.Prepare(`insert into post
+                                      (author_id, title, date, url, body)
+                                      values(?, ?, ?, ?, ?)`)
+        if err != nil {
+            fmt.Println(err)
+            return posts, err
+        }
+        defer stmt.Close()
+        result, err := stmt.Exec(1, p.title, p.date.Unix(), p.url, p.body)
+        p.id_sqlite, _ = result.LastInsertId()
+        //fmt.Printf("%+v\n", p)
+        //fmt.Printf("%q | %q\n", p.title, p.url)
+    }
+    xaction.Commit()
+    return posts, err
+}
+
+func xferComments(sconn, mconn *sql.DB, posts []*Post) {
+    comms := make([]*Comment, 0, 10)
+    for _, p := range posts {
+        rows, err := mconn.Query(`select comment_post_ID, comment_author_ID,
+                                         comment_author, comment_author_email,
+                                         comment_author_url, comment_author_IP,
+                                         comment_date, comment_content
+                                  from evo_comments
+                                  where comment_post_ID=?`, p.id)
+        for rows.Next() {
+            var c Comment
+            err = rows.Scan(&c.postId, &c.authorId, &c.author, &c.authorEmail,
+                &c.authorUrl, &c.authorIp, &c.date, &c.content)
+            if err != nil {
+                fmt.Printf("err: %s\n" + err.Error())
+            }
+            c.postId_sqlite = p.id_sqlite
+            comms = append(comms, &c)
+        }
+    }
+    fmt.Printf("#comms: %d\n", len(comms))
+    xaction, err := sconn.Begin()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    for _, c := range comms {
+        //fmt.Printf("%+v\n", c)
+        authorId, err := getCommenterId(xaction, mconn, c)
+        if err == sql.ErrNoRows {
+            insertCommenter, _ := xaction.Prepare(`insert into commenter
+                                                   (name, email, www, ip)
+                                                   values (?, ?, ?, ?)`)
+            defer insertCommenter.Close()
+            ip := ""
+            if c.authorIp.Valid {
+                ip = c.authorIp.String
+            }
+            result, err := insertCommenter.Exec(c.author, c.authorEmail,
+                c.authorUrl, ip)
+            if err != nil {
+                fmt.Println("Failed to insert commenter: " + err.Error())
+            }
+            authorId, err = result.LastInsertId()
+            if err != nil {
+                fmt.Println("Failed to insert commenter: " + err.Error())
+            }
+        } else if err != nil {
+            fmt.Println("err: " + err.Error())
+            continue
+        }
+        stmt, err := xaction.Prepare(`insert into comment
+                                      (commenter_id, post_id, timestamp, body)
+                                      values(?, ?, ?, ?)`)
+        defer stmt.Close()
+        if err != nil {
+            fmt.Printf("err: %s\n", err.Error())
+        }
+        _, err = stmt.Exec(authorId, c.postId_sqlite, c.date.Unix(), c.content)
+        if c.authorId.Int64 == 10 {
+            //fmt.Printf("%+v\n", c)
+        }
+        if err != nil {
+            fmt.Printf("err: %s\n", err.Error())
+        }
+    }
+    xaction.Commit()
+}
+
+func getCommenterId(xaction *sql.Tx, mconn *sql.DB, comment *Comment) (id int64, err error) {
+    if comment.authorId.Valid {
+        query, err := mconn.Prepare(`select user_nickname, user_email,
+                                              user_url, user_ip
+                                       from evo_users
+                                       where user_ID=?`)
+        defer query.Close()
+        if err != nil {
+            fmt.Printf("err: %s\n", err.Error())
+        }
+        err = query.QueryRow(comment.authorId.Int64).Scan(&comment.author,
+            &comment.authorEmail,
+            &comment.authorUrl,
+            &comment.authorIp)
+    }
+    query, _ := xaction.Prepare(`select c.id from commenter as c
+                                 where c.email like ?`)
+    defer query.Close()
+    err = query.QueryRow(comment.authorEmail.String).Scan(&id)
+    return
+}
+
+func xferTags(sconn, mconn *sql.DB, posts []*Post) {
+    for _, p := range posts {
+        rows, err := mconn.Query(`select t.tag_name
+                                  from evo_items__tag as t,
+                                       evo_items__itemtag as it
+                                  where t.tag_ID=it.itag_tag_ID
+                                    and it.itag_itm_ID=?`, p.id)
+        if err != nil {
+            fmt.Printf("err: %s\n", err.Error())
+        }
+        for rows.Next() {
+            var tag string
+            err = rows.Scan(&tag)
+            if err != nil {
+                fmt.Printf("err: %s\n" + err.Error())
+            }
+            fixedTag := strings.Replace(tag, " ", "-", -1)
+            row := sconn.QueryRow(`select id from tag where url=?`, fixedTag)
+            var tagId int64
+            err = row.Scan(&tagId)
+            if err != nil {
+                if err == sql.ErrNoRows {
+                    stmt, err := sconn.Prepare(`insert into tag
+                                                (name, url)
+                                                values(?, ?)`)
+                    if err != nil {
+                        fmt.Println(err)
+                        continue
+                    }
+                    defer stmt.Close()
+                    result, err := stmt.Exec(strings.Title(tag), fixedTag)
+                    tagId, _ = result.LastInsertId()
+                } else {
+                    fmt.Printf("err: %s\n", err.Error())
+                }
+            }
+            stmt, err := sconn.Prepare(`insert into tagmap
+                                        (tag_id, post_id)
+                                        values(?, ?)`)
+            if err != nil {
+                fmt.Println(err)
+                continue
+            }
+            defer stmt.Close()
+            _, err = stmt.Exec(tagId, p.id_sqlite)
+            if err != nil {
+                fmt.Printf("err inserting tagmap: %s\n", err.Error())
+            }
+        }
+    }
+}
+
+func readConf(path string) (db, uname, passwd string) {
+    b, err := ioutil.ReadFile(path)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    var config DbConfig
+    err = json.Unmarshal(b, &config)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    return config["db_name"], config["uname"], config["passwd"]
+}
+
+func importLegacyDb(sqliteFile, dbConf string) {
+    db, uname, passwd := readConf(dbConf)
+    mconn, err := sql.Open("mymysql", fmt.Sprintf("%s/%s/%s", db, uname, passwd))
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer mconn.Close()
+    sconn, err := sql.Open("sqlite3", sqliteFile)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer sconn.Close()
+    stmt, _ := sconn.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
+    defer stmt.Close()
+    stmt.Exec(1, "rtfb", "Vytautas Šaltenis", "vytas@rtfb.lt", "http://rtfb.lt")
+    row := mconn.QueryRow(`select blog_shortname, blog_name, blog_owner_user_ID
+                           from evo_blogs where blog_ID=?`, 19)
+    shortname := ""
+    name := ""
+    uid := 0
+    err = row.Scan(&shortname, &name, &uid)
+    if err != nil {
+        fmt.Printf("err: " + err.Error())
+    } else {
+        fmt.Printf("shortname: %q, name: %q, id=%d\n", shortname, name, uid)
+    }
+    rows, err := mconn.Query(`select cat_ID, cat_parent_ID,
+                                     cat_name, cat_urlname
+                              from evo_categories
+                              where cat_blog_ID=?`, 19)
+    cat := make([]*Category, 0, 10)
+    var id int64
+    var parent_id sql.NullInt64
+    var url string
+    for rows.Next() {
+        err = rows.Scan(&id, &parent_id, &name, &url)
+        if err != nil {
+            fmt.Printf("err: %s\n" + err.Error())
+        }
+        cat = append(cat, &Category{id, parent_id.Int64, name, url})
+    }
+    fmt.Printf("#categories: %d\n", len(cat))
+    for _, c := range cat {
+        fmt.Printf("%+v\n", c)
+    }
+    posts, err := xferPosts(sconn, mconn)
+    if err != nil {
+        fmt.Printf("err: " + err.Error())
+    }
+    xferComments(sconn, mconn, posts)
+    xferTags(sconn, mconn, posts)
+}

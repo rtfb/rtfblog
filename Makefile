@@ -4,6 +4,7 @@ GOFILES=\
 	rtfblog.go\
 	rtfblog_test.go\
 	dbtool/dbtool.go\
+	dbtool/b2e-import.go\
 
 all:
 	go build
