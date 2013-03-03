@@ -6,7 +6,6 @@ import (
     "fmt"
     "net/mail"
     "os"
-    "path"
     "path/filepath"
     "strings"
     "time"
@@ -20,7 +19,7 @@ func usage() {
         os.Args[0] + " <command> [params...]",
         "",
         "possible commands:",
-        "\tinit <file.db> <data dir> -- init clean db with schema",
+        "\tinit <../path/to/file.db> <data dir> -- init clean db with schema",
     }
     for _, s := range help {
         println(s)
@@ -250,7 +249,7 @@ func main() {
            return
        }
     */
-    dbFile := path.Join(dir, file)
+    dbFile, _ := filepath.Abs(file)
     init_db(dbFile)
     populate(dbFile)
     data, err := readTextEntries(dir)
