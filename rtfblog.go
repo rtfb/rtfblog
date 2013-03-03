@@ -110,8 +110,12 @@ func readDb(dbName string) (entries []*Entry, err error) {
         entry := new(Entry)
         var id int64
         var unixDate int64
-        rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
+        err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
             &entry.RawBody, &entry.Url)
+        if err != nil {
+            fmt.Println(err.Error())
+            continue
+        }
         entry.Body = string(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
         entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
         entry.Tags = queryTags(db, id)
@@ -140,7 +144,11 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
     tags := make([]*Tag, 0)
     for rows.Next() {
         tag := new(Tag)
-        rows.Scan(&tag.TagName, &tag.TagUrl)
+        err = rows.Scan(&tag.TagName, &tag.TagUrl)
+        if err != nil {
+            fmt.Println(err.Error())
+            continue
+        }
         tags = append(tags, tag)
     }
     return tags
