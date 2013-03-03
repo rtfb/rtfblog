@@ -151,7 +151,8 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
                                     c.id, c.timestamp, c.body
                              from commenter as a, comment as c
                              where a.id = c.commenter_id
-                                   and c.post_id = ?`)
+                                   and c.post_id = ?
+                             order by c.timestamp asc`)
     if err != nil {
         fmt.Println(err.Error())
         return nil
