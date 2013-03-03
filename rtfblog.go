@@ -168,8 +168,11 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
     for data.Next() {
         comment := new(Comment)
         var unixDate int64
-        data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
+        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
             &comment.CommentId, &unixDate, &comment.RawBody)
+        if err != nil {
+            fmt.Printf("error scanning comment row: %s\n", err.Error())
+        }
         hash := md5.New()
         hash.Write([]byte(strings.ToLower(comment.Email)))
         comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
