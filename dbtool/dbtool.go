@@ -94,6 +94,7 @@ func populate(fileName string) {
         fmt.Println(err.Error())
         return
     }
+    defer db.Close()
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err)
@@ -141,6 +142,7 @@ func populate2(fileName string, data []*Entry) {
         fmt.Println(err.Error())
         return
     }
+    defer db.Close()
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err)
