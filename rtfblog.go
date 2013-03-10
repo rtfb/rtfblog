@@ -100,7 +100,8 @@ func readDb(dbName string) (entries []*Entry, err error) {
     rows, err := db.Query(`select a.disp_name, p.id, p.title, p.date,
                                   p.body, p.url
                            from author as a, post as p
-                           where a.id=p.author_id`)
+                           where a.id=p.author_id
+                           order by p.date desc`)
     if err != nil {
         fmt.Println(err.Error())
         return
