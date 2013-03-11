@@ -87,13 +87,83 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
             return posts, err
         }
         defer stmt.Close()
-        result, err := stmt.Exec(1, p.title, p.date.Unix(), p.url, p.body)
+        newBody := fixupBody(p.body)
+        result, err := stmt.Exec(1, p.title, p.date.Unix(), p.url, newBody)
         p.id_sqlite, _ = result.LastInsertId()
         //fmt.Printf("%+v\n", p)
         //fmt.Printf("%q | %q\n", p.title, p.url)
     }
     xaction.Commit()
     return posts, err
+}
+
+func fixupBody(obody string) (nbody string) {
+    nbody = fixupPre(obody)
+    nbody = fixupTt(nbody)
+    nbody = fixupOl(nbody)
+    return
+}
+
+func fixupPre(obody string) (nbody string) {
+    ilines := strings.Split(obody, "\n")
+    olines := make([]string, 0, len(ilines))
+    inPre := false
+    for _, line := range ilines {
+        if strings.Contains(line, "<pre>") {
+            inPre = true
+            line = strings.Replace(line, "<pre>", "", -1)
+        }
+        if strings.Contains(line, "</pre>") {
+            inPre = false
+            line = strings.Replace(line, "</pre>", "", -1)
+        }
+        if inPre {
+            olines = append(olines, "    " + line)
+        } else {
+            olines = append(olines, line)
+        }
+    }
+    nbody = strings.Join(olines, "\n")
+    return
+}
+
+func fixupTt(obody string) (nbody string) {
+    nbody = strings.Replace(obody, "<tt>", "`", -1)
+    nbody = strings.Replace(nbody, "</tt>", "`", -1)
+    return
+}
+
+func fixupOl(obody string) (nbody string) {
+    ilines := strings.Split(obody, "\n")
+    olines := make([]string, 0, len(ilines))
+    inList := false
+    for _, line := range ilines {
+        if strings.Contains(line, "<ol") {
+            inList = true
+        }
+        if strings.Contains(line, "</ol>") {
+            inList = false
+            s := strings.Replace(strings.TrimSpace(line), "<li>", "1. ", -1)
+            s = strings.Replace(s, "</li>", "", -1)
+            s = strings.Replace(s, "</ol>", "", -1)
+            olines = append(olines, s)
+            continue
+        }
+        if inList && strings.TrimSpace(line) == "" {
+            continue
+        } else if inList {
+            s := strings.Replace(strings.TrimSpace(line), "<li>", "1. ", -1)
+            s = strings.Replace(s, "</li>", "", -1)
+            s = strings.Replace(s, "<ol>", "", -1)
+            s = strings.Replace(s, "<ol class=\"withalpha\">", "", -1)
+            s = strings.Replace(s, "</ol>", "", -1)
+            olines = append(olines, s)
+        } else {
+            olines = append(olines, line)
+        }
+    }
+    nbody = strings.Join(olines, "\n")
+    return
 }
 
 func xferComments(sconn, mconn *sql.DB, posts []*Post) {
