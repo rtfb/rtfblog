@@ -118,7 +118,7 @@ func fixupPre(obody string) (nbody string) {
             line = strings.Replace(line, "</pre>", "", -1)
         }
         if inPre {
-            olines = append(olines, "    " + line)
+            olines = append(olines, "    "+line)
         } else {
             olines = append(olines, line)
         }
