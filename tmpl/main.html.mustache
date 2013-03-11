@@ -15,6 +15,9 @@
                 padding: 4px 10px;
                 vertical-align: text-bottom;
             }
+            #post-body * code {
+                font-family: Consolas,monospace
+            }
         </style>
     </head>
     <body>
@@ -44,7 +47,7 @@
 </h3>
 {{> author}}
 <hr />
-<div>{{{Body}}}</div>
+<div id="post-body">{{{Body}}}</div>
     <div class="twelve columns container">
     {{#HasTags}}
     <div id="tags" class="ten columns alpha">
