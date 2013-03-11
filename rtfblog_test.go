@@ -119,6 +119,9 @@ func TestEntriesHaveTagsInList(t *testing.T) {
 }
 
 func checkTagsSection(t T, node *h5.Node) {
+    if strings.Contains(node.String(), "&nbsp;") {
+        return
+    }
     doc, err := transform.NewDoc(node.String())
     t.failIf(err != nil, "Error parsing tags section!")
     q := transform.NewSelectorQuery("a")
