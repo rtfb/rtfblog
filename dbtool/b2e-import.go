@@ -109,7 +109,9 @@ func fixupImgLinks(obody string) (nbody string) {
     ilines := strings.Split(obody, "\n")
     olines := make([]string, 0, len(ilines))
     for _, line := range ilines {
-        olines = append(olines, strings.Replace(line, "http://blog.stent.lt/media/blogs/rtfb", "", -1))
+        newline := strings.Replace(line, "http://blog.stent.lt/media/blogs/rtfb", "", -1)
+        newline = strings.Replace(newline, "h3", "h4", -1)
+        olines = append(olines, newline)
     }
     nbody = strings.Join(olines, "\n")
     return
