@@ -338,9 +338,6 @@ func importLegacyDb(sqliteFile, dbConf string) {
         return
     }
     defer sconn.Close()
-    stmt, _ := sconn.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
-    defer stmt.Close()
-    stmt.Exec(1, "rtfb", "Vytautas Šaltenis", "vytas@rtfb.lt", "http://rtfb.lt")
     row := mconn.QueryRow(`select blog_shortname, blog_name, blog_owner_user_ID
                            from evo_blogs where blog_ID=?`, 19)
     shortname := ""

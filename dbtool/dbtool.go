@@ -77,6 +77,9 @@ func init_db(fileName string) {
             return
         }
     }
+    stmt, _ := db.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
+    defer stmt.Close()
+    stmt.Exec(1, "rtfb", "Vytautas Šaltenis", "vytas@rtfb.lt", "http://rtfb.lt")
 }
 
 func populate(fileName string) {
@@ -91,10 +94,7 @@ func populate(fileName string) {
         fmt.Println(err)
         return
     }
-    stmt, _ := xaction.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
-    defer stmt.Close()
-    stmt.Exec(1, "rtfb", "Vytautas Šaltenis", "vytas@rtfb.lt", "http://rtfb.lt")
-    stmt, _ = xaction.Prepare("insert into post(id, author_id, title, date, url, body) values(?, ?, ?, ?, ?, ?)")
+    stmt, _ := xaction.Prepare("insert into post(id, author_id, title, date, url, body) values(?, ?, ?, ?, ?, ?)")
     defer stmt.Close()
     stmt.Exec(1, 1, "Labadėna", 123456, "labadena", "Nieko aš čia nerašysiu.")
     imgpost := `This is a post with a figure.
