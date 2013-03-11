@@ -252,7 +252,12 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "archive", basicData)
         return
     } else if path == "login" {
-        basicData["RedirectTo"] = xtractReferer(ctx)
+        referer := xtractReferer(ctx)
+        if referer == "login" {
+            basicData["LoginFailed"] = true
+        } else {
+            basicData["RedirectTo"] = referer
+        }
         basicData["PageTitle"] = "Login"
         render(ctx, "login", basicData)
         return
@@ -348,12 +353,18 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
 
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
-    //passwd := ctx.Request.Form["passwd"][0]
-    if uname == "admin" {
+    passwd := ctx.Request.Form["passwd"][0]
+    if uname == "admin" && passwd == "asd" {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
+        redir := ctx.Params["redirect_to"]
+        if redir == "login" {
+            redir = ""
+        }
+        ctx.Redirect(http.StatusFound, "/"+redir)
+    } else {
+        ctx.Params["HiddenShite"] = "foo"
+        ctx.Redirect(http.StatusFound, "/login")
     }
-    redir := ctx.Params["redirect_to"]
-    ctx.Redirect(http.StatusFound, "/"+redir)
 }
 
 func load_comments_handler(ctx *web.Context) {
