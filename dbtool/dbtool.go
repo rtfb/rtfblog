@@ -3,6 +3,7 @@ package main
 import (
     "bytes"
     "database/sql"
+    "flag"
     "fmt"
     "net/mail"
     "os"
@@ -14,19 +15,9 @@ import (
 )
 
 func usage() {
-    help := []string{
-        "Usage:",
-        os.Args[0] + " <command> [params...]",
-        "",
-        "possible commands:",
-        "\tinit <../path/to/file.db> <source data>",
-        "\t\t-- init clean db with schema.",
-        "\t\t   <source data> can be either a directory,",
-        "\t\t   or a path to DB dump configuration file.",
-    }
-    for _, s := range help {
-        println(s)
-    }
+    fmt.Fprintf(os.Stderr, "usage: %s [params]\n", filepath.Base(os.Args[0]))
+    flag.PrintDefaults()
+    os.Exit(2)
 }
 
 func init_db(fileName string) {
@@ -232,25 +223,22 @@ func readTextEntries(root string) (entries []*Entry, err error) {
 }
 
 func main() {
-    if len(os.Args) < 4 {
+    db := flag.String("db", "", "<../path/to/file.db> (required)")
+    srcData := flag.String("src", "", "Can be either a directory, or a path to DB dump configuration file (required)")
+    flag.Usage = usage
+    flag.Parse()
+    if *db == "" || *srcData == "" {
         usage()
         return
     }
-    cmd := os.Args[1]
-    file := os.Args[2]
-    srcData := os.Args[3]
-    if cmd != "init" {
-        fmt.Println("Unknown command %q", cmd)
+    if !strings.HasSuffix(*db, ".db") {
+        fmt.Println("File name is supposed to have a .db extension, but was %q", *db)
         usage()
         return
     }
-    if !strings.HasSuffix(file, ".db") {
-        fmt.Println("File name is supposed to have a .db extension, but was %q", file)
-        return
-    }
-    dbFile, _ := filepath.Abs(file)
+    dbFile, _ := filepath.Abs(*db)
     init_db(dbFile)
-    srcFile, err := os.Open(srcData)
+    srcFile, err := os.Open(*srcData)
     if err != nil {
         fmt.Println(err)
         return
@@ -263,13 +251,13 @@ func main() {
     }
     if fi.IsDir() {
         populate(dbFile)
-        data, err := readTextEntries(srcData)
+        data, err := readTextEntries(*srcData)
         if err != nil {
             println(err.Error())
             return
         }
         populate2(dbFile, data)
     } else {
-        importLegacyDb(file, srcData)
+        importLegacyDb(*db, *srcData)
     }
 }
