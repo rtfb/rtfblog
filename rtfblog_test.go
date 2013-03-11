@@ -249,7 +249,7 @@ func query0(t *testing.T, url string, query string) []*h5.Node {
     html := curl(url)
     doc, err := transform.NewDoc(html)
     if err != nil {
-        t.Fatal("Error parsing document!")
+        t.Fatalf("Error parsing document! URL=%q, Err=%s", url, err.Error())
     }
     q := transform.NewSelectorQuery(query)
     return q.Apply(doc)
