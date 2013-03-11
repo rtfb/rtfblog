@@ -101,6 +101,17 @@ func fixupBody(obody string) (nbody string) {
     nbody = fixupPre(obody)
     nbody = fixupTt(nbody)
     nbody = fixupOl(nbody)
+    nbody = fixupImgLinks(nbody)
+    return
+}
+
+func fixupImgLinks(obody string) (nbody string) {
+    ilines := strings.Split(obody, "\n")
+    olines := make([]string, 0, len(ilines))
+    for _, line := range ilines {
+        olines = append(olines, strings.Replace(line, "http://blog.stent.lt/media/blogs/rtfb", "", -1))
+    }
+    nbody = strings.Join(olines, "\n")
     return
 }
 
