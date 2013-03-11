@@ -225,6 +225,7 @@ func readTextEntries(root string) (entries []*Entry, err error) {
 func main() {
     db := flag.String("db", "", "<../path/to/file.db> (required)")
     srcData := flag.String("src", "", "Can be either a directory, or a path to DB dump configuration file (required)")
+    migrateOnly := flag.Bool("notest", false, "Don't populate DB with test data, only migrate what's in -src. (optional)")
     flag.Usage = usage
     flag.Parse()
     if *db == "" || *srcData == "" {
@@ -258,6 +259,9 @@ func main() {
         }
         populate2(dbFile, data)
     } else {
+        if !*migrateOnly {
+            populate(dbFile)
+        }
         importLegacyDb(*db, *srcData)
     }
 }
