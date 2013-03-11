@@ -221,12 +221,20 @@ func listOfPages(numPosts, currPage int) (list string) {
 
 func handler(ctx *web.Context, path string) {
     posts := loadData(dataset)
+    postsPerPage := 5
+    if postsPerPage >= len(posts) {
+        postsPerPage = len(posts)
+    }
+    recentPosts := 10
+    if recentPosts >= len(posts) {
+        recentPosts = len(posts)
+    }
     var basicData = map[string]interface{}{
         "PageTitle":       "",
         "NeedPagination":  len(posts) > 5,
         "ListOfPages":     listOfPages(len(posts), 0),
-        "entries":         posts,
-        "sidebar_entries": posts[:10],
+        "entries":         posts[:postsPerPage],
+        "sidebar_entries": posts[:recentPosts],
     }
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
@@ -265,8 +273,16 @@ func handler(ctx *web.Context, path string) {
         if err != nil {
             pgNo = 1
         }
+        lwr := (pgNo - 1) * 5
+        upr := pgNo * 5
+        if lwr >= len(posts) {
+            lwr = 0
+        }
+        if upr >= len(posts) {
+            upr = len(posts)
+        }
         basicData["PageTitle"] = "Velkam"
-        basicData["entries"] = posts[(pgNo-1)*5 : (pgNo * 5)]
+        basicData["entries"] = posts[lwr:upr]
         basicData["ListOfPages"] = listOfPages(len(posts), pgNo-1)
         render(ctx, "main", basicData)
         return
