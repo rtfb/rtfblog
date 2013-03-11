@@ -11,6 +11,7 @@ import (
     "mime/multipart"
     "net/http"
     "os"
+    "strconv"
     "strings"
     "time"
 
@@ -206,10 +207,24 @@ func xtractReferer(ctx *web.Context) string {
     return referer[strings.LastIndex(referer, "/")+1:]
 }
 
+func listOfPages(numPosts, currPage int) (list string) {
+    numPages := numPosts / 5
+    for p := 0; p < numPages; p++ {
+        if p == currPage {
+            list += fmt.Sprintf("%d\n", p+1)
+        } else {
+            list += fmt.Sprintf("<a href=\"/page/%d\">%d</a>\n", p+1, p+1)
+        }
+    }
+    return
+}
+
 func handler(ctx *web.Context, path string) {
     posts := loadData(dataset)
     var basicData = map[string]interface{}{
         "PageTitle":       "",
+        "NeedPagination":  len(posts) > 5,
+        "ListOfPages":     listOfPages(len(posts), 0),
         "entries":         posts,
         "sidebar_entries": posts[:10],
     }
@@ -244,6 +259,16 @@ func handler(ctx *web.Context, path string) {
             }
         }
         render(ctx, "edit_post", basicData)
+        return
+    } else if strings.HasPrefix(path, "page/") {
+        pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
+        if err != nil {
+            pgNo = 1
+        }
+        basicData["PageTitle"] = "Velkam"
+        basicData["entries"] = posts[(pgNo-1)*5 : (pgNo * 5)]
+        basicData["ListOfPages"] = listOfPages(len(posts), pgNo-1)
+        render(ctx, "main", basicData)
         return
     } else {
         for _, e := range posts {

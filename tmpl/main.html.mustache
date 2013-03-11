@@ -77,7 +77,18 @@
             {{> sidebar}}
 
             <hr />
-            <div id="footer"></div>
+            <div id="footer">
+                <div class="twelve columns content" id="pager">
+                    <div style="text-align: center">
+                        {{#NeedPagination}}
+                        Pages:
+                        {{{ListOfPages}}}
+                        {{/NeedPagination}}
+                        <br />
+                        <br />
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>
