@@ -4,3 +4,4 @@ vim-session
 testdata/foo.db
 testdata/legacy-db.conf
 dbtool/dbtool
+stuff/
