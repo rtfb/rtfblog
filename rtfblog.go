@@ -209,8 +209,9 @@ func xtractReferer(ctx *web.Context) string {
 func handler(ctx *web.Context, path string) {
     posts := loadData(dataset)
     var basicData = map[string]interface{}{
-        "PageTitle": "",
-        "entries":   posts,
+        "PageTitle":       "",
+        "entries":         posts,
+        "sidebar_entries": posts[:10],
     }
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
