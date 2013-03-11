@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>{{{PageTitle}}}</title>
+        <link rel="stylesheet" href="/css/base.css">
+        <link rel="stylesheet" href="/css/skeleton.css">
+        <link rel="stylesheet" href="/css/layout.css">
+        <style>
+            input[type="button"].inline {
+                margin-bottom: 0px;
+                padding: 4px 10px;
+                vertical-align: text-bottom;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="header">
+                <br />
+                {{> header}}
+            </div>
+            <hr />
+            <div id="subheader">
+                <h3 class="alt">Subhello</h3>
+            </div>
+
+            <hr />
+            <div class="twelve columns content" id="content">
+    <p>All posts:</p>
+{{#all_entries}}
+<b><a href="{{Url}}">{{Title}}</a></b>
+{{#AdminLogin}}
+<input
+    id="edit-post-button"
+    type="button"
+    class="inline"
+    onclick="location.href = '/edit_post?post={{Url}}'"
+    value="Edit"
+    />
+{{/AdminLogin}}
+<br />
+{{/all_entries}}
+{{^all_entries}}
+<h2>No entries. This is most likely an error.</h2>
+{{/all_entries}}
+            </div>
+
+            {{> sidebar}}
+
+            <hr />
+            <div id="footer">
+            </div>
+        </div>
+    </body>
+</html>

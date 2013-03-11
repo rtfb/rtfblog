@@ -246,6 +246,11 @@ func handler(ctx *web.Context, path string) {
         basicData["PageTitle"] = "Admin Console"
         render(ctx, "admin", basicData)
         return
+    } else if path == "archive" {
+        basicData["PageTitle"] = "Archive"
+        basicData["all_entries"] = posts
+        render(ctx, "archive", basicData)
+        return
     } else if path == "login" {
         basicData["RedirectTo"] = xtractReferer(ctx)
         basicData["PageTitle"] = "Login"
