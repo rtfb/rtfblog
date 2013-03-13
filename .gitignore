@@ -3,5 +3,6 @@ server.log
 vim-session
 testdata/foo.db
 testdata/legacy-db.conf
+testdata/db.conf
 dbtool/dbtool
 stuff/

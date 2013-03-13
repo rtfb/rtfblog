@@ -3,8 +3,10 @@ package main
 import (
     "bytes"
     "database/sql"
+    "encoding/json"
     "flag"
     "fmt"
+    "io/ioutil"
     "net/mail"
     "os"
     "path/filepath"
@@ -20,7 +22,7 @@ func usage() {
     os.Exit(2)
 }
 
-func init_db(fileName string) {
+func init_db(fileName, uname, passwd, fullname, email, www string) {
     createTables := []string{
         `create table tag (
             id integer not null primary key,
@@ -79,7 +81,7 @@ func init_db(fileName string) {
     }
     stmt, _ := db.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
     defer stmt.Close()
-    stmt.Exec(1, "rtfb", "Vytautas Šaltenis", "vytas@rtfb.lt", "http://rtfb.lt")
+    stmt.Exec(1, uname, fullname, email, www)
 }
 
 func populate(fileName string) {
@@ -222,23 +224,40 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
+func readDbConf(path string) (db, uname, fullname, email, www string) {
+    b, err := ioutil.ReadFile(path)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    var config DbConfig
+    err = json.Unmarshal(b, &config)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    return config["db_file"], config["uname"], config["fullname"],
+        config["email"], config["www"]
+}
+
 func main() {
-    db := flag.String("db", "", "<../path/to/file.db> (required)")
+    dbconf := flag.String("db", "", "Database configuration file (required)")
     srcData := flag.String("src", "", "Can be either a directory, or a path to DB dump configuration file (required)")
     migrateOnly := flag.Bool("notest", false, "Don't populate DB with test data, only migrate what's in -src. (optional)")
     flag.Usage = usage
     flag.Parse()
-    if *db == "" || *srcData == "" {
+    if *dbconf == "" || *srcData == "" {
         usage()
         return
     }
-    if !strings.HasSuffix(*db, ".db") {
-        fmt.Printf("File name is supposed to have a .db extension, but was %q\n", *db)
+    db, uname, fullname, email, www := readDbConf(*dbconf)
+    if !strings.HasSuffix(db, ".db") {
+        fmt.Printf("File name is supposed to have a .db extension, but was %q\n", db)
         usage()
         return
     }
-    dbFile, _ := filepath.Abs(*db)
-    init_db(dbFile)
+    dbFile, _ := filepath.Abs(db)
+    init_db(dbFile, "", uname, fullname, email, www)
     srcFile, err := os.Open(*srcData)
     if err != nil {
         fmt.Println(err)
@@ -262,6 +281,6 @@ func main() {
         if !*migrateOnly {
             populate(dbFile)
         }
-        importLegacyDb(*db, *srcData)
+        importLegacyDb(db, *srcData)
     }
 }
