@@ -233,7 +233,7 @@ func main() {
         return
     }
     if !strings.HasSuffix(*db, ".db") {
-        fmt.Println("File name is supposed to have a .db extension, but was %q", *db)
+        fmt.Printf("File name is supposed to have a .db extension, but was %q\n", *db)
         usage()
         return
     }
