@@ -35,7 +35,7 @@ func encrypt(passwd string) (salt, hash string) {
     }
     salt = base64.URLEncoding.EncodeToString(b)
     sha := sha1.New()
-    sha.Write([]byte(salt+passwd))
+    sha.Write([]byte(salt + passwd))
     hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
     return
 }

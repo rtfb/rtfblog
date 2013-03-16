@@ -404,7 +404,7 @@ func login_handler(ctx *web.Context) {
     }
     passwd := ctx.Request.Form["passwd"][0]
     sha := sha1.New()
-    sha.Write([]byte(salt+passwd))
+    sha.Write([]byte(salt + passwd))
     hash := base64.URLEncoding.EncodeToString(sha.Sum(nil))
     if hash == passwdHash {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
