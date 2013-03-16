@@ -275,13 +275,14 @@ func main() {
         usage()
         return
     }
+    root, _ := filepath.Split(filepath.Clean(*dbconf))
     db, uname, passwd, fullname, email, www := readDbConf(*dbconf)
     if !strings.HasSuffix(db, ".db") {
         fmt.Printf("File name is supposed to have a .db extension, but was %q\n", db)
         usage()
         return
     }
-    dbFile, _ := filepath.Abs(db)
+    dbFile := filepath.Join(root, db)
     init_db(dbFile, uname, passwd, fullname, email, www)
     srcFile, err := os.Open(*srcData)
     if err != nil {
@@ -306,6 +307,6 @@ func main() {
         if !*migrateOnly {
             populate(dbFile)
         }
-        importLegacyDb(db, *srcData)
+        importLegacyDb(dbFile, *srcData)
     }
 }
