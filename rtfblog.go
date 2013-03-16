@@ -386,7 +386,6 @@ func login_handler(ctx *web.Context) {
         }
         ctx.Redirect(http.StatusFound, "/"+redir)
     } else {
-        ctx.Params["HiddenShite"] = "foo"
         ctx.Redirect(http.StatusFound, "/login")
     }
 }
