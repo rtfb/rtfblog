@@ -84,8 +84,11 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
             body text
         )`,
     }
-    os.Remove(fileName)
-
+    err := os.Remove(fileName)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
     db, err := sql.Open("sqlite3", fileName)
     if err != nil {
         fmt.Println(err.Error())
