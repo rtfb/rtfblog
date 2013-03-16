@@ -2,10 +2,14 @@ package main
 
 import (
     "bytes"
+    "crypto/rand"
+    "crypto/sha1"
     "database/sql"
+    "encoding/base64"
     "encoding/json"
     "flag"
     "fmt"
+    "io"
     "io/ioutil"
     "net/mail"
     "os"
@@ -22,6 +26,20 @@ func usage() {
     os.Exit(2)
 }
 
+func encrypt(passwd string) (salt, hash string) {
+    b := make([]byte, 16)
+    n, err := io.ReadFull(rand.Reader, b)
+    if n != len(b) || err != nil {
+        fmt.Println("error:", err)
+        return
+    }
+    salt = base64.URLEncoding.EncodeToString(b)
+    sha := sha1.New()
+    sha.Write([]byte(salt+passwd))
+    hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
+    return
+}
+
 func init_db(fileName, uname, passwd, fullname, email, www string) {
     createTables := []string{
         `create table tag (
@@ -32,6 +50,8 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
         `create table author (
             id integer not null primary key,
             disp_name text,
+            salt text,
+            passwd text,
             full_name text,
             email text,
             www text
@@ -79,9 +99,11 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
             return
         }
     }
-    stmt, _ := db.Prepare("insert into author(id, disp_name, full_name, email, www) values(?, ?, ?, ?, ?)")
+    stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
+                           values(?, ?, ?, ?, ?, ?, ?)`)
     defer stmt.Close()
-    stmt.Exec(1, uname, fullname, email, www)
+    salt, passwdHash := encrypt(passwd)
+    stmt.Exec(1, uname, salt, passwdHash, fullname, email, www)
 }
 
 func populate(fileName string) {
@@ -224,7 +246,7 @@ func readTextEntries(root string) (entries []*Entry, err error) {
     return
 }
 
-func readDbConf(path string) (db, uname, fullname, email, www string) {
+func readDbConf(path string) (db, uname, passwd, fullname, email, www string) {
     b, err := ioutil.ReadFile(path)
     if err != nil {
         fmt.Println(err.Error())
@@ -236,8 +258,8 @@ func readDbConf(path string) (db, uname, fullname, email, www string) {
         fmt.Println(err.Error())
         return
     }
-    return config["db_file"], config["uname"], config["fullname"],
-        config["email"], config["www"]
+    return config["db_file"], config["uname"], config["passwd"],
+        config["fullname"], config["email"], config["www"]
 }
 
 func main() {
@@ -250,14 +272,14 @@ func main() {
         usage()
         return
     }
-    db, uname, fullname, email, www := readDbConf(*dbconf)
+    db, uname, passwd, fullname, email, www := readDbConf(*dbconf)
     if !strings.HasSuffix(db, ".db") {
         fmt.Printf("File name is supposed to have a .db extension, but was %q\n", db)
         usage()
         return
     }
     dbFile, _ := filepath.Abs(db)
-    init_db(dbFile, "", uname, fullname, email, www)
+    init_db(dbFile, uname, passwd, fullname, email, www)
     srcFile, err := os.Open(*srcData)
     if err != nil {
         fmt.Println(err)
