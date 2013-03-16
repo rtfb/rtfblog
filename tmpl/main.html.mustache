@@ -37,7 +37,7 @@
             <hr />
             <div class="twelve columns content" id="content">
 {{#entries}}
-<h3 id="post" class="strong twelve columns container"><a href="{{Url}}">{{Title}}</a>
+<h3 id="post" class="strong twelve columns container"><a href="/{{Url}}">{{Title}}</a>
 {{#AdminLogin}}
 <input
     id="edit-post-button"
@@ -69,7 +69,7 @@
     </div>
     {{/HasTags}}
     <div class="two columns omega">
-        <a href="{{Url}}#comments">{{NumComments}} comments</a>
+        <a href="/{{Url}}#comments">{{NumComments}} comments</a>
     </div>
     </div>
 {{/entries}}
