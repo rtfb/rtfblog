@@ -60,7 +60,7 @@ type Entry struct {
 type SrvConfig map[string]interface{}
 
 var (
-    dataset    string
+    db         *sql.DB
     conf       SrvConfig
     testLoader func() []*Entry
 )
@@ -120,13 +120,7 @@ func (e *Entry) TagsWithUrls() string {
     return strings.Join(parts, ", ")
 }
 
-func readDb(dbName string) (entries []*Entry, err error) {
-    db, err := sql.Open("sqlite3", dbName)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    defer db.Close()
+func readDb() (entries []*Entry, err error) {
     rows, err := db.Query(`select a.disp_name, p.id, p.title, p.date,
                                   p.body, p.url
                            from author as a, post as p
@@ -249,7 +243,7 @@ func listOfPages(numPosts, currPage int) (list string) {
 }
 
 func handler(ctx *web.Context, path string) {
-    posts := loadData(dataset)
+    posts := loadData()
     postsPerPage := 5
     if postsPerPage >= len(posts) {
         postsPerPage = len(posts)
@@ -382,16 +376,10 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
 
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
-    db, err := sql.Open("sqlite3", dataset)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    defer db.Close()
     row := db.QueryRow(`select salt, passwd, full_name, email, www
                         from author where disp_name=?`, uname)
     var salt, passwdHash, fullName, email, www string
-    err = row.Scan(&salt, &passwdHash, &fullName, &email, &www)
+    err := row.Scan(&salt, &passwdHash, &fullName, &email, &www)
     if err == sql.ErrNoRows {
         ctx.Redirect(http.StatusFound, "/login")
         return
@@ -419,7 +407,7 @@ func login_handler(ctx *web.Context) {
 
 func load_comments_handler(ctx *web.Context) {
     post := ctx.Params["post"]
-    posts := loadData(dataset)
+    posts := loadData()
     for _, p := range posts {
         if p.Url == post {
             b, err := json.Marshal(p)
@@ -438,13 +426,7 @@ func delete_comment_handler(ctx *web.Context) {
     redir := ctx.Params["redirect_to"]
     id := ctx.Params["id"]
     if action == "delete" {
-        db, err := sql.Open("sqlite3", dataset)
-        if err != nil {
-            fmt.Println(err.Error())
-            return
-        }
-        defer db.Close()
-        _, err = db.Exec(`delete from comment where id=?`, id)
+        _, err := db.Exec(`delete from comment where id=?`, id)
         if err != nil {
             fmt.Println(err.Error())
             return
@@ -459,13 +441,7 @@ func moderate_comment_handler(ctx *web.Context) {
     text := ctx.Params["text"]
     id := ctx.Params["id"]
     if action == "edit" {
-        db, err := sql.Open("sqlite3", dataset)
-        if err != nil {
-            fmt.Println(err.Error())
-            return
-        }
-        defer db.Close()
-        _, err = db.Exec(`update comment set body=? where id=?`, text, id)
+        _, err := db.Exec(`update comment set body=? where id=?`, text, id)
         if err != nil {
             fmt.Println(err.Error())
             return
@@ -479,12 +455,6 @@ func submit_post_handler(ctx *web.Context) {
     url := ctx.Params["url"]
     tagsWithUrls := ctx.Params["tags"]
     text := ctx.Params["text"]
-    db, err := sql.Open("sqlite3", dataset)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    defer db.Close()
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err.Error())
@@ -629,12 +599,6 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 }
 
 func comment_handler(ctx *web.Context) {
-    db, err := sql.Open("sqlite3", dataset)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    defer db.Close()
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err.Error())
@@ -695,14 +659,14 @@ func runServer() {
     web.Run(conf.Get("port"))
 }
 
-func loadData(db string) []*Entry {
+func loadData() []*Entry {
     if testLoader != nil {
         return testLoader()
     }
-    if db == "" {
+    if db == nil {
         return nil
     }
-    data, err := readDb(db)
+    data, err := readDb()
     if err != nil {
         println(err.Error())
         return nil
@@ -710,9 +674,19 @@ func loadData(db string) []*Entry {
     return data
 }
 
+func openDb(dbFile string) *sql.DB {
+    db, err := sql.Open("sqlite3", dbFile)
+    if err != nil {
+        fmt.Println("sql: " + err.Error())
+        return nil
+    }
+    return db
+}
+
 func main() {
     root, _ := filepath.Split(filepath.Clean(os.Args[0]))
     conf = loadConfig(filepath.Join(root, "server.conf"))
-    dataset = conf.Get("database")
+    db = openDb(conf.Get("database"))
+    defer db.Close()
     runServer()
 }

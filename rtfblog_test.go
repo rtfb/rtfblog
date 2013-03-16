@@ -48,6 +48,7 @@ func mustContain(t *testing.T, page string, what string) {
 
 func TestStartServer(t *testing.T) {
     conf = loadConfig("server.conf")
+    db = openDb(conf.Get("database"))
     go runServer()
     time.Sleep(50 * time.Millisecond)
 }
@@ -84,13 +85,14 @@ func TestBasicStructure(t *testing.T) {
 }
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
-    dataset = ""
+    dbtemp := db
+    db = nil
     html := curl("")
     mustContain(t, html, "No entries")
+    db = dbtemp
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
-    dataset = "testdata/foo.db"
     what := "No entries"
     if strings.Contains(curl(""), what) {
         t.Errorf("Test page should not contain %q", what)
@@ -144,7 +146,7 @@ func checkAuthorSection(t T, node *h5.Node) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
-    posts := loadData("testdata/foo.db")
+    posts := loadData()
     for _, e := range posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")
@@ -156,7 +158,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
 }
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
-    posts := loadData("testdata/foo.db")
+    posts := loadData()
     for _, p := range posts {
         nodes := query0(t, p.Url, "#comments")
         if len(nodes) != 1 {
@@ -199,7 +201,7 @@ func emptyChildren(node *h5.Node) bool {
 }
 
 func TestTagFormattingInPostPage(t *testing.T) {
-    posts := loadData("testdata/foo.db")
+    posts := loadData()
     for _, e := range posts {
         nodes := query0(t, e.Url, "#tags")
         if len(nodes) > 0 {
@@ -215,7 +217,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 }
 
 func TestPostPageHasCommentEditor(t *testing.T) {
-    posts := loadData("testdata/foo.db")
+    posts := loadData()
     for _, p := range posts {
         node := query1(t, p.Url, "#comment")
         assertElem(t, node, "form")
