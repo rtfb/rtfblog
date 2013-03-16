@@ -185,15 +185,22 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
         rows, err := mconn.Query(`select comment_post_ID, comment_author_ID,
                                          comment_author, comment_author_email,
                                          comment_author_url, comment_author_IP,
-                                         comment_date, comment_content
+                                         comment_date, comment_content,
+                                         comment_ID
                                   from evo_comments
                                   where comment_post_ID=?`, p.id)
         for rows.Next() {
             var c Comment
+            var cid int
             err = rows.Scan(&c.postId, &c.authorId, &c.author, &c.authorEmail,
-                &c.authorUrl, &c.authorIp, &c.date, &c.content)
+                &c.authorUrl, &c.authorIp, &c.date, &c.content, &cid)
             if err != nil {
                 fmt.Printf("err: %s\n" + err.Error())
+            }
+            if strings.Contains(c.content, "Honesty is the rarest wealth anyone can possess") ||
+                strings.Contains(c.content, "I do that you are going to be elaborating more on this issue") {
+                fmt.Printf("spam comment, skipping. id=%d, text=%q\n", cid, c.content)
+                continue
             }
             c.postId_sqlite = p.id_sqlite
             comms = append(comms, &c)
