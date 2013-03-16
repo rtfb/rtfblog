@@ -1,5 +1,6 @@
 rtfblog
 server.log
+server.conf
 vim-session
 testdata/foo.db
 testdata/legacy-db.conf

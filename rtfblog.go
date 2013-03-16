@@ -9,10 +9,12 @@ import (
     "encoding/json"
     "fmt"
     "io"
+    "io/ioutil"
     "log"
     "mime/multipart"
     "net/http"
     "os"
+    "path/filepath"
     "strconv"
     "strings"
     "time"
@@ -55,10 +57,36 @@ type Entry struct {
     Comments []*Comment
 }
 
+type SrvConfig map[string]interface{}
+
 var (
     dataset    string
+    conf       SrvConfig
     testLoader func() []*Entry
 )
+
+func (c *SrvConfig) Get(key string) string {
+    val, ok := (*c)[key].(string)
+    if !ok {
+        return ""
+    }
+    return val
+}
+
+func loadConfig() (config SrvConfig) {
+    root, _ := filepath.Split(filepath.Clean(os.Args[0]))
+    b, err := ioutil.ReadFile(filepath.Join(root, "server.conf"))
+    if err != nil {
+        println(err.Error())
+        return SrvConfig{}
+    }
+    err = json.Unmarshal(b, &config)
+    if err != nil {
+        println(err.Error())
+        return SrvConfig{}
+    }
+    return
+}
 
 func (e *Entry) HasTags() bool {
     return len(e.Tags) > 0
@@ -643,11 +671,11 @@ func comment_handler(ctx *web.Context) {
 }
 
 func serve_favicon(ctx *web.Context) {
-    http.ServeFile(ctx, ctx.Request, "static/rtfb.png")
+    http.ServeFile(ctx, ctx.Request, conf.Get("favicon"))
 }
 
 func runServer() {
-    f, err := os.Create("server.log")
+    f, err := os.Create(conf.Get("log"))
     if err != nil {
         println(err.Error())
         return
@@ -663,9 +691,9 @@ func runServer() {
     web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)
-    web.Config.StaticDir = "static"
-    web.Config.CookieSecret = "foobarbaz" // XXX: don't forget to change that!
-    web.Run(":8080")
+    web.Config.StaticDir = conf.Get("staticdir")
+    web.Config.CookieSecret = conf.Get("cookie_secret")
+    web.Run(conf.Get("port"))
 }
 
 func loadData(db string) []*Entry {
@@ -684,6 +712,7 @@ func loadData(db string) []*Entry {
 }
 
 func main() {
-    dataset = "testdata/foo.db"
+    conf = loadConfig()
+    dataset = conf.Get("database")
     runServer()
 }
