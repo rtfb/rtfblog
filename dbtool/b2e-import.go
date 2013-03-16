@@ -102,6 +102,8 @@ func fixupBody(obody string) (nbody string) {
     nbody = fixupTt(nbody)
     nbody = fixupOl(nbody)
     nbody = fixupImgLinks(nbody)
+    nbody = strings.Replace(nbody, "pasistatyi", "pasistatyti", -1)
+    nbody = strings.Replace(nbody, "sąngražinės", "sangrąžinės", -1)
     return
 }
 
