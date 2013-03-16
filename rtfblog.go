@@ -643,7 +643,7 @@ func comment_handler(ctx *web.Context) {
 }
 
 func serve_favicon(ctx *web.Context) {
-    http.ServeFile(ctx, ctx.Request, "static/snifter.png")
+    http.ServeFile(ctx, ctx.Request, "static/rtfb.png")
 }
 
 func runServer() {
