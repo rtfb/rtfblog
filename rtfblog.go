@@ -3,7 +3,9 @@ package main
 import (
     "bufio"
     "crypto/md5"
+    "crypto/sha1"
     "database/sql"
+    "encoding/base64"
     "encoding/json"
     "fmt"
     "io"
@@ -353,8 +355,30 @@ func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
 
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
+    db, err := sql.Open("sqlite3", dataset)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer db.Close()
+    row := db.QueryRow(`select salt, passwd, full_name, email, www
+                        from author where disp_name=?`, uname)
+    var salt, passwdHash, fullName, email, www string
+    err = row.Scan(&salt, &passwdHash, &fullName, &email, &www)
+    if err == sql.ErrNoRows {
+        ctx.Redirect(http.StatusFound, "/login")
+        return
+    }
+    if err != nil {
+        fmt.Println(err.Error())
+        ctx.Redirect(http.StatusFound, "/login")
+        return
+    }
     passwd := ctx.Request.Form["passwd"][0]
-    if uname == "admin" && passwd == "asd" {
+    sha := sha1.New()
+    sha.Write([]byte(salt+passwd))
+    hash := base64.URLEncoding.EncodeToString(sha.Sum(nil))
+    if hash == passwdHash {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
         redir := ctx.Params["redirect_to"]
         if redir == "login" {
