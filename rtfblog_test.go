@@ -47,6 +47,7 @@ func mustContain(t *testing.T, page string, what string) {
 }
 
 func TestStartServer(t *testing.T) {
+    conf = loadConfig("server.conf")
     go runServer()
     time.Sleep(50 * time.Millisecond)
 }

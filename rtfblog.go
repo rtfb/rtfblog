@@ -73,11 +73,10 @@ func (c *SrvConfig) Get(key string) string {
     return val
 }
 
-func loadConfig() (config SrvConfig) {
-    root, _ := filepath.Split(filepath.Clean(os.Args[0]))
-    b, err := ioutil.ReadFile(filepath.Join(root, "server.conf"))
+func loadConfig(path string) (config SrvConfig) {
+    b, err := ioutil.ReadFile(path)
     if err != nil {
-        println(err.Error())
+        println("readconf: " + err.Error())
         return SrvConfig{}
     }
     err = json.Unmarshal(b, &config)
@@ -677,7 +676,7 @@ func serve_favicon(ctx *web.Context) {
 func runServer() {
     f, err := os.Create(conf.Get("log"))
     if err != nil {
-        println(err.Error())
+        println("create log: " + err.Error())
         return
     }
     logger := log.New(f, "", log.Ldate|log.Ltime)
@@ -712,7 +711,8 @@ func loadData(db string) []*Entry {
 }
 
 func main() {
-    conf = loadConfig()
+    root, _ := filepath.Split(filepath.Clean(os.Args[0]))
+    conf = loadConfig(filepath.Join(root, "server.conf"))
     dataset = conf.Get("database")
     runServer()
 }
