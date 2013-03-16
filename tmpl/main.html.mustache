@@ -37,7 +37,7 @@
             <hr />
             <div class="twelve columns content" id="content">
 {{#entries}}
-<h3 id="post" class="strong"><a href="{{Url}}">{{Title}}</a>
+<h3 id="post" class="strong twelve columns container"><a href="{{Url}}">{{Title}}</a>
 {{#AdminLogin}}
 <input
     id="edit-post-button"
@@ -50,7 +50,8 @@
 </h3>
 {{> author}}
 <hr />
-<div id="post-body">{{{Body}}}</div>
+<div id="post-body" class="nine columns container">{{{Body}}}</div>
+<div class="three columns container">&nbsp;</div>
     <div class="twelve columns container">
     {{#HasTags}}
     <div id="tags" class="ten columns alpha">

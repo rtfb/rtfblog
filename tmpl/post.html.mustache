@@ -76,7 +76,8 @@
 </h3>
 {{> author}}
 <hr />
-<div id="post-body">{{{Body}}}</div>
+<div id="post-body" class="nine columns container">{{{Body}}}</div>
+<div class="three columns container">&nbsp;</div>
     <div class="twelve columns container">
     {{#HasTags}}
     <div class="nine columns alpha" id="tags">
@@ -218,7 +219,7 @@
                 ></textarea>
         </div>
     </div>
-    <div><input type="submit" value="Submit" /></div>
+    <div class="twelve columns container"><input type="submit" value="Submit" /></div>
     </form>
 {{/entry}}
             </div>
