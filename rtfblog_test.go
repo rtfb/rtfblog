@@ -1,8 +1,14 @@
 package main
 
 import (
+    "crypto/rand"
+    "crypto/sha1"
+    "encoding/base64"
+    "fmt"
+    "io"
     "io/ioutil"
     "net/http"
+    "net/url"
     "regexp"
     "runtime/debug"
     "strings"
@@ -13,8 +19,36 @@ import (
     "code.google.com/p/go-html-transform/html/transform"
 )
 
+type Jar struct {
+    cookies []*http.Cookie
+}
+
 type T struct {
     *testing.T
+}
+
+var (
+    jar = new(Jar)
+    tclient = &http.Client{nil, nil, jar}
+)
+
+func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
+    jar.cookies = cookies
+}
+
+func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
+    return jar.cookies
+}
+
+func login() {
+    resp, err := tclient.PostForm("http://localhost:8080/login_submit", url.Values{
+        "uname": {"testuser"},
+        "passwd": {"testpasswd"},
+    })
+    if err != nil {
+        println(err.Error())
+    }
+    resp.Body.Close()
 }
 
 func (t T) failIf(cond bool, msg string, params ...interface{}) {
@@ -30,7 +64,7 @@ func (t T) failIf(cond bool, msg string, params ...interface{}) {
 }
 
 func curl(url string) string {
-    if r, err := http.Get("http://localhost:8080/" + url); err == nil {
+    if r, err := tclient.Get("http://localhost:8080/" + url); err == nil {
         b, err := ioutil.ReadAll(r.Body)
         r.Body.Close()
         if err == nil {
@@ -49,6 +83,10 @@ func mustContain(t *testing.T, page string, what string) {
 func TestStartServer(t *testing.T) {
     conf = loadConfig("server.conf")
     db = openDb(conf.Get("database"))
+    err := forgeTestUser("testuser", "testpasswd")
+    if err != nil {
+        t.Error("Failed to set up test account")
+    }
     go runServer()
     time.Sleep(50 * time.Millisecond)
 }
@@ -90,6 +128,12 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
     html := curl("")
     mustContain(t, html, "No entries")
     db = dbtemp
+}
+
+func TestLogin(t *testing.T) {
+    login()
+    html := curl("persikrausciau")
+    mustContain(t, html, "Logout")
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
@@ -273,4 +317,33 @@ func assertElem(t *testing.T, node *h5.Node, elem string) {
     if !strings.HasPrefix(node.Data(), elem) {
         T{t}.failIf(true, "<%s> expected, but <%s> found!", elem, node.Data())
     }
+}
+
+func encrypt(passwd string) (salt, hash string) {
+    b := make([]byte, 16)
+    n, err := io.ReadFull(rand.Reader, b)
+    if n != len(b) || err != nil {
+        fmt.Println("error:", err)
+        return
+    }
+    salt = base64.URLEncoding.EncodeToString(b)
+    sha := sha1.New()
+    sha.Write([]byte(salt + passwd))
+    hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
+    return
+}
+
+func forgeTestUser(uname, passwd string) error {
+    salt, passwdHash := encrypt(passwd)
+    updateStmt, err := db.Prepare(`update author set disp_name=?, salt=?, passwd=?
+                                   where id=?`)
+    if err != nil {
+        return err
+    }
+    defer updateStmt.Close()
+    _, err = updateStmt.Exec(uname, salt, passwdHash, 1)
+    if err != nil {
+        return err
+    }
+    return nil
 }
