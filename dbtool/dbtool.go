@@ -2,20 +2,17 @@ package main
 
 import (
     "bytes"
-    "crypto/rand"
-    "crypto/sha1"
     "database/sql"
-    "encoding/base64"
     "encoding/json"
     "flag"
     "fmt"
-    "io"
     "io/ioutil"
     "net/mail"
     "os"
     "path/filepath"
     "strings"
     "time"
+    "../util"
 
     _ "github.com/mattn/go-sqlite3"
 )
@@ -24,20 +21,6 @@ func usage() {
     fmt.Fprintf(os.Stderr, "usage: %s [params]\n", filepath.Base(os.Args[0]))
     flag.PrintDefaults()
     os.Exit(2)
-}
-
-func encrypt(passwd string) (salt, hash string) {
-    b := make([]byte, 16)
-    n, err := io.ReadFull(rand.Reader, b)
-    if n != len(b) || err != nil {
-        fmt.Println("error:", err)
-        return
-    }
-    salt = base64.URLEncoding.EncodeToString(b)
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
-    return
 }
 
 func init_db(fileName, uname, passwd, fullname, email, www string) {
@@ -105,7 +88,7 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
                            values(?, ?, ?, ?, ?, ?, ?)`)
     defer stmt.Close()
-    salt, passwdHash := encrypt(passwd)
+    salt, passwdHash := util.Encrypt(passwd)
     stmt.Exec(1, uname, salt, passwdHash, fullname, email, www)
 }
 

@@ -1,11 +1,6 @@
 package main
 
 import (
-    "crypto/rand"
-    "crypto/sha1"
-    "encoding/base64"
-    "fmt"
-    "io"
     "io/ioutil"
     "net/http"
     "net/url"
@@ -14,6 +9,7 @@ import (
     "strings"
     "testing"
     "time"
+    "./util"
 
     "code.google.com/p/go-html-transform/h5"
     "code.google.com/p/go-html-transform/html/transform"
@@ -319,22 +315,8 @@ func assertElem(t *testing.T, node *h5.Node, elem string) {
     }
 }
 
-func encrypt(passwd string) (salt, hash string) {
-    b := make([]byte, 16)
-    n, err := io.ReadFull(rand.Reader, b)
-    if n != len(b) || err != nil {
-        fmt.Println("error:", err)
-        return
-    }
-    salt = base64.URLEncoding.EncodeToString(b)
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
-    return
-}
-
 func forgeTestUser(uname, passwd string) error {
-    salt, passwdHash := encrypt(passwd)
+    salt, passwdHash := util.Encrypt(passwd)
     updateStmt, err := db.Prepare(`update author set disp_name=?, salt=?, passwd=?
                                    where id=?`)
     if err != nil {
