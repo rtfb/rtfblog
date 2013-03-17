@@ -8,6 +8,12 @@ import (
     "io"
 )
 
+func SaltAndPepper(salt, passwd string) string {
+    sha := sha1.New()
+    sha.Write([]byte(salt + passwd))
+    return base64.URLEncoding.EncodeToString(sha.Sum(nil))
+}
+
 func Encrypt(passwd string) (salt, hash string) {
     b := make([]byte, 16)
     n, err := io.ReadFull(rand.Reader, b)
@@ -16,8 +22,6 @@ func Encrypt(passwd string) (salt, hash string) {
         return
     }
     salt = base64.URLEncoding.EncodeToString(b)
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    hash = base64.URLEncoding.EncodeToString(sha.Sum(nil))
+    hash = SaltAndPepper(salt, passwd)
     return
 }

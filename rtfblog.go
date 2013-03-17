@@ -3,9 +3,7 @@ package main
 import (
     "bufio"
     "crypto/md5"
-    "crypto/sha1"
     "database/sql"
-    "encoding/base64"
     "encoding/json"
     "fmt"
     "io"
@@ -18,6 +16,7 @@ import (
     "strconv"
     "strings"
     "time"
+    "./util"
 
     "github.com/hoisie/web"
     "github.com/lye/mustache"
@@ -390,9 +389,7 @@ func login_handler(ctx *web.Context) {
         return
     }
     passwd := ctx.Request.Form["passwd"][0]
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    hash := base64.URLEncoding.EncodeToString(sha.Sum(nil))
+    hash := util.SaltAndPepper(salt, passwd)
     if hash == passwdHash {
         ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
         redir := ctx.Params["redirect_to"]
