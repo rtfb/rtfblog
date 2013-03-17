@@ -231,6 +231,9 @@ func xtractReferer(ctx *web.Context) string {
 
 func listOfPages(numPosts, currPage int) (list string) {
     numPages := numPosts / 5
+    if numPosts % 5 != 0 {
+        numPages += 1
+    }
     for p := 0; p < numPages; p++ {
         if p == currPage {
             list += fmt.Sprintf("%d\n", p+1)

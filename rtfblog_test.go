@@ -283,6 +283,19 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
     T{t}.failIf(len(nodes) != 5, "Not all posts have been rendered!")
 }
 
+func TestPostPager(t *testing.T) {
+    testLoader = func() []*Entry {
+        return []*Entry{{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, nil},
+            {},
+            {},
+            {},
+            {},
+            {},
+        }
+    }
+    mustContain(t, curl(""), "/page/2")
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
