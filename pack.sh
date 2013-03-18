@@ -21,4 +21,4 @@ cp stuff/images/* $package/static/
 ./dbtool/dbtool -db=./testdata/db.conf -src=./testdata/legacy-db.conf -notest
 cp ./testdata/foo.db $package/main.db
 
-tar cvf package.tar.gz $package
+tar czvf package.tar.gz $package
