@@ -7,9 +7,11 @@ if [ -d $package ] ; then
 fi
 
 mkdir -p $package/dbtool
+mkdir -p $package/util
 
 cp rtfblog.go $package
 cp rtfblog_test.go $package
+cp util/util.go $package/util
 cp dbtool/dbtool.go $package/dbtool
 cp dbtool/b2e-import.go $package/dbtool
 cp Makefile $package
