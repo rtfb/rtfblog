@@ -164,9 +164,12 @@
                         &nbsp;
                     </div>
                     <div id="comment-admin" style="text-align: right" class="four columns omega">
-                        <a href="/delete_comment?id={{CommentId}}&action=delete&redirect_to={{Url}}"
-                            onclick="return confirm('You are about to delete this comment!\nThis cannot be undone!')"
-                            ><img src="delete.gif" />Delete!</a>
+                        <input
+                            id="delete-comment-button-{{CommentId}}"
+                            type="button"
+                            onclick="deleteWithConfirm({{CommentId}}, '{{Url}}')"
+                            value="Delete!"
+                            />
                         <input
                             id="edit-comment-button-{{CommentId}}"
                             type="button"
@@ -270,6 +273,14 @@
             showElement('submit-comment-' + id, false);
             showElement('cancel-edit-comment-' + id, false);
             showElement('edit-comment-button-' + id, true);
+        }
+
+        function deleteWithConfirm(id, redirectTo) {
+            if (confirm('You are about to delete this comment!\nThis cannot be undone!')) {
+                var url = "/delete_comment?id=" + id
+                          + "&action=delete&redirect_to=" + redirectTo;
+                window.open(url, '_self', false);
+            }
         }
         </script>
     </body>
