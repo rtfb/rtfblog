@@ -11,5 +11,5 @@ all:
 	go build
 	./rtfblog
 
-format:
+fmt:
 	${GOFMT} -w ${GOFILES}
