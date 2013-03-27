@@ -25,7 +25,8 @@ import (
 )
 
 const (
-    MAX_FILE_SIZE = 50 * 1024 * 1024 // bytes
+    MAX_FILE_SIZE  = 50 * 1024 * 1024 // bytes
+    POSTS_PER_PAGE = 5
 )
 
 type Tag struct {
@@ -230,8 +231,8 @@ func xtractReferer(ctx *web.Context) string {
 }
 
 func listOfPages(numPosts, currPage int) (list string) {
-    numPages := numPosts / 5
-    if numPosts%5 != 0 {
+    numPages := numPosts / POSTS_PER_PAGE
+    if numPosts%POSTS_PER_PAGE != 0 {
         numPages += 1
     }
     for p := 0; p < numPages; p++ {
@@ -249,8 +250,8 @@ func renderPage(ctx *web.Context, path string, data map[string]interface{}, post
     if err != nil {
         pgNo = 1
     }
-    lwr := (pgNo - 1) * 5
-    upr := pgNo * 5
+    lwr := (pgNo - 1) * POSTS_PER_PAGE
+    upr := pgNo * POSTS_PER_PAGE
     if lwr >= len(posts) {
         lwr = 0
     }
@@ -265,7 +266,7 @@ func renderPage(ctx *web.Context, path string, data map[string]interface{}, post
 
 func handler(ctx *web.Context, path string) {
     posts := loadData()
-    postsPerPage := 5
+    postsPerPage := POSTS_PER_PAGE
     if postsPerPage >= len(posts) {
         postsPerPage = len(posts)
     }
@@ -275,7 +276,7 @@ func handler(ctx *web.Context, path string) {
     }
     var basicData = map[string]interface{}{
         "PageTitle":       "",
-        "NeedPagination":  len(posts) > 5,
+        "NeedPagination":  len(posts) > POSTS_PER_PAGE,
         "ListOfPages":     listOfPages(len(posts), 0),
         "entries":         posts[:postsPerPage],
         "sidebar_entries": posts[:recentPosts],

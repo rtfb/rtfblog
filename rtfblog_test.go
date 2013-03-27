@@ -281,7 +281,7 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
         }
     }
     nodes := query0(t, "", "#post")
-    T{t}.failIf(len(nodes) != 5, "Not all posts have been rendered!")
+    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
 }
 
 func TestPostPager(t *testing.T) {
