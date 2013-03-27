@@ -244,6 +244,25 @@ func listOfPages(numPosts, currPage int) (list string) {
     return
 }
 
+func renderPage(ctx *web.Context, path string, data map[string]interface{}, posts []*Entry) {
+    pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
+    if err != nil {
+        pgNo = 1
+    }
+    lwr := (pgNo - 1) * 5
+    upr := pgNo * 5
+    if lwr >= len(posts) {
+        lwr = 0
+    }
+    if upr >= len(posts) {
+        upr = len(posts)
+    }
+    data["PageTitle"] = "Velkam"
+    data["entries"] = posts[lwr:upr]
+    data["ListOfPages"] = listOfPages(len(posts), pgNo-1)
+    render(ctx, "main", data)
+}
+
 func handler(ctx *web.Context, path string) {
     posts := loadData()
     postsPerPage := 5
@@ -263,6 +282,10 @@ func handler(ctx *web.Context, path string) {
     }
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
+    if strings.HasPrefix(path, "page/") {
+        renderPage(ctx, path, basicData, posts)
+        return
+    }
     if path == "" {
         basicData["PageTitle"] = "Velkam"
         render(ctx, "main", basicData)
@@ -316,24 +339,6 @@ func handler(ctx *web.Context, path string) {
                 return
             }
         }
-    } else if strings.HasPrefix(path, "page/") {
-        pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
-        if err != nil {
-            pgNo = 1
-        }
-        lwr := (pgNo - 1) * 5
-        upr := pgNo * 5
-        if lwr >= len(posts) {
-            lwr = 0
-        }
-        if upr >= len(posts) {
-            upr = len(posts)
-        }
-        basicData["PageTitle"] = "Velkam"
-        basicData["entries"] = posts[lwr:upr]
-        basicData["ListOfPages"] = listOfPages(len(posts), pgNo-1)
-        render(ctx, "main", basicData)
-        return
     } else {
         for _, e := range posts {
             if e.Url == path {
