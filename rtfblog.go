@@ -303,6 +303,19 @@ func handler(ctx *web.Context, path string) {
         }
         render(ctx, "edit_post", basicData)
         return
+    } else if path == "load_comments" {
+        post := ctx.Params["post"]
+        for _, p := range posts {
+            if p.Url == post {
+                b, err := json.Marshal(p)
+                if err != nil {
+                    fmt.Println(err.Error())
+                    return
+                }
+                ctx.WriteString(string(b))
+                return
+            }
+        }
     } else if strings.HasPrefix(path, "page/") {
         pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
         if err != nil {
@@ -402,22 +415,6 @@ func login_handler(ctx *web.Context) {
         ctx.Redirect(http.StatusFound, "/"+redir)
     } else {
         ctx.Redirect(http.StatusFound, "/login")
-    }
-}
-
-func load_comments_handler(ctx *web.Context) {
-    post := ctx.Params["post"]
-    posts := loadData()
-    for _, p := range posts {
-        if p.Url == post {
-            b, err := json.Marshal(p)
-            if err != nil {
-                fmt.Println(err.Error())
-                return
-            }
-            ctx.WriteString(string(b))
-            return
-        }
     }
 }
 
@@ -646,7 +643,6 @@ func runServer() {
     logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Post("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
-    web.Get("/load_comments", load_comments_handler)
     web.Get("/delete_comment", delete_comment_handler)
     web.Post("/moderate_comment", moderate_comment_handler)
     web.Post("/submit_post", submit_post_handler)
