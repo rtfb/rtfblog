@@ -1,6 +1,7 @@
 package main
 
 import (
+    "../util"
     "bytes"
     "database/sql"
     "encoding/json"
@@ -12,7 +13,6 @@ import (
     "path/filepath"
     "strings"
     "time"
-    "../util"
 
     _ "github.com/mattn/go-sqlite3"
 )

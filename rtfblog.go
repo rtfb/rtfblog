@@ -1,6 +1,7 @@
 package main
 
 import (
+    "./util"
     "bufio"
     "crypto/md5"
     "database/sql"
@@ -16,7 +17,6 @@ import (
     "strconv"
     "strings"
     "time"
-    "./util"
 
     "github.com/hoisie/web"
     "github.com/lye/mustache"
@@ -231,7 +231,7 @@ func xtractReferer(ctx *web.Context) string {
 
 func listOfPages(numPosts, currPage int) (list string) {
     numPages := numPosts / 5
-    if numPosts % 5 != 0 {
+    if numPosts%5 != 0 {
         numPages += 1
     }
     for p := 0; p < numPages; p++ {

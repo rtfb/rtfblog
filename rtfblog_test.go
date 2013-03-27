@@ -1,6 +1,7 @@
 package main
 
 import (
+    "./util"
     "io/ioutil"
     "net/http"
     "net/url"
@@ -9,7 +10,6 @@ import (
     "strings"
     "testing"
     "time"
-    "./util"
 
     "code.google.com/p/go-html-transform/h5"
     "code.google.com/p/go-html-transform/html/transform"
@@ -24,7 +24,7 @@ type T struct {
 }
 
 var (
-    jar = new(Jar)
+    jar     = new(Jar)
     tclient = &http.Client{nil, nil, jar}
 )
 
@@ -38,7 +38,7 @@ func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
 
 func login() {
     resp, err := tclient.PostForm("http://localhost:8080/login_submit", url.Values{
-        "uname": {"testuser"},
+        "uname":  {"testuser"},
         "passwd": {"testpasswd"},
     })
     if err != nil {
