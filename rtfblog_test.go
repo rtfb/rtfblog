@@ -296,6 +296,28 @@ func TestPostPager(t *testing.T) {
     mustContain(t, curl(""), "/page/2")
 }
 
+func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
+    testLoader = func() []*Entry {
+        return []*Entry{{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, nil},
+            {},
+        }
+    }
+    login()
+    nodes := query(t, "", "#edit-post-button")
+    T{t}.failIf(len(nodes) != 2, "Not all posts have Edit button!")
+}
+
+func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
+    comm := []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
+    item := &Entry{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, comm}
+    testLoader = func() []*Entry {
+        return []*Entry{item}
+    }
+    login()
+    node := query1(t, item.Url, "#edit-comment-form")
+    assertElem(t, node, "form")
+}
+
 func query(t *testing.T, url string, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
