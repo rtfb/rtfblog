@@ -271,7 +271,8 @@ func TestLoginPage(t *testing.T) {
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
     testLoader = func() []*Entry {
-        return []*Entry{{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, nil},
+        return []*Entry{
+            mkEntry(nil),
             {},
             {},
             {},
@@ -285,7 +286,8 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
 
 func TestPostPager(t *testing.T) {
     testLoader = func() []*Entry {
-        return []*Entry{{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, nil},
+        return []*Entry{
+            mkEntry(nil),
             {},
             {},
             {},
@@ -298,7 +300,8 @@ func TestPostPager(t *testing.T) {
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
     testLoader = func() []*Entry {
-        return []*Entry{{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, nil},
+        return []*Entry{
+            mkEntry(nil),
             {},
         }
     }
@@ -309,13 +312,19 @@ func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     comm := []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
-    item := &Entry{"", "LD", "", "B", "labadena", "RB", []*Tag{{"u", "n"}}, comm}
+    item := mkEntry(comm)
     testLoader = func() []*Entry {
         return []*Entry{item}
     }
     login()
     node := query1(t, item.Url, "#edit-comment-form")
     assertElem(t, node, "form")
+}
+
+func mkEntry(comments []*Comment) *Entry {
+    return &Entry{
+        "", "HI", "", "Body", "RawBody", "hello", []*Tag{{"u", "n"}}, comments,
+    }
 }
 
 func query(t *testing.T, url string, query string) []*h5.Node {
