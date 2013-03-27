@@ -286,20 +286,21 @@ func handler(ctx *web.Context, path string) {
         renderPage(ctx, path, basicData, posts)
         return
     }
-    if path == "" {
+    switch path {
+    case "":
         basicData["PageTitle"] = "Velkam"
         render(ctx, "main", basicData)
         return
-    } else if path == "admin" {
+    case "admin":
         basicData["PageTitle"] = "Admin Console"
         render(ctx, "admin", basicData)
         return
-    } else if path == "archive" {
+    case "archive":
         basicData["PageTitle"] = "Archive"
         basicData["all_entries"] = posts
         render(ctx, "archive", basicData)
         return
-    } else if path == "login" {
+    case "login":
         referer := xtractReferer(ctx)
         if referer == "login" {
             basicData["LoginFailed"] = true
@@ -309,11 +310,11 @@ func handler(ctx *web.Context, path string) {
         basicData["PageTitle"] = "Login"
         render(ctx, "login", basicData)
         return
-    } else if path == "logout" {
+    case "logout":
         ctx.SetSecureCookie("adminlogin", "", 0)
         ctx.Redirect(http.StatusFound, "/"+xtractReferer(ctx))
         return
-    } else if path == "edit_post" {
+    case "edit_post":
         basicData["PageTitle"] = "Edit Post"
         post := ctx.Params["post"]
         for _, e := range posts {
@@ -326,7 +327,7 @@ func handler(ctx *web.Context, path string) {
         }
         render(ctx, "edit_post", basicData)
         return
-    } else if path == "load_comments" {
+    case "load_comments":
         post := ctx.Params["post"]
         for _, p := range posts {
             if p.Url == post {
@@ -339,7 +340,7 @@ func handler(ctx *web.Context, path string) {
                 return
             }
         }
-    } else {
+    default:
         for _, e := range posts {
             if e.Url == path {
                 basicData["PageTitle"] = e.Title
