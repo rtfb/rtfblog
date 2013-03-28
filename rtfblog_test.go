@@ -24,8 +24,17 @@ type T struct {
 }
 
 var (
-    jar     = new(Jar)
-    tclient = &http.Client{nil, nil, jar}
+    jar        = new(Jar)
+    tclient    = &http.Client{nil, nil, jar}
+    test_comm  = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
+    test_posts = []*Entry{
+        {"Author", "Hi1", "2013-03-19", "Body1", "RawBody1", "hello1", []*Tag{{"u1", "n1"}}, test_comm},
+        {"Author", "Hi2", "2013-03-19", "Body2", "RawBody2", "hello2", []*Tag{{"u2", "n2"}}, test_comm},
+        {"Author", "Hi3", "2013-03-19", "Body3", "RawBody3", "hello3", []*Tag{{"u3", "n3"}}, test_comm},
+        {"Author", "Hi4", "2013-03-19", "Body4", "RawBody4", "hello4", []*Tag{{"u4", "n4"}}, test_comm},
+        {"Author", "Hi5", "2013-03-19", "Body5", "RawBody5", "hello5", []*Tag{{"u5", "n5"}}, test_comm},
+        {"Author", "Hi6", "2013-03-19", "Body6", "RawBody6", "hello6", []*Tag{{"u6", "n6"}}, test_comm},
+    }
 )
 
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
@@ -83,6 +92,9 @@ func TestStartServer(t *testing.T) {
     if err != nil {
         t.Error("Failed to set up test account")
     }
+    testLoader = func() []*Entry {
+        return test_posts
+    }
     go runServer()
     time.Sleep(50 * time.Millisecond)
 }
@@ -120,15 +132,18 @@ func TestBasicStructure(t *testing.T) {
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
     dbtemp := db
+    loaderTemp := testLoader
+    testLoader = nil
     db = nil
     html := curl("")
     mustContain(t, html, "No entries")
     db = dbtemp
+    testLoader = loaderTemp
 }
 
 func TestLogin(t *testing.T) {
     login()
-    html := curl("persikrausciau")
+    html := curl(test_posts[0].Url)
     mustContain(t, html, "Logout")
 }
 
@@ -186,8 +201,7 @@ func checkAuthorSection(t T, node *h5.Node) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
-    posts := loadData()
-    for _, e := range posts {
+    for _, e := range test_posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")
         if len(node.Children) == 0 {
@@ -198,8 +212,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
 }
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
-    posts := loadData()
-    for _, p := range posts {
+    for _, p := range test_posts {
         nodes := query0(t, p.Url, "#comments")
         if len(nodes) != 1 {
             t.Fatal("There should be only one comments section!")
@@ -241,8 +254,7 @@ func emptyChildren(node *h5.Node) bool {
 }
 
 func TestTagFormattingInPostPage(t *testing.T) {
-    posts := loadData()
-    for _, e := range posts {
+    for _, e := range test_posts {
         nodes := query0(t, e.Url, "#tags")
         if len(nodes) > 0 {
             for _, node := range nodes {
@@ -257,8 +269,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 }
 
 func TestPostPageHasCommentEditor(t *testing.T) {
-    posts := loadData()
-    for _, p := range posts {
+    for _, p := range test_posts {
         node := query1(t, p.Url, "#comment")
         assertElem(t, node, "form")
     }
@@ -270,61 +281,24 @@ func TestLoginPage(t *testing.T) {
 }
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
-    testLoader = func() []*Entry {
-        return []*Entry{
-            mkEntry(nil),
-            {},
-            {},
-            {},
-            {},
-            {},
-        }
-    }
     nodes := query0(t, "", "#post")
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
 }
 
 func TestPostPager(t *testing.T) {
-    testLoader = func() []*Entry {
-        return []*Entry{
-            mkEntry(nil),
-            {},
-            {},
-            {},
-            {},
-            {},
-        }
-    }
     mustContain(t, curl(""), "/page/2")
 }
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
-    testLoader = func() []*Entry {
-        return []*Entry{
-            mkEntry(nil),
-            {},
-        }
-    }
     login()
     nodes := query(t, "", "#edit-post-button")
-    T{t}.failIf(len(nodes) != 2, "Not all posts have Edit button!")
+    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
-    comm := []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
-    item := mkEntry(comm)
-    testLoader = func() []*Entry {
-        return []*Entry{item}
-    }
     login()
-    node := query1(t, item.Url, "#edit-comment-form")
+    node := query1(t, test_posts[0].Url, "#edit-comment-form")
     assertElem(t, node, "form")
-}
-
-func mkEntry(comments []*Comment) *Entry {
-    return &Entry{
-        "", "HI", "", "Body", "RawBody", "hello", []*Tag{{"u", "n"}}, comments,
-    }
 }
 
 func query(t *testing.T, url string, query string) []*h5.Node {
