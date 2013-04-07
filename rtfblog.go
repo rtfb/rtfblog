@@ -414,7 +414,7 @@ func login_handler(ctx *web.Context) {
     passwd := ctx.Request.Form["passwd"][0]
     hash := util.SaltAndPepper(salt, passwd)
     if hash == passwdHash {
-        ctx.SetSecureCookie("adminlogin", "yesplease", int64(time.Hour*24))
+        ctx.SetSecureCookie("adminlogin", "yesplease", 3600*24)
         redir := ctx.Params["redirect_to"]
         if redir == "login" {
             redir = ""
