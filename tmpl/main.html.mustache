@@ -37,17 +37,7 @@
             <hr />
             <div class="twelve columns content" id="content">
 {{#entries}}
-<h3 id="post" class="strong twelve columns container"><a href="/{{Url}}">{{Title}}</a>
-{{#AdminLogin}}
-<input
-    id="edit-post-button"
-    type="button"
-    class="inline"
-    onclick="location.href = '/edit_post?post={{Url}}'"
-    value="Edit"
-    />
-{{/AdminLogin}}
-</h3>
+{{> post-title}}
 {{> author}}
 <hr />
 <div id="post-body" class="nine columns container">{{{Body}}}</div>
