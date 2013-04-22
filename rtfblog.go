@@ -21,7 +21,7 @@ import (
     "github.com/hoisie/web"
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
-    "github.com/russross/blackfriday"
+    "github.com/rtfb/blackfriday"
 )
 
 const (
