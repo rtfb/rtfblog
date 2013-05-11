@@ -18,6 +18,7 @@ import (
     "strings"
     "time"
 
+    "github.com/gorilla/feeds"
     "github.com/hoisie/web"
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
@@ -27,6 +28,7 @@ import (
 const (
     MAX_FILE_SIZE  = 50 * 1024 * 1024 // bytes
     POSTS_PER_PAGE = 5
+    NUM_FEED_ITEMS = 3
 )
 
 type Tag struct {
@@ -264,6 +266,41 @@ func renderPage(ctx *web.Context, path string, data map[string]interface{}, post
     render(ctx, "main", data)
 }
 
+func produceFeedXml(ctx *web.Context, posts []*Entry) {
+    url := conf.Get("url") + conf.Get("port")
+    blogTitle := conf.Get("blog_title")
+    descr := conf.Get("blog_descr")
+    author := conf.Get("author")
+    authorEmail := conf.Get("email")
+    now := time.Now()
+    feed := &feeds.Feed{
+        Title:       blogTitle,
+        Link:        &feeds.Link{Href: url},
+        Description: descr,
+        Author:      &feeds.Author{author, authorEmail},
+        Created:     now,
+    }
+    numItems := NUM_FEED_ITEMS
+    if numItems > len(posts) {
+        numItems = len(posts)
+    }
+    for _, p := range posts[:numItems] {
+        item := feeds.Item{
+            Title:       p.Title,
+            Link:        &feeds.Link{Href: p.Url},
+            Description: p.Body,
+            Author:      &feeds.Author{p.Author, authorEmail},
+            Created:     now,
+        }
+        feed.Items = append(feed.Items, &item)
+    }
+    rss, err := feed.ToRss()
+    if err != nil {
+        fmt.Println(err.Error())
+    }
+    ctx.WriteString(rss)
+}
+
 func handler(ctx *web.Context, path string) {
     posts := loadData()
     postsPerPage := POSTS_PER_PAGE
@@ -341,6 +378,9 @@ func handler(ctx *web.Context, path string) {
                 return
             }
         }
+    case "feed.xml":
+        produceFeedXml(ctx, posts)
+        return
     default:
         for _, e := range posts {
             if e.Url == path {
