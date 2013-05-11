@@ -10,13 +10,11 @@
         <link rel="stylesheet" href="/css/skeleton.css">
         <link rel="stylesheet" href="/css/layout.css">
         <link rel="stylesheet" href="/css/pagedown.css">
+        <link rel="stylesheet" href="/css/speech-bubble.css">
         <script type="text/javascript" src="/js/Markdown.Converter.js"></script>
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
         <style type="text/css">
-            .comment-body-container {
-                background: #eee;
-            }
             .comment-body-container * img {
                 max-height: 500px;
                 max-width: 500px;
@@ -24,9 +22,18 @@
             #comment-container {
                 position: relative;
             }
+            #bubble-container {
+                position: relative;
+                left: -30px;
+                float: right;
+            }
             #commenter-avatar {
-                float: left;
-                margin-right: 8px;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            #avatar-container {
+                margin: 1em 0 3em;
             }
             #commenter {
                 position: relative;
@@ -101,23 +108,27 @@
         <div class="twelve columns">
             {{#Comments}}
             <div id="comment-container">
-                <img id="commenter-avatar" src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
-                <div id="commenter">
-                    <p><b>{{Name}}</b>
-                    {{#AdminLogin}}
-                    &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt;
-                    {{/AdminLogin}}
-                    <br />
-                    <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
-                    </p>
+                <div id="avatar-container" class="two columns alpha">
+                    <img id="commenter-avatar" src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
                 </div>
-                <div id="comment-text-{{CommentId}}"
-                    class="comment-body-container"
-                    {{#AdminLogin}}
-                    onclick="toggleEdit('{{CommentId}}')"
-                    {{/AdminLogin}}
-                    >
-                    {{{Body}}}
+                <div id="bubble-container" class="ten columns omega">
+                    <div id="comment-text-{{CommentId}}"
+                        class="comment-body-container speech-bubble left"
+                        {{#AdminLogin}}
+                        onclick="toggleEdit('{{CommentId}}')"
+                        {{/AdminLogin}}
+                        >
+                        <div id="commenter">
+                            <p><b>{{Name}}</b>
+                            {{#AdminLogin}}
+                            &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt;
+                            {{/AdminLogin}}
+                            <br />
+                            <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
+                            </p>
+                        </div>
+                        {{{Body}}}
+                    </div>
                 </div>
                 {{#AdminLogin}}
                 <form
@@ -171,8 +182,7 @@
                 </form>
                 {{/AdminLogin}}
             </div>
-            <br />
-            <hr />
+            <br class="clear" />
             {{/Comments}}
         </div>
         {{/HasComments}}

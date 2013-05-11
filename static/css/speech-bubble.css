@@ -1,0 +1,60 @@
+/*
+ * Taken from here and slightly modified:
+ * http://nicolasgallagher.com/pure-css-speech-bubbles/demo/
+ */
+.speech-bubble {
+    position:relative;
+    padding:15px;
+    margin:1em 0 3em;
+    border:1px solid #ccc;
+    color:#333;
+    background:#fff;
+    /* css3 */
+    -webkit-border-radius:10px;
+    -moz-border-radius:10px;
+    border-radius:10px;
+}
+.speech-bubble.left {
+    margin-left:30px;
+}
+.speech-bubble:before {
+    content:"";
+    position:absolute;
+    bottom:-20px; /* value = - border-top-width - border-bottom-width */
+    left:40px; /* controls horizontal position */
+    border-width:20px 20px 0;
+    border-style:solid;
+    border-color:#ccc transparent;
+    /* reduce the damage in FF3.0 */
+    display:block;
+    width:0;
+}
+/* creates the smaller  triangle */
+.speech-bubble:after {
+    content:"";
+    position:absolute;
+    bottom:-13px; /* value = - border-top-width - border-bottom-width */
+    left:47px; /* value = (:before left) + (:before border-left) - (:after border-left) */
+    border-width:13px 13px 0;
+    border-style:solid;
+    border-color:#fff transparent;
+    /* reduce the damage in FF3.0 */
+    display:block;
+    width:0;
+}
+/* creates the larger triangle */
+.speech-bubble.left:before {
+    top:10px; /* controls vertical position */
+    bottom:auto;
+    left:-30px; /* value = - border-left-width - border-right-width */
+    border-width:15px 30px 15px 0;
+    border-color:transparent #ccc;
+}
+/* creates the smaller  triangle */
+.speech-bubble.left:after {
+    top:12px; /* value = (:before top) + (:before border-top) - (:after border-top) */
+    bottom:auto;
+    left:-27px; /* value = - border-left-width - border-right-width */
+    border-width:13px 27px 13px 0;
+    border-color:transparent #fff;
+}
