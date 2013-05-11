@@ -236,7 +236,7 @@ func checkCommentsSection(t T, node *h5.Node) {
         headers := transform.NewSelectorQuery("#comment-container").Apply(node)
         t.failIf(len(headers) == 0,
             "Comment header not found in section: %q", node.String())
-        bodies := transform.NewSelectorQuery(".body-container").Apply(node)
+        bodies := transform.NewSelectorQuery(".comment-body-container").Apply(node)
         t.failIf(len(bodies) == 0,
             "Comment body not found in section: %q", node.String())
     }

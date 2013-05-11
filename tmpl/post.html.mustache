@@ -14,7 +14,7 @@
         <script type="text/javascript" src="/js/Markdown.Sanitizer.js"></script>
         <script type="text/javascript" src="/js/Markdown.Editor.js"></script>
         <style type="text/css">
-            .body-container {
+            .comment-body-container {
                 background: #eee;
             }
             #comment-container {
@@ -111,7 +111,7 @@
                     </p>
                 </div>
                 <div id="comment-text-{{CommentId}}"
-                    class="body-container"
+                    class="comment-body-container"
                     {{#AdminLogin}}
                     onclick="toggleEdit('{{CommentId}}')"
                     {{/AdminLogin}}
