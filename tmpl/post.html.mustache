@@ -55,6 +55,22 @@
             #post-body * img {
                 max-width: 100%;
             }
+            .shadow {
+                -moz-box-shadow: inset 0 0 10px #000000;
+                -webkit-box-shadow: inset 0 0 10px #000000;
+                box-shadow: inset 0 0 10px #000000;
+                border-radius: 3px;
+                -moz-border-radius: 3px;
+                -webkit-border-radius: 3px;
+                display: inline-block
+            }
+            .shadow img {
+                z-index: -1;
+                border-radius: 3px;
+                -moz-border-radius: 3px;
+                -webkit-border-radius: 3px;
+                position: relative
+            }
         </style>
     </head>
     <body>
@@ -109,7 +125,9 @@
             {{#Comments}}
             <div id="comment-container">
                 <div id="avatar-container" class="two columns alpha">
-                    <img id="commenter-avatar" src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
+                    <div class="shadow">
+                        <img id="commenter-avatar" src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
+                    </div>
                 </div>
                 <div id="bubble-container" class="ten columns omega">
                     <div id="comment-text-{{CommentId}}"
