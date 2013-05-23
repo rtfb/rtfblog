@@ -119,7 +119,15 @@
                         {{/AdminLogin}}
                         >
                         <div id="commenter">
-                            <p><strong>{{Name}}</strong>
+                            <p>
+                            <strong>
+                                {{#Website}}
+                                <a href="{{Website}}">{{Name}}</a>
+                                {{/Website}}
+                                {{^Website}}
+                                {{Name}}
+                                {{/Website}}
+                            </strong>
                             {{#AdminLogin}}
                             &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt;
                             {{/AdminLogin}}
