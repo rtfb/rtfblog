@@ -194,7 +194,7 @@ func checkAuthorSection(t T, node *h5.Node) {
     t.failIf(m == "", "No date found in author section!")
     doc, err := transform.NewDoc(node.String())
     t.failIf(err != nil, "Error parsing author section!")
-    q := transform.NewSelectorQuery("b")
+    q := transform.NewSelectorQuery("strong")
     n2 := q.Apply(doc)
     t.failIf(len(n2) != 1, "Author node not found in section: %q", node.String())
     t.failIf(n2[0].Children == nil, "Author node not found in section: %q", node.String())
@@ -229,7 +229,7 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
 
 func checkCommentsSection(t T, node *h5.Node) {
     noComments := transform.NewSelectorQuery("p").Apply(node)
-    comments := transform.NewSelectorQuery("b").Apply(node)
+    comments := transform.NewSelectorQuery("strong").Apply(node)
     t.failIf(len(noComments) == 0 && len(comments) == 0,
         "Comments node not found in section: %q", node.String())
     if len(comments) > 0 {
