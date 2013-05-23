@@ -301,7 +301,7 @@ func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     assertElem(t, node, "form")
 }
 
-func query(t *testing.T, url string, query string) []*h5.Node {
+func query(t *testing.T, url, query string) []*h5.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
         t.Fatalf("No nodes found: %q", query)
@@ -309,7 +309,7 @@ func query(t *testing.T, url string, query string) []*h5.Node {
     return nodes
 }
 
-func query0(t *testing.T, url string, query string) []*h5.Node {
+func query0(t *testing.T, url, query string) []*h5.Node {
     html := curl(url)
     doc, err := transform.NewDoc(html)
     if err != nil {
@@ -319,7 +319,7 @@ func query0(t *testing.T, url string, query string) []*h5.Node {
     return q.Apply(doc)
 }
 
-func query1(t *testing.T, url string, q string) *h5.Node {
+func query1(t *testing.T, url, q string) *h5.Node {
     nodes := query(t, url, q)
     if len(nodes) > 1 {
         t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
