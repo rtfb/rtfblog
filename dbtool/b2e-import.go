@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "fmt"
     "io/ioutil"
+    "regexp"
     "strings"
     "time"
 
@@ -59,6 +60,8 @@ type User struct {
 type DbConfig map[string]string
 
 func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
+    asterisk := regexp.MustCompile(`(\n\[\*\](.*)\n)`)
+    links := regexp.MustCompile(`silavinimui:\r\n`)
     rows, err := mconn.Query(`select post_ID, post_datecreated, post_content,
                                      post_title, post_urltitle
                               from evo_items__item
@@ -87,6 +90,14 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
             return posts, err
         }
         defer stmt.Close()
+        if p.url == "arrr" {
+            p.body = asterisk.ReplaceAllString(p.body, "$1\n")
+        }
+        if p.url == "uzreferenduma-lt-the-good-the-bad-and-the-ugly" {
+            prefix := links.FindStringIndex(p.body)
+            startLinks := prefix[1]
+            p.body = p.body[:startLinks] + fixupLinks(p.body[startLinks:startLinks+357]) + p.body[startLinks+357:]
+        }
         newBody := fixupBody(p.body)
         result, err := stmt.Exec(1, p.title, p.date.Unix(), p.url, newBody)
         p.id_sqlite, _ = result.LastInsertId()
@@ -95,6 +106,20 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
     }
     xaction.Commit()
     return posts, err
+}
+
+func fixupLinks(olinks string) (nlinks string) {
+    lst := strings.Split(olinks, "\n")
+    nlst := make([]string, 0, len(lst))
+    for _, line := range lst {
+        s := strings.TrimSpace(line)
+        if s == "" {
+            continue
+        }
+        nlst = append(nlst, fmt.Sprintf(" - %s\n", s))
+    }
+    nlinks = "\n" + strings.Join(nlst, "\n") + "\n"
+    return
 }
 
 func fixupBody(obody string) (nbody string) {
