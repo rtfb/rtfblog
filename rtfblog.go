@@ -23,6 +23,7 @@ import (
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
     "github.com/rtfb/blackfriday"
+    email "github.com/ungerik/go-mail"
 )
 
 const (
@@ -674,7 +675,32 @@ func comment_handler(ctx *web.Context) {
     commentId, _ := result.LastInsertId()
     xaction.Commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
+    url := conf.Get("url") + conf.Get("port") + redir
+    name := ctx.Params["name"]
+    email := ctx.Params["email"]
+    website := ctx.Params["website"]
+    go SendEmail(name, email, website, body, url, refUrl)
     ctx.Redirect(http.StatusFound, redir)
+}
+
+func SendEmail(author, mail, www, comment, url, postTitle string) {
+    gmailSenderAcct := conf.Get("notif_sender_acct")
+    gmailSenderPasswd := conf.Get("notif_sender_passwd")
+    notifee := conf.Get("email")
+    err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
+    if err != nil {
+        println("err initing gmail: ", err.Error())
+        return
+    }
+    format := "\n\nNew comment from %s <%s> (%s):\n\n%s\n\nURL: %s"
+    message := fmt.Sprintf(format, author, mail, www, comment, url)
+    subj := fmt.Sprintf("New comment in '%s'", postTitle)
+    mess := email.NewBriefMessageFrom(subj, message, gmailSenderAcct, notifee)
+    err = mess.Send()
+    if err != nil {
+        println("err sending email: ", err.Error())
+        return
+    }
 }
 
 func serve_favicon(ctx *web.Context) {
