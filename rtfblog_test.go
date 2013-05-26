@@ -111,12 +111,14 @@ func TestStartServer(t *testing.T) {
     date := "2013-03-19"
     for i := 1; i <= 11; i++ {
         e := &Entry{
+            EntryLink: EntryLink{
+                Title: fmt.Sprintf("Hi%d", i),
+                Url:   fmt.Sprintf("hello%d", i),
+            },
             Author:   auth,
-            Title:    fmt.Sprintf("Hi%d", i),
             Date:     date,
             Body:     fmt.Sprintf("Body%d", i),
             RawBody:  fmt.Sprintf("RawBody%d", i),
-            Url:      fmt.Sprintf("hello%d", i),
             Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
             Comments: test_comm,
         }

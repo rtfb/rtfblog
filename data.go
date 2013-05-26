@@ -29,13 +29,17 @@ type Comment struct {
     CommentId string
 }
 
+type EntryLink struct {
+    Title string
+    Url   string
+}
+
 type Entry struct {
+    EntryLink
     Author   string
-    Title    string
     Date     string
     Body     string
     RawBody  string
-    Url      string
     Tags     []*Tag
     Comments []*Comment
 }
