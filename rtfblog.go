@@ -3,7 +3,6 @@ package main
 import (
     "./util"
     "bufio"
-    "crypto/md5"
     "database/sql"
     "encoding/json"
     "fmt"
@@ -22,7 +21,6 @@ import (
     "github.com/hoisie/web"
     "github.com/lye/mustache"
     _ "github.com/mattn/go-sqlite3"
-    "github.com/rtfb/blackfriday"
     email "github.com/ungerik/go-mail"
 )
 
@@ -56,102 +54,6 @@ func loadConfig(path string) (config SrvConfig) {
     return
 }
 
-func readDb() (entries []*Entry, err error) {
-    rows, err := db.Query(`select a.disp_name, p.id, p.title, p.date,
-                                  p.body, p.url
-                           from author as a, post as p
-                           where a.id=p.author_id
-                           order by p.date desc`)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
-    defer rows.Close()
-    for rows.Next() {
-        entry := new(Entry)
-        var id int64
-        var unixDate int64
-        err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
-            &entry.RawBody, &entry.Url)
-        if err != nil {
-            fmt.Println(err.Error())
-            continue
-        }
-        entry.Body = string(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
-        entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
-        entry.Tags = queryTags(db, id)
-        entry.Comments = queryComments(db, id)
-        entries = append(entries, entry)
-    }
-    return
-}
-
-func queryTags(db *sql.DB, postId int64) []*Tag {
-    stmt, err := db.Prepare(`select t.name, t.url
-                             from tag as t, tagmap as tm
-                             where t.id = tm.tag_id
-                                   and tm.post_id = ?`)
-    if err != nil {
-        fmt.Println(err.Error())
-        return nil
-    }
-    defer stmt.Close()
-    rows, err := stmt.Query(postId)
-    if err != nil {
-        fmt.Println(err.Error())
-        return nil
-    }
-    defer rows.Close()
-    tags := make([]*Tag, 0)
-    for rows.Next() {
-        tag := new(Tag)
-        err = rows.Scan(&tag.TagName, &tag.TagUrl)
-        if err != nil {
-            fmt.Println(err.Error())
-            continue
-        }
-        tags = append(tags, tag)
-    }
-    return tags
-}
-
-func queryComments(db *sql.DB, postId int64) []*Comment {
-    stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
-                                    c.id, c.timestamp, c.body
-                             from commenter as a, comment as c
-                             where a.id = c.commenter_id
-                                   and c.post_id = ?
-                             order by c.timestamp asc`)
-    if err != nil {
-        fmt.Println(err.Error())
-        return nil
-    }
-    defer stmt.Close()
-    data, err := stmt.Query(postId)
-    if err != nil {
-        fmt.Println(err.Error())
-        return nil
-    }
-    defer data.Close()
-    comments := make([]*Comment, 0)
-    for data.Next() {
-        comment := new(Comment)
-        var unixDate int64
-        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
-            &comment.CommentId, &unixDate, &comment.RawBody)
-        if err != nil {
-            fmt.Printf("error scanning comment row: %s\n", err.Error())
-        }
-        hash := md5.New()
-        hash.Write([]byte(strings.ToLower(comment.Email)))
-        comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
-        comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-        comment.Body = string(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
-        comments = append(comments, comment)
-    }
-    return comments
-}
-
 func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
     html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache", data)
     ctx.WriteString(html)
@@ -181,23 +83,24 @@ func listOfPages(numPosts, currPage int) (list string) {
     return
 }
 
-func renderPage(ctx *web.Context, path string, data map[string]interface{}, posts []*Entry) {
+func renderPage(ctx *web.Context, path string, tmplData map[string]interface{}, data Data) {
     pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
     if err != nil {
         pgNo = 1
     }
     lwr := (pgNo - 1) * POSTS_PER_PAGE
     upr := pgNo * POSTS_PER_PAGE
-    if lwr >= len(posts) {
+    numTotalPosts := data.numPosts()
+    if lwr >= numTotalPosts {
         lwr = 0
     }
-    if upr >= len(posts) {
-        upr = len(posts)
+    if upr >= numTotalPosts {
+        upr = numTotalPosts
     }
-    data["PageTitle"] = "Velkam"
-    data["entries"] = posts[lwr:upr]
-    data["ListOfPages"] = listOfPages(len(posts), pgNo-1)
-    render(ctx, "main", data)
+    tmplData["PageTitle"] = "Velkam"
+    tmplData["entries"] = data.posts(-1)[lwr:upr]
+    tmplData["ListOfPages"] = listOfPages(numTotalPosts, pgNo-1)
+    render(ctx, "main", tmplData)
 }
 
 func produceFeedXml(ctx *web.Context, posts []*Entry) {
@@ -235,37 +138,33 @@ func produceFeedXml(ctx *web.Context, posts []*Entry) {
     ctx.WriteString(rss)
 }
 
-func getPostByUrl(ctx *web.Context, posts []*Entry, url string) *Entry {
-    for _, e := range posts {
-        if e.Url == url {
-            return e
-        }
+func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
+    if post := data.post(url); post != nil {
+        return post
     }
     ctx.NotFound("Page not found: " + url)
     return nil
 }
 
 func handler(ctx *web.Context, path string) {
-    posts := loadData()
+    data := getData()
+    posts := data.posts(NUM_RECENT_POSTS)
+    numTotalPosts := data.numPosts()
     postsPerPage := POSTS_PER_PAGE
-    if postsPerPage >= len(posts) {
-        postsPerPage = len(posts)
-    }
-    recentPosts := NUM_RECENT_POSTS
-    if recentPosts >= len(posts) {
-        recentPosts = len(posts)
+    if postsPerPage >= numTotalPosts {
+        postsPerPage = numTotalPosts
     }
     var basicData = map[string]interface{}{
         "PageTitle":       "",
-        "NeedPagination":  len(posts) > POSTS_PER_PAGE,
-        "ListOfPages":     listOfPages(len(posts), 0),
+        "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
+        "ListOfPages":     listOfPages(numTotalPosts, 0),
         "entries":         posts[:postsPerPage],
-        "sidebar_entries": posts[:recentPosts],
+        "sidebar_entries": posts,
     }
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
     if strings.HasPrefix(path, "page/") {
-        renderPage(ctx, path, basicData, posts)
+        renderPage(ctx, path, basicData, data)
         return
     }
     switch path {
@@ -278,6 +177,7 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "admin", basicData)
         return
     case "archive":
+        posts := data.posts(-1)
         basicData["PageTitle"] = "Archive"
         basicData["all_entries"] = posts
         render(ctx, "archive", basicData)
@@ -298,7 +198,7 @@ func handler(ctx *web.Context, path string) {
         return
     case "edit_post":
         basicData["PageTitle"] = "Edit Post"
-        if post := getPostByUrl(ctx, posts, ctx.Params["post"]); post != nil {
+        if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
             basicData["Title"] = post.Title
             basicData["Url"] = post.Url
             basicData["TagsWithUrls"] = post.TagsWithUrls()
@@ -307,7 +207,7 @@ func handler(ctx *web.Context, path string) {
         }
         return
     case "load_comments":
-        if post := getPostByUrl(ctx, posts, ctx.Params["post"]); post != nil {
+        if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
             b, err := json.Marshal(post)
             if err != nil {
                 fmt.Println(err.Error())
@@ -320,7 +220,7 @@ func handler(ctx *web.Context, path string) {
         produceFeedXml(ctx, posts)
         return
     default:
-        if post := getPostByUrl(ctx, posts, path); post != nil {
+        if post := getPostByUrl(ctx, data, path); post != nil {
             basicData["PageTitle"] = post.Title
             basicData["entry"] = post
             render(ctx, "post", basicData)
@@ -661,19 +561,8 @@ func runServer() {
     web.Run(conf.Get("port"))
 }
 
-func loadData() []*Entry {
-    if testLoader != nil {
-        return testLoader()
-    }
-    if db == nil {
-        return nil
-    }
-    data, err := readDb()
-    if err != nil {
-        println(err.Error())
-        return nil
-    }
-    return data
+func getData() Data {
+    return &DbData{}
 }
 
 func openDb(dbFile string) *sql.DB {
