@@ -36,9 +36,18 @@ func (db *DbData) posts(limit int) []*Entry {
     return posts
 }
 
-func (db *DbData) numPosts() int {
-    posts := loadData()
-    return len(posts)
+func (dd *DbData) numPosts() int {
+    rows, err := db.Query(`select count(*) from post`)
+    if err != nil {
+        fmt.Println(err.Error())
+        return 0
+    }
+    defer rows.Close()
+    num := 0
+    if rows.Next() {
+        rows.Scan(&num)
+    }
+    return num
 }
 
 func loadData() []*Entry {
