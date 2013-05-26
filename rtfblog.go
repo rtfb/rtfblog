@@ -27,9 +27,9 @@ import (
 type SrvConfig map[string]interface{}
 
 var (
-    db         *sql.DB
-    conf       SrvConfig
-    testLoader func() []*Entry
+    db   *sql.DB
+    conf SrvConfig
+    data Data
 )
 
 func (c *SrvConfig) Get(key string) string {
@@ -147,7 +147,6 @@ func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
 }
 
 func handler(ctx *web.Context, path string) {
-    data := getData()
     posts := data.posts(NUM_RECENT_POSTS)
     numTotalPosts := data.numPosts()
     postsPerPage := POSTS_PER_PAGE
@@ -540,7 +539,8 @@ func serve_favicon(ctx *web.Context) {
     http.ServeFile(ctx, ctx.Request, conf.Get("favicon"))
 }
 
-func runServer() {
+func runServer(_data Data) {
+    data = _data
     f, err := os.Create(conf.Get("log"))
     if err != nil {
         println("create log: " + err.Error())
@@ -561,10 +561,6 @@ func runServer() {
     web.Run(conf.Get("port"))
 }
 
-func getData() Data {
-    return &DbData{}
-}
-
 func openDb(dbFile string) *sql.DB {
     db, err := sql.Open("sqlite3", dbFile)
     if err != nil {
@@ -579,5 +575,5 @@ func main() {
     conf = loadConfig(filepath.Join(root, "server.conf"))
     db = openDb(conf.Get("database"))
     defer db.Close()
-    runServer()
+    runServer(&DbData{})
 }

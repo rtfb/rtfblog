@@ -41,6 +41,28 @@ var (
     }
 )
 
+type TestData struct{}
+
+func (db *TestData) post(url string) *Entry {
+    for _, e := range test_posts {
+        if e.Url == url {
+            return e
+        }
+    }
+    return nil
+}
+
+func (db *TestData) posts(limit int) []*Entry {
+    if limit > 0 && limit < len(test_posts) {
+        return test_posts[:limit]
+    }
+    return test_posts
+}
+
+func (db *TestData) numPosts() int {
+    return len(test_posts)
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }
@@ -96,10 +118,7 @@ func TestStartServer(t *testing.T) {
     if err != nil {
         t.Error("Failed to set up test account")
     }
-    testLoader = func() []*Entry {
-        return test_posts
-    }
-    go runServer()
+    go runServer(&TestData{})
 }
 
 func TestMainPage(t *testing.T) {
@@ -135,13 +154,13 @@ func TestBasicStructure(t *testing.T) {
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
     dbtemp := db
-    loaderTemp := testLoader
-    testLoader = nil
+    tmpPosts := test_posts
+    test_posts = nil
     db = nil
     html := curl("")
     mustContain(t, html, "No entries")
     db = dbtemp
-    testLoader = loaderTemp
+    test_posts = tmpPosts
 }
 
 func TestLogin(t *testing.T) {

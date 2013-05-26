@@ -42,9 +42,6 @@ func (db *DbData) numPosts() int {
 }
 
 func loadData() []*Entry {
-    if testLoader != nil {
-        return testLoader()
-    }
     if db == nil {
         return nil
     }
