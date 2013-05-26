@@ -235,6 +235,16 @@ func produceFeedXml(ctx *web.Context, posts []*Entry) {
     ctx.WriteString(rss)
 }
 
+func getPostByUrl(ctx *web.Context, posts []*Entry, url string) *Entry {
+    for _, e := range posts {
+        if e.Url == url {
+            return e
+        }
+    }
+    ctx.NotFound("Page not found: " + url)
+    return nil
+}
+
 func handler(ctx *web.Context, path string) {
     posts := loadData()
     postsPerPage := POSTS_PER_PAGE
@@ -288,43 +298,33 @@ func handler(ctx *web.Context, path string) {
         return
     case "edit_post":
         basicData["PageTitle"] = "Edit Post"
-        post := ctx.Params["post"]
-        for _, e := range posts {
-            if e.Url == post {
-                basicData["Title"] = e.Title
-                basicData["Url"] = e.Url
-                basicData["TagsWithUrls"] = e.TagsWithUrls()
-                basicData["RawBody"] = e.RawBody
-            }
+        if post := getPostByUrl(ctx, posts, ctx.Params["post"]); post != nil {
+            basicData["Title"] = post.Title
+            basicData["Url"] = post.Url
+            basicData["TagsWithUrls"] = post.TagsWithUrls()
+            basicData["RawBody"] = post.RawBody
+            render(ctx, "edit_post", basicData)
         }
-        render(ctx, "edit_post", basicData)
         return
     case "load_comments":
-        post := ctx.Params["post"]
-        for _, p := range posts {
-            if p.Url == post {
-                b, err := json.Marshal(p)
-                if err != nil {
-                    fmt.Println(err.Error())
-                    return
-                }
-                ctx.WriteString(string(b))
+        if post := getPostByUrl(ctx, posts, ctx.Params["post"]); post != nil {
+            b, err := json.Marshal(post)
+            if err != nil {
+                fmt.Println(err.Error())
                 return
             }
+            ctx.WriteString(string(b))
         }
+        return
     case "feed.xml":
         produceFeedXml(ctx, posts)
         return
     default:
-        for _, e := range posts {
-            if e.Url == path {
-                basicData["PageTitle"] = e.Title
-                basicData["entry"] = e
-                render(ctx, "post", basicData)
-                return
-            }
+        if post := getPostByUrl(ctx, posts, path); post != nil {
+            basicData["PageTitle"] = post.Title
+            basicData["entry"] = post
+            render(ctx, "post", basicData)
         }
-        ctx.NotFound("Page not found: " + path)
         return
     }
     ctx.Abort(http.StatusInternalServerError, "Server Error")
