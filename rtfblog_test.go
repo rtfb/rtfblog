@@ -9,7 +9,6 @@ import (
     "runtime/debug"
     "strings"
     "testing"
-    "time"
 
     "code.google.com/p/go-html-transform/h5"
     "code.google.com/p/go-html-transform/html/transform"
@@ -101,7 +100,6 @@ func TestStartServer(t *testing.T) {
         return test_posts
     }
     go runServer()
-    time.Sleep(50 * time.Millisecond)
 }
 
 func TestMainPage(t *testing.T) {
