@@ -285,6 +285,11 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
 }
 
+func TestArchiveContainsAllEntries(t *testing.T) {
+    nodes := query0(t, "archive", "#post")
+    T{t}.failIf(len(nodes) != len(test_posts), "Not all posts rendered in archive!")
+}
+
 func TestPostPager(t *testing.T) {
     mustContain(t, curl(""), "/page/2")
 }
