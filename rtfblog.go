@@ -117,11 +117,7 @@ func produceFeedXml(ctx *web.Context, posts []*Entry) {
         Author:      &feeds.Author{author, authorEmail},
         Created:     now,
     }
-    numItems := NUM_FEED_ITEMS
-    if numItems > len(posts) {
-        numItems = len(posts)
-    }
-    for _, p := range posts[:numItems] {
+    for _, p := range posts {
         item := feeds.Item{
             Title:       p.Title,
             Link:        &feeds.Link{Href: p.Url},
@@ -147,18 +143,13 @@ func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
 }
 
 func handler(ctx *web.Context, path string) {
-    posts := data.posts(NUM_RECENT_POSTS)
     numTotalPosts := data.numPosts()
-    postsPerPage := POSTS_PER_PAGE
-    if postsPerPage >= numTotalPosts {
-        postsPerPage = numTotalPosts
-    }
     var basicData = map[string]interface{}{
         "PageTitle":       "",
         "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
         "ListOfPages":     listOfPages(numTotalPosts, 0),
-        "entries":         posts[:postsPerPage],
-        "sidebar_entries": posts,
+        "entries":         data.posts(POSTS_PER_PAGE),
+        "sidebar_entries": data.titles(NUM_RECENT_POSTS),
     }
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
@@ -176,9 +167,8 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "admin", basicData)
         return
     case "archive":
-        posts := data.posts(-1)
         basicData["PageTitle"] = "Archive"
-        basicData["all_entries"] = posts
+        basicData["all_entries"] = data.titles(-1)
         render(ctx, "archive", basicData)
         return
     case "login":
@@ -216,7 +206,7 @@ func handler(ctx *web.Context, path string) {
         }
         return
     case "feed.xml":
-        produceFeedXml(ctx, posts)
+        produceFeedXml(ctx, data.posts(NUM_FEED_ITEMS))
         return
     default:
         if post := getPostByUrl(ctx, data, path); post != nil {

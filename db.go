@@ -13,6 +13,7 @@ import (
 type Data interface {
     post(url string) *Entry
     posts(limit int) []*Entry
+    titles(limit int) []*EntryLink
     numPosts() int
 }
 
@@ -48,6 +49,42 @@ func (dd *DbData) numPosts() int {
         rows.Scan(&num)
     }
     return num
+}
+
+func (dd *DbData) titles(limit int) (links []*EntryLink) {
+    selectSql := `select p.title, p.url
+                  from post as p
+                  order by p.date desc`
+    if limit > 0 {
+        selectSql = selectSql + " limit ?"
+    }
+    stmt, err := db.Prepare(selectSql)
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer stmt.Close()
+    var rows *sql.Rows
+    if limit > 0 {
+        rows, err = stmt.Query(limit)
+    } else {
+        rows, err = stmt.Query()
+    }
+    if err != nil {
+        fmt.Println(err.Error())
+        return
+    }
+    defer rows.Close()
+    for rows.Next() {
+        entryLink := new(EntryLink)
+        err = rows.Scan(&entryLink.Title, &entryLink.Url)
+        if err != nil {
+            fmt.Println(err.Error())
+            continue
+        }
+        links = append(links, entryLink)
+    }
+    return
 }
 
 func loadData() []*Entry {

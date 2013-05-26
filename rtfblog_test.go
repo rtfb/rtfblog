@@ -52,6 +52,14 @@ func (db *TestData) numPosts() int {
     return len(test_posts)
 }
 
+func (dd *TestData) titles(limit int) (links []*EntryLink) {
+    for _, p := range test_posts {
+        entryLink := &EntryLink{p.Title, p.Url}
+        links = append(links, entryLink)
+    }
+    return
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }
