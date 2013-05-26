@@ -34,6 +34,11 @@ var (
         {"Author", "Hi4", "2013-03-19", "Body4", "RawBody4", "hello4", []*Tag{{"u4", "n4"}}, test_comm},
         {"Author", "Hi5", "2013-03-19", "Body5", "RawBody5", "hello5", []*Tag{{"u5", "n5"}}, test_comm},
         {"Author", "Hi6", "2013-03-19", "Body6", "RawBody6", "hello6", []*Tag{{"u6", "n6"}}, test_comm},
+        {"Author", "Hi7", "2013-03-19", "Body7", "RawBody7", "hello7", []*Tag{{"u7", "n7"}}, test_comm},
+        {"Author", "Hi8", "2013-03-19", "Body8", "RawBody8", "hello8", []*Tag{{"u8", "n8"}}, test_comm},
+        {"Author", "Hi9", "2013-03-19", "Body9", "RawBody9", "hello9", []*Tag{{"u9", "n9"}}, test_comm},
+        {"Author", "Hi10", "2013-03-19", "Body10", "RawBody10", "hello10", []*Tag{{"u10", "n10"}}, test_comm},
+        {"Author", "Hi11", "2013-03-19", "Body11", "RawBody11", "hello11", []*Tag{{"u11", "n11"}}, test_comm},
     }
 )
 
@@ -286,6 +291,9 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
 }
 
 func TestArchiveContainsAllEntries(t *testing.T) {
+    if len(test_posts) <= NUM_RECENT_POSTS {
+        t.Fatalf("This test only makes sense if len(test_posts) > NUM_RECENT_POSTS")
+    }
     nodes := query0(t, "archive", "#post")
     T{t}.failIf(len(nodes) != len(test_posts), "Not all posts rendered in archive!")
 }
