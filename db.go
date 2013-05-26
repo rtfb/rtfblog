@@ -7,7 +7,7 @@ import (
     "strings"
     "time"
 
-    "github.com/rtfb/blackfriday"
+    "github.com/russross/blackfriday"
 )
 
 type Data interface {
