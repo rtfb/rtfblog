@@ -241,7 +241,7 @@ func handler(ctx *web.Context, path string) {
     if postsPerPage >= len(posts) {
         postsPerPage = len(posts)
     }
-    recentPosts := 10
+    recentPosts := NUM_RECENT_POSTS
     if recentPosts >= len(posts) {
         recentPosts = len(posts)
     }

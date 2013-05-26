@@ -6,9 +6,10 @@ import (
 )
 
 const (
-    MAX_FILE_SIZE  = 50 * 1024 * 1024 // bytes
-    POSTS_PER_PAGE = 5
-    NUM_FEED_ITEMS = 3
+    MAX_FILE_SIZE    = 50 * 1024 * 1024 // bytes
+    POSTS_PER_PAGE   = 5
+    NUM_FEED_ITEMS   = 3
+    NUM_RECENT_POSTS = 10
 )
 
 type Tag struct {
