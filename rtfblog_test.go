@@ -2,6 +2,7 @@ package main
 
 import (
     "./util"
+    "fmt"
     "io/ioutil"
     "net/http"
     "net/url"
@@ -26,19 +27,7 @@ var (
     jar        = new(Jar)
     tclient    = &http.Client{nil, nil, jar}
     test_comm  = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
-    test_posts = []*Entry{
-        {"Author", "Hi1", "2013-03-19", "Body1", "RawBody1", "hello1", []*Tag{{"u1", "n1"}}, test_comm},
-        {"Author", "Hi2", "2013-03-19", "Body2", "RawBody2", "hello2", []*Tag{{"u2", "n2"}}, test_comm},
-        {"Author", "Hi3", "2013-03-19", "Body3", "RawBody3", "hello3", []*Tag{{"u3", "n3"}}, test_comm},
-        {"Author", "Hi4", "2013-03-19", "Body4", "RawBody4", "hello4", []*Tag{{"u4", "n4"}}, test_comm},
-        {"Author", "Hi5", "2013-03-19", "Body5", "RawBody5", "hello5", []*Tag{{"u5", "n5"}}, test_comm},
-        {"Author", "Hi6", "2013-03-19", "Body6", "RawBody6", "hello6", []*Tag{{"u6", "n6"}}, test_comm},
-        {"Author", "Hi7", "2013-03-19", "Body7", "RawBody7", "hello7", []*Tag{{"u7", "n7"}}, test_comm},
-        {"Author", "Hi8", "2013-03-19", "Body8", "RawBody8", "hello8", []*Tag{{"u8", "n8"}}, test_comm},
-        {"Author", "Hi9", "2013-03-19", "Body9", "RawBody9", "hello9", []*Tag{{"u9", "n9"}}, test_comm},
-        {"Author", "Hi10", "2013-03-19", "Body10", "RawBody10", "hello10", []*Tag{{"u10", "n10"}}, test_comm},
-        {"Author", "Hi11", "2013-03-19", "Body11", "RawBody11", "hello11", []*Tag{{"u11", "n11"}}, test_comm},
-    }
+    test_posts = make([]*Entry, 0)
 )
 
 type TestData struct{}
@@ -117,6 +106,21 @@ func TestStartServer(t *testing.T) {
     err := forgeTestUser("testuser", "testpasswd")
     if err != nil {
         t.Error("Failed to set up test account")
+    }
+    auth := "Author"
+    date := "2013-03-19"
+    for i := 1; i <= 11; i++ {
+        e := &Entry{
+            Author:   auth,
+            Title:    fmt.Sprintf("Hi%d", i),
+            Date:     date,
+            Body:     fmt.Sprintf("Body%d", i),
+            RawBody:  fmt.Sprintf("RawBody%d", i),
+            Url:      fmt.Sprintf("hello%d", i),
+            Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
+            Comments: test_comm,
+        }
+        test_posts = append(test_posts, e)
     }
     go runServer(&TestData{})
 }
