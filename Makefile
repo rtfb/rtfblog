@@ -2,6 +2,7 @@ GOFMT=gofmt -s -tabs=false -tabwidth=4
 
 GOFILES=\
 	rtfblog.go\
+	data.go\
 	rtfblog_test.go\
 	util/util.go\
 	dbtool/dbtool.go\
