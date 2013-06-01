@@ -83,18 +83,6 @@ func listOfPages(numPosts, currPage int) (list string) {
     return
 }
 
-func renderPage(ctx *web.Context, path string, tmplData map[string]interface{}, data Data) {
-    pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
-    if err != nil {
-        pgNo = 1
-    }
-    offset := (pgNo - 1) * POSTS_PER_PAGE
-    tmplData["PageTitle"] = "Velkam"
-    tmplData["entries"] = data.posts(POSTS_PER_PAGE, offset)
-    tmplData["ListOfPages"] = listOfPages(data.numPosts(), pgNo-1)
-    render(ctx, "main", tmplData)
-}
-
 func produceFeedXml(ctx *web.Context, posts []*Entry) {
     url := conf.Get("url") + conf.Get("port")
     blogTitle := conf.Get("blog_title")
@@ -146,7 +134,17 @@ func handler(ctx *web.Context, path string) {
     value, found := ctx.GetSecureCookie("adminlogin")
     basicData["AdminLogin"] = found && value == "yesplease"
     if strings.HasPrefix(path, "page/") {
-        renderPage(ctx, path, basicData, data)
+        pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
+        if err != nil {
+            pgNo = 1
+        }
+        offset := (pgNo - 1) * POSTS_PER_PAGE
+        if offset > 0 {
+            basicData["entries"] = data.posts(POSTS_PER_PAGE, offset)
+        }
+        basicData["PageTitle"] = "Velkam"
+        basicData["ListOfPages"] = listOfPages(numTotalPosts, pgNo-1)
+        render(ctx, "main", basicData)
         return
     }
     switch path {
