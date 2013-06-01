@@ -20,7 +20,7 @@ type Data interface {
 type DbData struct{}
 
 func (db *DbData) post(url string) *Entry {
-    posts := loadData(-1, -1, url)
+    posts := loadPosts(-1, -1, url)
     if len(posts) != 1 {
         msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
         println(fmt.Sprintf(msg, url, len(posts)))
@@ -30,7 +30,7 @@ func (db *DbData) post(url string) *Entry {
 }
 
 func (db *DbData) posts(limit, offset int) []*Entry {
-    return loadData(limit, offset, "")
+    return loadPosts(limit, offset, "")
 }
 
 func (dd *DbData) numPosts() int {
@@ -83,11 +83,11 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     return
 }
 
-func loadData(limit, offset int, url string) []*Entry {
+func loadPosts(limit, offset int, url string) []*Entry {
     if db == nil {
         return nil
     }
-    data, err := readDb(limit, offset, url)
+    data, err := queryPosts(limit, offset, url)
     if err != nil {
         println(err.Error())
         return nil
@@ -95,7 +95,7 @@ func loadData(limit, offset int, url string) []*Entry {
     return data
 }
 
-func readDb(limit, offset int, url string) (entries []*Entry, err error) {
+func queryPosts(limit, offset int, url string) (entries []*Entry, err error) {
     postUrlWhereClause := ""
     if url != "" {
         postUrlWhereClause = fmt.Sprintf("and p.url='%s'", url)
