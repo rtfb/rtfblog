@@ -20,21 +20,17 @@ type Data interface {
 type DbData struct{}
 
 func (db *DbData) post(url string) *Entry {
-    posts := loadData()
-    for _, e := range posts {
-        if e.Url == url {
-            return e
-        }
+    posts := loadData(-1, url)
+    if len(posts) != 1 {
+        msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
+        println(fmt.Sprintf(msg, url, len(posts)))
+        return nil
     }
-    return nil
+    return posts[0]
 }
 
 func (db *DbData) posts(limit int) []*Entry {
-    posts := loadData()
-    if limit > 0 && limit < len(posts) {
-        return posts[:limit]
-    }
-    return posts
+    return loadData(limit, "")
 }
 
 func (dd *DbData) numPosts() int {
@@ -87,11 +83,11 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     return
 }
 
-func loadData() []*Entry {
+func loadData(limit int, url string) []*Entry {
     if db == nil {
         return nil
     }
-    data, err := readDb()
+    data, err := readDb(limit, url)
     if err != nil {
         println(err.Error())
         return nil
@@ -99,12 +95,20 @@ func loadData() []*Entry {
     return data
 }
 
-func readDb() (entries []*Entry, err error) {
-    rows, err := db.Query(`select a.disp_name, p.id, p.title, p.date,
-                                  p.body, p.url
-                           from author as a, post as p
-                           where a.id=p.author_id
-                           order by p.date desc`)
+func readDb(limit int, url string) (entries []*Entry, err error) {
+    postUrlWhereClause := ""
+    if url != "" {
+        postUrlWhereClause = fmt.Sprintf(" and p.url='%s'", url)
+    }
+    limitClause := ""
+    if limit >= 0 {
+        limitClause = fmt.Sprintf(" limit %d", limit)
+    }
+    query := `select a.disp_name, p.id, p.title, p.date, p.body, p.url
+              from author as a, post as p
+              where a.id=p.author_id`
+    query += postUrlWhereClause
+    rows, err := db.Query(query + " order by p.date desc" + limitClause)
     if err != nil {
         fmt.Println(err.Error())
         return
