@@ -88,18 +88,10 @@ func renderPage(ctx *web.Context, path string, tmplData map[string]interface{}, 
     if err != nil {
         pgNo = 1
     }
-    lwr := (pgNo - 1) * POSTS_PER_PAGE
-    upr := pgNo * POSTS_PER_PAGE
-    numTotalPosts := data.numPosts()
-    if lwr >= numTotalPosts {
-        lwr = 0
-    }
-    if upr >= numTotalPosts {
-        upr = numTotalPosts
-    }
+    offset := (pgNo - 1) * POSTS_PER_PAGE
     tmplData["PageTitle"] = "Velkam"
-    tmplData["entries"] = data.posts(-1)[lwr:upr]
-    tmplData["ListOfPages"] = listOfPages(numTotalPosts, pgNo-1)
+    tmplData["entries"] = data.posts(POSTS_PER_PAGE, offset)
+    tmplData["ListOfPages"] = listOfPages(data.numPosts(), pgNo-1)
     render(ctx, "main", tmplData)
 }
 
@@ -148,7 +140,7 @@ func handler(ctx *web.Context, path string) {
         "PageTitle":       "",
         "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
         "ListOfPages":     listOfPages(numTotalPosts, 0),
-        "entries":         data.posts(POSTS_PER_PAGE),
+        "entries":         data.posts(POSTS_PER_PAGE, 0),
         "sidebar_entries": data.titles(NUM_RECENT_POSTS),
     }
     value, found := ctx.GetSecureCookie("adminlogin")
@@ -206,7 +198,7 @@ func handler(ctx *web.Context, path string) {
         }
         return
     case "feed.xml":
-        produceFeedXml(ctx, data.posts(NUM_FEED_ITEMS))
+        produceFeedXml(ctx, data.posts(NUM_FEED_ITEMS, 0))
         return
     default:
         if post := getPostByUrl(ctx, data, path); post != nil {

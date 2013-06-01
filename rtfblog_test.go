@@ -41,9 +41,12 @@ func (db *TestData) post(url string) *Entry {
     return nil
 }
 
-func (db *TestData) posts(limit int) []*Entry {
+func (db *TestData) posts(limit, offset int) []*Entry {
+    if offset < 0 {
+        offset = 0
+    }
     if limit > 0 && limit < len(test_posts) {
-        return test_posts[:limit]
+        return test_posts[offset:limit]
     }
     return test_posts
 }

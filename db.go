@@ -12,7 +12,7 @@ import (
 
 type Data interface {
     post(url string) *Entry
-    posts(limit int) []*Entry
+    posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
     numPosts() int
 }
@@ -20,7 +20,7 @@ type Data interface {
 type DbData struct{}
 
 func (db *DbData) post(url string) *Entry {
-    posts := loadData(-1, url)
+    posts := loadData(-1, -1, url)
     if len(posts) != 1 {
         msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
         println(fmt.Sprintf(msg, url, len(posts)))
@@ -29,8 +29,8 @@ func (db *DbData) post(url string) *Entry {
     return posts[0]
 }
 
-func (db *DbData) posts(limit int) []*Entry {
-    return loadData(limit, "")
+func (db *DbData) posts(limit, offset int) []*Entry {
+    return loadData(limit, offset, "")
 }
 
 func (dd *DbData) numPosts() int {
@@ -83,11 +83,11 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     return
 }
 
-func loadData(limit int, url string) []*Entry {
+func loadData(limit, offset int, url string) []*Entry {
     if db == nil {
         return nil
     }
-    data, err := readDb(limit, url)
+    data, err := readDb(limit, offset, url)
     if err != nil {
         println(err.Error())
         return nil
@@ -95,20 +95,27 @@ func loadData(limit int, url string) []*Entry {
     return data
 }
 
-func readDb(limit int, url string) (entries []*Entry, err error) {
+func readDb(limit, offset int, url string) (entries []*Entry, err error) {
     postUrlWhereClause := ""
     if url != "" {
-        postUrlWhereClause = fmt.Sprintf(" and p.url='%s'", url)
+        postUrlWhereClause = fmt.Sprintf("and p.url='%s'", url)
     }
     limitClause := ""
     if limit >= 0 {
-        limitClause = fmt.Sprintf(" limit %d", limit)
+        limitClause = fmt.Sprintf("limit %d", limit)
     }
-    query := `select a.disp_name, p.id, p.title, p.date, p.body, p.url
-              from author as a, post as p
-              where a.id=p.author_id`
-    query += postUrlWhereClause
-    rows, err := db.Query(query + " order by p.date desc" + limitClause)
+    offsetClause := ""
+    if offset > 0 {
+        offsetClause = fmt.Sprintf("offset %d", offset)
+    }
+    queryFmt := `select a.disp_name, p.id, p.title, p.date, p.body, p.url
+                 from author as a, post as p
+                 where a.id=p.author_id
+                 %s
+                 order by p.date desc
+                 %s %s`
+    query := fmt.Sprintf(queryFmt, postUrlWhereClause, limitClause, offsetClause)
+    rows, err := db.Query(query)
     if err != nil {
         fmt.Println(err.Error())
         return
