@@ -27,7 +27,6 @@ type Data interface {
     begin() bool
     commit()
     rollback()
-    xaction() *sql.Tx
 }
 
 type DbData struct {
@@ -65,10 +64,6 @@ func (dd *DbData) rollback() {
     }
     dd.tx.Rollback()
     dd.tx = nil
-}
-
-func (dd *DbData) xaction() *sql.Tx {
-    return dd.tx
 }
 
 func (dd *DbData) post(url string) *Entry {

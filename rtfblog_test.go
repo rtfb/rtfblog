@@ -2,7 +2,6 @@ package main
 
 import (
     "./util"
-    "database/sql"
     "fmt"
     "io/ioutil"
     "net/http"
@@ -90,10 +89,6 @@ func (dd *TestData) commit() {
 }
 
 func (dd *TestData) rollback() {
-}
-
-func (dd *TestData) xaction() *sql.Tx {
-    return nil
 }
 
 func (dd *TestData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {
