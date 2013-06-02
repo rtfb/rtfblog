@@ -19,6 +19,7 @@ type Data interface {
     author(username string) (*Author, error)
     deleteComment(id string) bool
     updateComment(id, text string) bool
+    selOrInsCommenter(name, email, website, ip string) (id int64, err error)
     begin() bool
     commit()
     rollback()
@@ -136,6 +137,40 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
             continue
         }
         links = append(links, entryLink)
+    }
+    return
+}
+
+func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {
+    id = -1
+    err = sql.ErrNoRows
+    if dd.tx == nil {
+        fmt.Println("DbData.selOrInsCommenter() can only be called within xaction!")
+        return
+    }
+    query, _ := dd.tx.Prepare(`select c.id from commenter as c
+                               where c.name = ?
+                                 and c.email = ?
+                                 and c.www = ?`)
+    defer query.Close()
+    err = query.QueryRow(name, email, website).Scan(&id)
+    switch err {
+    case nil:
+        return
+    case sql.ErrNoRows:
+        insertCommenter, _ := dd.tx.Prepare(`insert into commenter
+                                             (name, email, www, ip)
+                                             values (?, ?, ?, ?)`)
+        defer insertCommenter.Close()
+        result, err := insertCommenter.Exec(name, email, website, ip)
+        if err != nil {
+            fmt.Println("Failed to insert commenter: " + err.Error())
+        }
+        return result.LastInsertId()
+    default:
+        fmt.Println("err")
+        fmt.Println(err.Error())
+        return
     }
     return
 }

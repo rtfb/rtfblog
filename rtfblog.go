@@ -211,38 +211,6 @@ func handler(ctx *web.Context, path string) {
     ctx.Abort(http.StatusInternalServerError, "Server Error")
 }
 
-func getCommenterId(xaction *sql.Tx, ctx *web.Context) (id int64, err error) {
-    name := ctx.Params["name"]
-    email := ctx.Params["email"]
-    website := ctx.Params["website"]
-    ip := ctx.Request.RemoteAddr
-    query, _ := xaction.Prepare(`select c.id from commenter as c
-                                 where c.name = ?
-                                   and c.email = ?
-                                   and c.www = ?`)
-    defer query.Close()
-    err = query.QueryRow(name, email, website).Scan(&id)
-    switch err {
-    case nil:
-        return
-    case sql.ErrNoRows:
-        insertCommenter, _ := xaction.Prepare(`insert into commenter
-                                               (name, email, www, ip)
-                                               values (?, ?, ?, ?)`)
-        defer insertCommenter.Close()
-        result, err := insertCommenter.Exec(name, email, website, ip)
-        if err != nil {
-            fmt.Println("Failed to insert commenter: " + err.Error())
-        }
-        return result.LastInsertId()
-    default:
-        fmt.Println("err")
-        fmt.Println(err.Error())
-        return -1, sql.ErrNoRows
-    }
-    return -1, sql.ErrNoRows
-}
-
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
     a, err := data.author(uname)
@@ -451,9 +419,13 @@ func comment_handler(ctx *web.Context) {
     if !data.begin() {
         return
     }
-    commenterId, err := getCommenterId(data.xaction(), ctx)
+    name := ctx.Params["name"]
+    email := ctx.Params["email"]
+    website := ctx.Params["website"]
+    ip := ctx.Request.RemoteAddr
+    commenterId, err := data.selOrInsCommenter(name, email, website, ip)
     if err != nil {
-        fmt.Println("getCommenterId failed: " + err.Error())
+        fmt.Println("data.selOrInsCommenter() failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         data.rollback()
         return
@@ -473,9 +445,6 @@ func comment_handler(ctx *web.Context) {
     data.commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
     url := conf.Get("url") + conf.Get("port") + redir
-    name := ctx.Params["name"]
-    email := ctx.Params["email"]
-    website := ctx.Params["website"]
     go SendEmail(name, email, website, body, url, refUrl)
     ctx.Redirect(http.StatusFound, redir)
 }
