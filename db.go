@@ -22,6 +22,7 @@ type Data interface {
     selOrInsCommenter(name, email, website, ip string) (id int64, err error)
     insertComment(commenterId, postId int64, body string) (id int64, err error)
     insertPost(author int64, title, url, body string) (id int64, err error)
+    updatePost(id int64, tiel, url, body string) bool
     begin() bool
     commit()
     rollback()
@@ -218,6 +219,19 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
         return
     }
     return result.LastInsertId()
+}
+
+func (dd *DbData) updatePost(id int64, title, url, body string) bool {
+    updateStmt, _ := dd.tx.Prepare(`update post
+                                    set title=?, url=?, body=?
+                                    where id=?`)
+    defer updateStmt.Close()
+    _, err := updateStmt.Exec(title, url, body, id)
+    if err != nil {
+        fmt.Println(err.Error())
+        return false
+    }
+    return true
 }
 
 func (dd *DbData) author(username string) (*Author, error) {

@@ -108,6 +108,10 @@ func (dd *TestData) insertPost(author int64, title, url, body string) (id int64,
     return
 }
 
+func (dd *TestData) updatePost(id int64, title, url, body string) bool {
+    return true
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }
