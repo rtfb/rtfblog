@@ -467,6 +467,7 @@ func comment_handler(ctx *web.Context) {
     if err != nil {
         fmt.Println("getCommenterId failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
+        xaction.Rollback()
         return
     }
     stmt, _ := xaction.Prepare(`insert into comment(commenter_id, post_id,
@@ -478,6 +479,7 @@ func comment_handler(ctx *web.Context) {
     if err != nil {
         fmt.Println("Failed to insert comment: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
+        xaction.Rollback()
     }
     commentId, _ := result.LastInsertId()
     xaction.Commit()
