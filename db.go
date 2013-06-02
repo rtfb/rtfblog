@@ -20,6 +20,7 @@ type Data interface {
     deleteComment(id string) bool
     updateComment(id, text string) bool
     selOrInsCommenter(name, email, website, ip string) (id int64, err error)
+    insertComment(commenterId, postId int64, body string) (id int64, err error)
     begin() bool
     commit()
     rollback()
@@ -173,6 +174,29 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
         return
     }
     return
+}
+
+func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
+    id = -1
+    err = sql.ErrNoRows
+    if dd.tx == nil {
+        fmt.Println("DbData.insertComment() can only be called within xaction!")
+        return
+    }
+    stmt, err := dd.tx.Prepare(`insert into comment
+                                (commenter_id, post_id, timestamp, body)
+                                values (?, ?, ?, ?)`)
+    defer stmt.Close()
+    if err != nil {
+        fmt.Println("Failed to prepare insert comment stmt: " + err.Error())
+        return
+    }
+    result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    if err != nil {
+        fmt.Println("Failed to insert comment: " + err.Error())
+        return
+    }
+    return result.LastInsertId()
 }
 
 func (dd *DbData) author(username string) (*Author, error) {

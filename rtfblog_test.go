@@ -100,6 +100,10 @@ func (dd *TestData) selOrInsCommenter(name, email, website, ip string) (id int64
     return
 }
 
+func (dd *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
+    return
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }

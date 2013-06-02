@@ -430,18 +430,13 @@ func comment_handler(ctx *web.Context) {
         data.rollback()
         return
     }
-    stmt, _ := data.xaction().Prepare(`insert into comment
-                                       (commenter_id, post_id, timestamp, body)
-                                       values (?, ?, ?, ?)`)
-    defer stmt.Close()
     body := ctx.Params["text"]
-    result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
-        fmt.Println("Failed to insert comment: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         data.rollback()
+        return
     }
-    commentId, _ := result.LastInsertId()
     data.commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
     url := conf.Get("url") + conf.Get("port") + redir
