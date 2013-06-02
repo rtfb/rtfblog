@@ -146,11 +146,7 @@ func mustContain(t *testing.T, page string, what string) {
 
 func TestStartServer(t *testing.T) {
     conf = loadConfig("server.conf")
-    db = openDb(conf.Get("database"))
-    err := forgeTestUser("testuser", "testpasswd")
-    if err != nil {
-        t.Error("Failed to set up test account")
-    }
+    forgeTestUser("testuser", "testpasswd")
     auth := "Author"
     date := "2013-03-19"
     for i := 1; i <= 11; i++ {
@@ -203,13 +199,10 @@ func TestBasicStructure(t *testing.T) {
 }
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
-    dbtemp := db
     tmpPosts := test_posts
     test_posts = nil
-    db = nil
     html := curl("")
     mustContain(t, html, "No entries")
-    db = dbtemp
     test_posts = tmpPosts
 }
 
@@ -413,20 +406,9 @@ func assertElem(t *testing.T, node *h5.Node, elem string) {
     }
 }
 
-func forgeTestUser(uname, passwd string) error {
+func forgeTestUser(uname, passwd string) {
     salt, passwdHash := util.Encrypt(passwd)
     test_author.Salt = salt
     test_author.Passwd = passwdHash
     test_author.UserName = uname
-    updateStmt, err := db.Prepare(`update author set disp_name=?, salt=?, passwd=?
-                                   where id=?`)
-    if err != nil {
-        return err
-    }
-    defer updateStmt.Close()
-    _, err = updateStmt.Exec(uname, salt, passwdHash, 1)
-    if err != nil {
-        return err
-    }
-    return nil
 }

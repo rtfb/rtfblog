@@ -27,7 +27,6 @@ import (
 type SrvConfig map[string]interface{}
 
 var (
-    db   *sql.DB
     conf SrvConfig
     data Data
 )
@@ -527,19 +526,14 @@ func runServer(_data Data) {
     web.Run(conf.Get("port"))
 }
 
-func openDb(dbFile string) *sql.DB {
-    db, err := sql.Open("sqlite3", dbFile)
-    if err != nil {
-        fmt.Println("sql: " + err.Error())
-        return nil
-    }
-    return db
-}
-
 func main() {
     root, _ := filepath.Split(filepath.Clean(os.Args[0]))
     conf = loadConfig(filepath.Join(root, "server.conf"))
-    db = openDb(conf.Get("database"))
+    db, err := sql.Open("sqlite3", conf.Get("database"))
+    if err != nil {
+        fmt.Println("sql: " + err.Error())
+        return
+    }
     defer db.Close()
     runServer(&DbData{db, nil})
 }

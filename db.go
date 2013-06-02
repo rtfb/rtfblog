@@ -66,8 +66,8 @@ func (dd *DbData) xaction() *sql.Tx {
     return dd.tx
 }
 
-func (db *DbData) post(url string) *Entry {
-    posts := loadPosts(-1, -1, url)
+func (dd *DbData) post(url string) *Entry {
+    posts := loadPosts(dd.db, -1, -1, url)
     if len(posts) != 1 {
         msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
         println(fmt.Sprintf(msg, url, len(posts)))
@@ -77,7 +77,7 @@ func (db *DbData) post(url string) *Entry {
 }
 
 func (dd *DbData) postId(url string) (id int64, err error) {
-    query, err := db.Prepare("select id from post where url = ?")
+    query, err := dd.db.Prepare("select id from post where url = ?")
     defer query.Close()
     if err != nil {
         return
@@ -86,12 +86,12 @@ func (dd *DbData) postId(url string) (id int64, err error) {
     return
 }
 
-func (db *DbData) posts(limit, offset int) []*Entry {
-    return loadPosts(limit, offset, "")
+func (dd *DbData) posts(limit, offset int) []*Entry {
+    return loadPosts(dd.db, limit, offset, "")
 }
 
 func (dd *DbData) numPosts() int {
-    rows, err := db.Query(`select count(*) from post`)
+    rows, err := dd.db.Query(`select count(*) from post`)
     if err != nil {
         fmt.Println(err.Error())
         return 0
@@ -111,7 +111,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     if limit > 0 {
         selectSql = selectSql + " limit ?"
     }
-    stmt, err := db.Prepare(selectSql)
+    stmt, err := dd.db.Prepare(selectSql)
     if err != nil {
         fmt.Println(err.Error())
         return
@@ -141,8 +141,8 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
 }
 
 func (dd *DbData) author(username string) (*Author, error) {
-    row := db.QueryRow(`select salt, passwd, full_name, email, www
-                        from author where disp_name=?`, username)
+    row := dd.db.QueryRow(`select salt, passwd, full_name, email, www
+                           from author where disp_name=?`, username)
     var a Author
     a.UserName = username
     err := row.Scan(&a.Salt, &a.Passwd, &a.FullName, &a.Email, &a.Www)
@@ -150,7 +150,7 @@ func (dd *DbData) author(username string) (*Author, error) {
 }
 
 func (dd *DbData) deleteComment(id string) bool {
-    _, err := db.Exec("delete from comment where id=?", id)
+    _, err := dd.db.Exec("delete from comment where id=?", id)
     if err != nil {
         fmt.Println(err.Error())
         return false
@@ -159,7 +159,7 @@ func (dd *DbData) deleteComment(id string) bool {
 }
 
 func (dd *DbData) updateComment(id, text string) bool {
-    _, err := db.Exec("update comment set body=? where id=?", text, id)
+    _, err := dd.db.Exec("update comment set body=? where id=?", text, id)
     if err != nil {
         fmt.Println(err.Error())
         return false
@@ -167,11 +167,11 @@ func (dd *DbData) updateComment(id, text string) bool {
     return true
 }
 
-func loadPosts(limit, offset int, url string) []*Entry {
+func loadPosts(db *sql.DB, limit, offset int, url string) []*Entry {
     if db == nil {
         return nil
     }
-    data, err := queryPosts(limit, offset, url)
+    data, err := queryPosts(db, limit, offset, url)
     if err != nil {
         println(err.Error())
         return nil
@@ -179,7 +179,7 @@ func loadPosts(limit, offset int, url string) []*Entry {
     return data
 }
 
-func queryPosts(limit, offset int, url string) (entries []*Entry, err error) {
+func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, err error) {
     postUrlWhereClause := ""
     if url != "" {
         postUrlWhereClause = fmt.Sprintf("and p.url='%s'", url)
