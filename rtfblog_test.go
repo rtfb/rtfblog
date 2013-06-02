@@ -41,6 +41,11 @@ func (db *TestData) post(url string) *Entry {
     return nil
 }
 
+func (db *TestData) postId(url string) (id int64, err error) {
+    id = 0
+    return
+}
+
 func (db *TestData) posts(limit, offset int) []*Entry {
     if offset < 0 {
         offset = 0

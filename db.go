@@ -12,6 +12,7 @@ import (
 
 type Data interface {
     post(url string) *Entry
+    postId(url string) (id int64, err error)
     posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
     numPosts() int
@@ -27,6 +28,16 @@ func (db *DbData) post(url string) *Entry {
         return nil
     }
     return posts[0]
+}
+
+func (dd *DbData) postId(url string) (id int64, err error) {
+    query, err := db.Prepare("select id from post where url = ?")
+    defer query.Close()
+    if err != nil {
+        return
+    }
+    err = query.QueryRow(url).Scan(&id)
+    return
 }
 
 func (db *DbData) posts(limit, offset int) []*Entry {

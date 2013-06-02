@@ -244,14 +244,6 @@ func getCommenterId(xaction *sql.Tx, ctx *web.Context) (id int64, err error) {
     return -1, sql.ErrNoRows
 }
 
-func getPostId(xaction *sql.Tx, url string) (id int64, err error) {
-    query, _ := xaction.Prepare(`select p.id from post as p
-                                 where p.url = ?`)
-    defer query.Close()
-    err = query.QueryRow(url).Scan(&id)
-    return
-}
-
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
     row := db.QueryRow(`select salt, passwd, full_name, email, www
@@ -315,14 +307,14 @@ func submit_post_handler(ctx *web.Context) {
     url := ctx.Params["url"]
     tagsWithUrls := ctx.Params["tags"]
     text := ctx.Params["text"]
+    postId, idErr := data.postId(url)
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err.Error())
         return
     }
-    postId, err := getPostId(xaction, url)
-    if err != nil {
-        if err == sql.ErrNoRows {
+    if idErr != nil {
+        if idErr == sql.ErrNoRows {
             insertPostSql, _ := xaction.Prepare(`insert into post
                                                  (author_id, title, date,
                                                   url, body)
@@ -338,7 +330,7 @@ func submit_post_handler(ctx *web.Context) {
             }
             postId, _ = result.LastInsertId()
         } else {
-            fmt.Println("getPostId failed: " + err.Error())
+            fmt.Println("data.postId() failed: " + idErr.Error())
             ctx.Abort(http.StatusInternalServerError, "Server Error")
             return
         }
@@ -459,6 +451,13 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 }
 
 func comment_handler(ctx *web.Context) {
+    refUrl := xtractReferer(ctx)
+    postId, err := data.postId(refUrl)
+    if err != nil {
+        fmt.Println("data.postId() failed: " + err.Error())
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        return
+    }
     xaction, err := db.Begin()
     if err != nil {
         fmt.Println(err.Error())
@@ -467,13 +466,6 @@ func comment_handler(ctx *web.Context) {
     commenterId, err := getCommenterId(xaction, ctx)
     if err != nil {
         fmt.Println("getCommenterId failed: " + err.Error())
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        return
-    }
-    refUrl := xtractReferer(ctx)
-    postId, err := getPostId(xaction, refUrl)
-    if err != nil {
-        fmt.Println("getPostId failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
