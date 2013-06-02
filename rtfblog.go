@@ -269,21 +269,14 @@ func submit_post_handler(ctx *web.Context) {
     }
     if idErr != nil {
         if idErr == sql.ErrNoRows {
-            insertPostSql, _ := data.xaction().Prepare(`insert into post
-                                                        (author_id, title,
-                                                         date, url, body)
-                                                        values (?, ?, ?, ?, ?)`)
-            defer insertPostSql.Close()
-            authorId := 1 // XXX: it's only me now
-            date := time.Now().Unix()
-            result, err := insertPostSql.Exec(authorId, title, date, url, text)
+            authorId := int64(1) // XXX: it's only me now
+            newPostId, err := data.insertPost(authorId, title, url, text)
             if err != nil {
-                fmt.Println("Failed to insert post: " + err.Error())
                 ctx.Abort(http.StatusInternalServerError, "Server Error")
                 data.rollback()
                 return
             }
-            postId, _ = result.LastInsertId()
+            postId = newPostId
         } else {
             fmt.Println("data.postId() failed: " + idErr.Error())
             ctx.Abort(http.StatusInternalServerError, "Server Error")
