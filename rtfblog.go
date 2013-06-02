@@ -177,13 +177,16 @@ func handler(ctx *web.Context, path string) {
         return
     case "edit_post":
         basicData["PageTitle"] = "Edit Post"
-        if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
-            basicData["Title"] = post.Title
-            basicData["Url"] = post.Url
-            basicData["TagsWithUrls"] = post.TagsWithUrls()
-            basicData["RawBody"] = post.RawBody
-            render(ctx, "edit_post", basicData)
+        url := ctx.Params["post"]
+        if url != "" {
+            if post := data.post(url); post != nil {
+                basicData["Title"] = post.Title
+                basicData["Url"] = post.Url
+                basicData["TagsWithUrls"] = post.TagsWithUrls()
+                basicData["RawBody"] = post.RawBody
+            }
         }
+        render(ctx, "edit_post", basicData)
         return
     case "load_comments":
         if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
