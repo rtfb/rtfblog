@@ -249,13 +249,13 @@ func delete_comment_handler(ctx *web.Context) {
 
 func moderate_comment_handler(ctx *web.Context) {
     action := ctx.Params["action"]
-    redir := ctx.Params["redirect_to"]
     text := ctx.Params["text"]
     id := ctx.Params["id"]
     if action == "edit" && !data.updateComment(id, text) {
         return
     }
-    ctx.Redirect(http.StatusFound, "/"+redir)
+    redir := ctx.Params["redirect_to"]
+    ctx.Redirect(http.StatusFound, fmt.Sprintf("/%s#comment-%s", redir, id))
 }
 
 func submit_post_handler(ctx *web.Context) {
