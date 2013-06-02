@@ -18,6 +18,7 @@ type Data interface {
     numPosts() int
     author(username string) (*Author, error)
     deleteComment(id string) bool
+    updateComment(id, text string) bool
 }
 
 type DbData struct{}
@@ -107,6 +108,15 @@ func (dd *DbData) author(username string) (*Author, error) {
 
 func (dd *DbData) deleteComment(id string) bool {
     _, err := db.Exec("delete from comment where id=?", id)
+    if err != nil {
+        fmt.Println(err.Error())
+        return false
+    }
+    return true
+}
+
+func (dd *DbData) updateComment(id, text string) bool {
+    _, err := db.Exec("update comment set body=? where id=?", text, id)
     if err != nil {
         fmt.Println(err.Error())
         return false

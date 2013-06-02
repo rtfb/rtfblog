@@ -77,6 +77,10 @@ func (dd *TestData) deleteComment(id string) bool {
     return false
 }
 
+func (dd *TestData) updateComment(id, text string) bool {
+    return false
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }

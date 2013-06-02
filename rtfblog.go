@@ -285,12 +285,8 @@ func moderate_comment_handler(ctx *web.Context) {
     redir := ctx.Params["redirect_to"]
     text := ctx.Params["text"]
     id := ctx.Params["id"]
-    if action == "edit" {
-        _, err := db.Exec(`update comment set body=? where id=?`, text, id)
-        if err != nil {
-            fmt.Println(err.Error())
-            return
-        }
+    if action == "edit" && !data.updateComment(id, text) {
+        return
     }
     ctx.Redirect(http.StatusFound, "/"+redir)
 }
