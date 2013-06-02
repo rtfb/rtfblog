@@ -73,6 +73,10 @@ func (dd *TestData) author(username string) (*Author, error) {
     return test_author, nil
 }
 
+func (dd *TestData) deleteComment(id string) bool {
+    return false
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }

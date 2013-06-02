@@ -17,6 +17,7 @@ type Data interface {
     titles(limit int) []*EntryLink
     numPosts() int
     author(username string) (*Author, error)
+    deleteComment(id string) bool
 }
 
 type DbData struct{}
@@ -102,6 +103,15 @@ func (dd *DbData) author(username string) (*Author, error) {
     a.UserName = username
     err := row.Scan(&a.Salt, &a.Passwd, &a.FullName, &a.Email, &a.Www)
     return &a, err
+}
+
+func (dd *DbData) deleteComment(id string) bool {
+    _, err := db.Exec("delete from comment where id=?", id)
+    if err != nil {
+        fmt.Println(err.Error())
+        return false
+    }
+    return true
 }
 
 func loadPosts(limit, offset int, url string) []*Entry {

@@ -274,12 +274,8 @@ func delete_comment_handler(ctx *web.Context) {
     action := ctx.Params["action"]
     redir := ctx.Params["redirect_to"]
     id := ctx.Params["id"]
-    if action == "delete" {
-        _, err := db.Exec(`delete from comment where id=?`, id)
-        if err != nil {
-            fmt.Println(err.Error())
-            return
-        }
+    if action == "delete" && !data.deleteComment(id) {
+        return
     }
     ctx.Redirect(http.StatusFound, "/"+redir)
 }
