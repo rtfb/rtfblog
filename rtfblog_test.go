@@ -2,6 +2,7 @@ package main
 
 import (
     "./util"
+    "database/sql"
     "fmt"
     "io/ioutil"
     "net/http"
@@ -79,6 +80,20 @@ func (dd *TestData) deleteComment(id string) bool {
 
 func (dd *TestData) updateComment(id, text string) bool {
     return false
+}
+
+func (dd *TestData) begin() bool {
+    return true
+}
+
+func (dd *TestData) commit() {
+}
+
+func (dd *TestData) rollback() {
+}
+
+func (dd *TestData) xaction() *sql.Tx {
+    return nil
 }
 
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {

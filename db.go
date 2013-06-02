@@ -19,9 +19,52 @@ type Data interface {
     author(username string) (*Author, error)
     deleteComment(id string) bool
     updateComment(id, text string) bool
+    begin() bool
+    commit()
+    rollback()
+    xaction() *sql.Tx
 }
 
-type DbData struct{}
+type DbData struct {
+    db  *sql.DB
+    tx  *sql.Tx
+}
+
+func (dd *DbData) begin() bool {
+    if dd.tx != nil {
+        fmt.Println("Error! DbData.begin() called within transaction!")
+        return false
+    }
+    xaction, err := dd.db.Begin()
+    if err != nil {
+        fmt.Println(err.Error())
+        return false
+    }
+    dd.tx = xaction
+    return true
+}
+
+func (dd *DbData) commit() {
+    if dd.tx == nil {
+        fmt.Println("Error! DbData.commit() called outside of transaction!")
+        return
+    }
+    dd.tx.Commit()
+    dd.tx = nil
+}
+
+func (dd *DbData) rollback() {
+    if dd.tx == nil {
+        fmt.Println("Error! DbData.rollback() called outside of transaction!")
+        return
+    }
+    dd.tx.Rollback()
+    dd.tx = nil
+}
+
+func (dd *DbData) xaction() *sql.Tx {
+    return dd.tx
+}
 
 func (db *DbData) post(url string) *Entry {
     posts := loadPosts(-1, -1, url)

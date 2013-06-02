@@ -297,17 +297,15 @@ func submit_post_handler(ctx *web.Context) {
     tagsWithUrls := ctx.Params["tags"]
     text := ctx.Params["text"]
     postId, idErr := data.postId(url)
-    xaction, err := db.Begin()
-    if err != nil {
-        fmt.Println(err.Error())
+    if !data.begin() {
         return
     }
     if idErr != nil {
         if idErr == sql.ErrNoRows {
-            insertPostSql, _ := xaction.Prepare(`insert into post
-                                                 (author_id, title, date,
-                                                  url, body)
-                                                 values (?, ?, ?, ?, ?)`)
+            insertPostSql, _ := data.xaction().Prepare(`insert into post
+                                                        (author_id, title,
+                                                         date, url, body)
+                                                        values (?, ?, ?, ?, ?)`)
             defer insertPostSql.Close()
             authorId := 1 // XXX: it's only me now
             date := time.Now().Unix()
@@ -324,17 +322,18 @@ func submit_post_handler(ctx *web.Context) {
             return
         }
     }
-    updateStmt, _ := xaction.Prepare(`update post set title=?, url=?, body=?
-                                      where id=?`)
+    updateStmt, _ := data.xaction().Prepare(`update post
+                                             set title=?, url=?, body=?
+                                             where id=?`)
     defer updateStmt.Close()
-    _, err = updateStmt.Exec(title, url, text, postId)
+    _, err := updateStmt.Exec(title, url, text, postId)
     if err != nil {
         fmt.Println(err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
-    updateTags(xaction, tagsWithUrls, postId)
-    xaction.Commit()
+    updateTags(data.xaction(), tagsWithUrls, postId)
+    data.commit()
     ctx.Redirect(http.StatusFound, "/"+url)
 }
 
@@ -447,31 +446,29 @@ func comment_handler(ctx *web.Context) {
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
-    xaction, err := db.Begin()
-    if err != nil {
-        fmt.Println(err.Error())
+    if !data.begin() {
         return
     }
-    commenterId, err := getCommenterId(xaction, ctx)
+    commenterId, err := getCommenterId(data.xaction(), ctx)
     if err != nil {
         fmt.Println("getCommenterId failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
-        xaction.Rollback()
+        data.rollback()
         return
     }
-    stmt, _ := xaction.Prepare(`insert into comment(commenter_id, post_id,
-                                                    timestamp, body)
-                                values(?, ?, ?, ?)`)
+    stmt, _ := data.xaction().Prepare(`insert into comment
+                                       (commenter_id, post_id, timestamp, body)
+                                       values (?, ?, ?, ?)`)
     defer stmt.Close()
     body := ctx.Params["text"]
     result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
     if err != nil {
         fmt.Println("Failed to insert comment: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
-        xaction.Rollback()
+        data.rollback()
     }
     commentId, _ := result.LastInsertId()
-    xaction.Commit()
+    data.commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
     url := conf.Get("url") + conf.Get("port") + redir
     name := ctx.Params["name"]
@@ -541,5 +538,5 @@ func main() {
     conf = loadConfig(filepath.Join(root, "server.conf"))
     db = openDb(conf.Get("database"))
     defer db.Close()
-    runServer(&DbData{})
+    runServer(&DbData{db, nil})
 }
