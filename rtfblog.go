@@ -283,17 +283,18 @@ func submit_post_handler(ctx *web.Context) {
             data.rollback()
             return
         }
-    }
-    updateStmt, _ := data.xaction().Prepare(`update post
-                                             set title=?, url=?, body=?
-                                             where id=?`)
-    defer updateStmt.Close()
-    _, err := updateStmt.Exec(title, url, text, postId)
-    if err != nil {
-        fmt.Println(err.Error())
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        data.rollback()
-        return
+    } else {
+        updateStmt, _ := data.xaction().Prepare(`update post
+                                                 set title=?, url=?, body=?
+                                                 where id=?`)
+        defer updateStmt.Close()
+        _, err := updateStmt.Exec(title, url, text, postId)
+        if err != nil {
+            fmt.Println(err.Error())
+            ctx.Abort(http.StatusInternalServerError, "Server Error")
+            data.rollback()
+            return
+        }
     }
     updateTags(data.xaction(), tagsWithUrls, postId)
     data.commit()
