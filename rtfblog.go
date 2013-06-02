@@ -290,7 +290,7 @@ func submit_post_handler(ctx *web.Context) {
             return
         }
     }
-    updateTags(data.xaction(), tagsWithUrls, postId)
+    data.updateTags(explodeTags(tagsWithUrls), postId)
     data.commit()
     ctx.Redirect(http.StatusFound, "/"+url)
 }
@@ -310,48 +310,6 @@ func explodeTags(tagsWithUrls string) []*Tag {
         tags = append(tags, &Tag{url, tag})
     }
     return tags
-}
-
-func updateTags(xaction *sql.Tx, tagsWithUrls string, postId int64) {
-    delStmt, _ := xaction.Prepare("delete from tagmap where post_id=?")
-    defer delStmt.Close()
-    delStmt.Exec(postId)
-    for _, t := range explodeTags(tagsWithUrls) {
-        tagId, _ := insertOrGetTagId(xaction, t)
-        updateTagMap(xaction, postId, tagId)
-    }
-}
-
-func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
-    query, _ := xaction.Prepare("select id from tag where url=?")
-    defer query.Close()
-    err = query.QueryRow(tag.TagUrl).Scan(&tagId)
-    switch err {
-    case nil:
-        return
-    case sql.ErrNoRows:
-        insertTagSql, _ := xaction.Prepare(`insert into tag
-                                            (name, url)
-                                            values (?, ?)`)
-        defer insertTagSql.Close()
-        result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
-        if err != nil {
-            fmt.Println("Failed to insert tag: " + err.Error())
-        }
-        return result.LastInsertId()
-    default:
-        fmt.Printf("err: %s", err.Error())
-        return -1, sql.ErrNoRows
-    }
-    return -1, sql.ErrNoRows
-}
-
-func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
-    stmt, _ := xaction.Prepare(`insert into tagmap
-                                (tag_id, post_id)
-                                values (?, ?)`)
-    defer stmt.Close()
-    stmt.Exec(tagId, postId)
 }
 
 func upload_image_handler(ctx *web.Context) {

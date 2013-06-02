@@ -112,6 +112,9 @@ func (dd *TestData) updatePost(id int64, title, url, body string) bool {
     return true
 }
 
+func (dd *TestData) updateTags(tags []*Tag, postId int64) {
+}
+
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
     jar.cookies = cookies
 }

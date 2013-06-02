@@ -23,6 +23,7 @@ type Data interface {
     insertComment(commenterId, postId int64, body string) (id int64, err error)
     insertPost(author int64, title, url, body string) (id int64, err error)
     updatePost(id int64, tiel, url, body string) bool
+    updateTags(tags []*Tag, postId int64)
     begin() bool
     commit()
     rollback()
@@ -234,6 +235,16 @@ func (dd *DbData) updatePost(id int64, title, url, body string) bool {
     return true
 }
 
+func (dd *DbData) updateTags(tags []*Tag, postId int64) {
+    delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=?")
+    defer delStmt.Close()
+    delStmt.Exec(postId)
+    for _, t := range tags {
+        tagId, _ := insertOrGetTagId(dd.tx, t)
+        updateTagMap(dd.tx, postId, tagId)
+    }
+}
+
 func (dd *DbData) author(username string) (*Author, error) {
     row := dd.db.QueryRow(`select salt, passwd, full_name, email, www
                            from author where disp_name=?`, username)
@@ -382,4 +393,36 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
         comments = append(comments, comment)
     }
     return comments
+}
+
+func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
+    query, _ := xaction.Prepare("select id from tag where url=?")
+    defer query.Close()
+    err = query.QueryRow(tag.TagUrl).Scan(&tagId)
+    switch err {
+    case nil:
+        return
+    case sql.ErrNoRows:
+        insertTagSql, _ := xaction.Prepare(`insert into tag
+                                            (name, url)
+                                            values (?, ?)`)
+        defer insertTagSql.Close()
+        result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
+        if err != nil {
+            fmt.Println("Failed to insert tag: " + err.Error())
+        }
+        return result.LastInsertId()
+    default:
+        fmt.Printf("err: %s", err.Error())
+        return -1, sql.ErrNoRows
+    }
+    return -1, sql.ErrNoRows
+}
+
+func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
+    stmt, _ := xaction.Prepare(`insert into tagmap
+                                (tag_id, post_id)
+                                values (?, ?)`)
+    defer stmt.Close()
+    stmt.Exec(tagId, postId)
 }
