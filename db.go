@@ -396,17 +396,25 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
 }
 
 func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
-    query, _ := xaction.Prepare("select id from tag where url=?")
+    query, err := xaction.Prepare("select id from tag where url=?")
     defer query.Close()
+    if err != nil {
+        fmt.Println("Failed to prepare select tag stmt: " + err.Error())
+        return
+    }
     err = query.QueryRow(tag.TagUrl).Scan(&tagId)
     switch err {
     case nil:
         return
     case sql.ErrNoRows:
-        insertTagSql, _ := xaction.Prepare(`insert into tag
-                                            (name, url)
-                                            values (?, ?)`)
+        insertTagSql, err := xaction.Prepare(`insert into tag
+                                              (name, url)
+                                              values (?, ?)`)
         defer insertTagSql.Close()
+        if err != nil {
+            fmt.Println("Failed to prepare insert tag stmt: " + err.Error())
+            return -1, err
+        }
         result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
         if err != nil {
             fmt.Println("Failed to insert tag: " + err.Error())
@@ -420,9 +428,12 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
 }
 
 func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
-    stmt, _ := xaction.Prepare(`insert into tagmap
-                                (tag_id, post_id)
-                                values (?, ?)`)
+    stmt, err := xaction.Prepare(`insert into tagmap
+                                  (tag_id, post_id)
+                                  values (?, ?)`)
     defer stmt.Close()
+    if err != nil {
+        fmt.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
+    }
     stmt.Exec(tagId, postId)
 }
