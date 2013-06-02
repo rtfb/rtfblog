@@ -348,7 +348,7 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
         defer insertTagSql.Close()
         result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
         if err != nil {
-            fmt.Println("Failed to insert commenter: " + err.Error())
+            fmt.Println("Failed to insert tag: " + err.Error())
         }
         return result.LastInsertId()
     default:
