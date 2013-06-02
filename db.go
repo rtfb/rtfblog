@@ -16,6 +16,7 @@ type Data interface {
     posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
     numPosts() int
+    author(username string) (*Author, error)
 }
 
 type DbData struct{}
@@ -92,6 +93,15 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
         links = append(links, entryLink)
     }
     return
+}
+
+func (dd *DbData) author(username string) (*Author, error) {
+    row := db.QueryRow(`select salt, passwd, full_name, email, www
+                        from author where disp_name=?`, username)
+    var a Author
+    a.UserName = username
+    err := row.Scan(&a.Salt, &a.Passwd, &a.FullName, &a.Email, &a.Www)
+    return &a, err
 }
 
 func loadPosts(limit, offset int, url string) []*Entry {

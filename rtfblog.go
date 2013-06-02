@@ -246,10 +246,7 @@ func getCommenterId(xaction *sql.Tx, ctx *web.Context) (id int64, err error) {
 
 func login_handler(ctx *web.Context) {
     uname := ctx.Params["uname"]
-    row := db.QueryRow(`select salt, passwd, full_name, email, www
-                        from author where disp_name=?`, uname)
-    var salt, passwdHash, fullName, email, www string
-    err := row.Scan(&salt, &passwdHash, &fullName, &email, &www)
+    a, err := data.author(uname)
     if err == sql.ErrNoRows {
         ctx.Redirect(http.StatusFound, "/login")
         return
@@ -260,8 +257,8 @@ func login_handler(ctx *web.Context) {
         return
     }
     passwd := ctx.Request.Form["passwd"][0]
-    hash := util.SaltAndPepper(salt, passwd)
-    if hash == passwdHash {
+    hash := util.SaltAndPepper(a.Salt, passwd)
+    if hash == a.Passwd {
         ctx.SetSecureCookie("adminlogin", "yesplease", 3600*24)
         redir := ctx.Params["redirect_to"]
         if redir == "login" {

@@ -24,10 +24,11 @@ type T struct {
 }
 
 var (
-    jar        = new(Jar)
-    tclient    = &http.Client{nil, nil, jar}
-    test_comm  = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
-    test_posts = make([]*Entry, 0)
+    jar         = new(Jar)
+    tclient     = &http.Client{nil, nil, jar}
+    test_comm   = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
+    test_posts  = make([]*Entry, 0)
+    test_author = new(Author)
 )
 
 type TestData struct{}
@@ -66,6 +67,10 @@ func (dd *TestData) titles(limit int) (links []*EntryLink) {
         links = append(links, entryLink)
     }
     return
+}
+
+func (dd *TestData) author(username string) (*Author, error) {
+    return test_author, nil
 }
 
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
@@ -387,6 +392,9 @@ func assertElem(t *testing.T, node *h5.Node, elem string) {
 
 func forgeTestUser(uname, passwd string) error {
     salt, passwdHash := util.Encrypt(passwd)
+    test_author.Salt = salt
+    test_author.Passwd = passwdHash
+    test_author.UserName = uname
     updateStmt, err := db.Prepare(`update author set disp_name=?, salt=?, passwd=?
                                    where id=?`)
     if err != nil {

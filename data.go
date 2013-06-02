@@ -17,6 +17,15 @@ type Tag struct {
     TagName string
 }
 
+type Author struct {
+    UserName string
+    Salt     string
+    Passwd   string
+    FullName string
+    Email    string
+    Www      string
+}
+
 type Comment struct {
     Name      string
     Email     string
