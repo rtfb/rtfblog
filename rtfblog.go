@@ -313,12 +313,14 @@ func submit_post_handler(ctx *web.Context) {
             if err != nil {
                 fmt.Println("Failed to insert post: " + err.Error())
                 ctx.Abort(http.StatusInternalServerError, "Server Error")
+                data.rollback()
                 return
             }
             postId, _ = result.LastInsertId()
         } else {
             fmt.Println("data.postId() failed: " + idErr.Error())
             ctx.Abort(http.StatusInternalServerError, "Server Error")
+            data.rollback()
             return
         }
     }
@@ -330,6 +332,7 @@ func submit_post_handler(ctx *web.Context) {
     if err != nil {
         fmt.Println(err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
+        data.rollback()
         return
     }
     updateTags(data.xaction(), tagsWithUrls, postId)
