@@ -158,7 +158,7 @@ func mustContain(t *testing.T, page string, what string) {
     }
 }
 
-func TestStartServer(t *testing.T) {
+func init() {
     conf = loadConfig("server.conf")
     forgeTestUser("testuser", "testpasswd")
     auth := "Author"
