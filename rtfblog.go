@@ -27,8 +27,9 @@ import (
 type SrvConfig map[string]interface{}
 
 var (
-    conf SrvConfig
-    data Data
+    conf   SrvConfig
+    data   Data
+    logger *log.Logger
 )
 
 func (c *SrvConfig) Get(key string) string {
@@ -108,7 +109,7 @@ func produceFeedXml(ctx *web.Context, posts []*Entry) {
     }
     rss, err := feed.ToRss()
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
     }
     ctx.WriteString(rss)
 }
@@ -191,7 +192,7 @@ func handler(ctx *web.Context, path string) {
         if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
             b, err := json.Marshal(post)
             if err != nil {
-                fmt.Println(err.Error())
+                logger.Println(err.Error())
                 return
             }
             ctx.WriteString(string(b))
@@ -219,7 +220,7 @@ func login_handler(ctx *web.Context) {
         return
     }
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         ctx.Redirect(http.StatusFound, "/login")
         return
     }
@@ -278,7 +279,7 @@ func submit_post_handler(ctx *web.Context) {
             }
             postId = newPostId
         } else {
-            fmt.Println("data.postId() failed: " + idErr.Error())
+            logger.Println("data.postId() failed: " + idErr.Error())
             ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
             return
@@ -333,23 +334,23 @@ func upload_image_handler(ctx *web.Context) {
 func handleUpload(r *http.Request, p *multipart.Part) {
     defer func() {
         if rec := recover(); rec != nil {
-            log.Println(rec)
+            logger.Println(rec)
         }
     }()
     lr := &io.LimitedReader{R: p, N: MAX_FILE_SIZE + 1}
     filename := "static/" + p.FileName()
     fo, err := os.Create(filename)
     if err != nil {
-        fmt.Printf("err writing %q!, err = %s", filename, err.Error())
+        logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
     }
     defer fo.Close()
     w := bufio.NewWriter(fo)
     _, err = io.Copy(w, lr)
     if err != nil {
-        fmt.Printf("err writing %q!, err = %s", filename, err.Error())
+        logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
     }
     if err = w.Flush(); err != nil {
-        fmt.Printf("err flushing writer for %q!, err = %s", filename, err.Error())
+        logger.Printf("err flushing writer for %q!, err = %s\n", filename, err.Error())
     }
     return
 }
@@ -358,7 +359,7 @@ func comment_handler(ctx *web.Context) {
     refUrl := xtractReferer(ctx)
     postId, err := data.postId(refUrl)
     if err != nil {
-        fmt.Println("data.postId() failed: " + err.Error())
+        logger.Println("data.postId() failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
@@ -371,7 +372,7 @@ func comment_handler(ctx *web.Context) {
     ip := ctx.Request.RemoteAddr
     commenterId, err := data.selOrInsCommenter(name, email, website, ip)
     if err != nil {
-        fmt.Println("data.selOrInsCommenter() failed: " + err.Error())
+        logger.Println("data.selOrInsCommenter() failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         data.rollback()
         return
@@ -396,7 +397,7 @@ func SendEmail(author, mail, www, comment, url, postTitle string) {
     notifee := conf.Get("email")
     err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
     if err != nil {
-        println("err initing gmail: ", err.Error())
+        logger.Println("err initing gmail: ", err.Error())
         return
     }
     format := "\n\nNew comment from %s <%s> (%s):\n\n%s\n\nURL: %s"
@@ -405,7 +406,7 @@ func SendEmail(author, mail, www, comment, url, postTitle string) {
     mess := email.NewBriefMessageFrom(subj, message, gmailSenderAcct, notifee)
     err = mess.Send()
     if err != nil {
-        println("err sending email: ", err.Error())
+        logger.Println("err sending email: ", err.Error())
         return
     }
 }
@@ -416,12 +417,6 @@ func serve_favicon(ctx *web.Context) {
 
 func runServer(_data Data) {
     data = _data
-    f, err := os.Create(conf.Get("log"))
-    if err != nil {
-        println("create log: " + err.Error())
-        return
-    }
-    logger := log.New(f, "", log.Ldate|log.Ltime)
     web.Post("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
     web.Get("/delete_comment", delete_comment_handler)
@@ -439,9 +434,15 @@ func runServer(_data Data) {
 func main() {
     root, _ := filepath.Split(filepath.Clean(os.Args[0]))
     conf = loadConfig(filepath.Join(root, "server.conf"))
+    f, err := os.Create(conf.Get("log"))
+    if err != nil {
+        println("create log: " + err.Error())
+        return
+    }
+    logger = log.New(f, "", log.Ldate|log.Ltime|log.Lshortfile)
     db, err := sql.Open("sqlite3", conf.Get("database"))
     if err != nil {
-        fmt.Println("sql: " + err.Error())
+        logger.Println("sql: " + err.Error())
         return
     }
     defer db.Close()

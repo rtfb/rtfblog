@@ -36,12 +36,12 @@ type DbData struct {
 
 func (dd *DbData) begin() bool {
     if dd.tx != nil {
-        fmt.Println("Error! DbData.begin() called within transaction!")
+        logger.Println("Error! DbData.begin() called within transaction!")
         return false
     }
     xaction, err := dd.db.Begin()
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return false
     }
     dd.tx = xaction
@@ -50,7 +50,7 @@ func (dd *DbData) begin() bool {
 
 func (dd *DbData) commit() {
     if dd.tx == nil {
-        fmt.Println("Error! DbData.commit() called outside of transaction!")
+        logger.Println("Error! DbData.commit() called outside of transaction!")
         return
     }
     dd.tx.Commit()
@@ -59,7 +59,7 @@ func (dd *DbData) commit() {
 
 func (dd *DbData) rollback() {
     if dd.tx == nil {
-        fmt.Println("Error! DbData.rollback() called outside of transaction!")
+        logger.Println("Error! DbData.rollback() called outside of transaction!")
         return
     }
     dd.tx.Rollback()
@@ -70,7 +70,7 @@ func (dd *DbData) post(url string) *Entry {
     posts := loadPosts(dd.db, -1, -1, url)
     if len(posts) != 1 {
         msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
-        println(fmt.Sprintf(msg, url, len(posts)))
+        logger.Println(fmt.Sprintf(msg, url, len(posts)))
         return nil
     }
     return posts[0]
@@ -93,7 +93,7 @@ func (dd *DbData) posts(limit, offset int) []*Entry {
 func (dd *DbData) numPosts() int {
     rows, err := dd.db.Query(`select count(*) from post`)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return 0
     }
     defer rows.Close()
@@ -113,7 +113,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     }
     stmt, err := dd.db.Prepare(selectSql)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return
     }
     defer stmt.Close()
@@ -124,7 +124,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
         rows, err = stmt.Query()
     }
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return
     }
     defer rows.Close()
@@ -132,7 +132,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
         entryLink := new(EntryLink)
         err = rows.Scan(&entryLink.Title, &entryLink.Url)
         if err != nil {
-            fmt.Println(err.Error())
+            logger.Println(err.Error())
             continue
         }
         links = append(links, entryLink)
@@ -144,7 +144,7 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
     id = -1
     err = sql.ErrNoRows
     if dd.tx == nil {
-        fmt.Println("DbData.selOrInsCommenter() can only be called within xaction!")
+        logger.Println("DbData.selOrInsCommenter() can only be called within xaction!")
         return
     }
     query, _ := dd.tx.Prepare(`select c.id from commenter as c
@@ -163,12 +163,11 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
         defer insertCommenter.Close()
         result, err := insertCommenter.Exec(name, email, website, ip)
         if err != nil {
-            fmt.Println("Failed to insert commenter: " + err.Error())
+            logger.Println("Failed to insert commenter: " + err.Error())
         }
         return result.LastInsertId()
     default:
-        fmt.Println("err")
-        fmt.Println(err.Error())
+        logger.Println("err: " + err.Error())
         return
     }
     return
@@ -178,20 +177,20 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
     id = -1
     err = sql.ErrNoRows
     if dd.tx == nil {
-        fmt.Println("DbData.insertComment() can only be called within xaction!")
+        logger.Println("DbData.insertComment() can only be called within xaction!")
         return
     }
     stmt, err := dd.tx.Prepare(`insert into comment
                                 (commenter_id, post_id, timestamp, body)
                                 values (?, ?, ?, ?)`)
     if err != nil {
-        fmt.Println("Failed to prepare insert comment stmt: " + err.Error())
+        logger.Println("Failed to prepare insert comment stmt: " + err.Error())
         return
     }
     defer stmt.Close()
     result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
     if err != nil {
-        fmt.Println("Failed to insert comment: " + err.Error())
+        logger.Println("Failed to insert comment: " + err.Error())
         return
     }
     return result.LastInsertId()
@@ -201,7 +200,7 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
     id = -1
     err = sql.ErrNoRows
     if dd.tx == nil {
-        fmt.Println("DbData.insertPost() can only be called within xaction!")
+        logger.Println("DbData.insertPost() can only be called within xaction!")
         return
     }
     insertPostSql, _ := dd.tx.Prepare(`insert into post
@@ -211,7 +210,7 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
     date := time.Now().Unix()
     result, err := insertPostSql.Exec(author, title, date, url, body)
     if err != nil {
-        fmt.Println("Failed to insert post: " + err.Error())
+        logger.Println("Failed to insert post: " + err.Error())
         return
     }
     return result.LastInsertId()
@@ -224,7 +223,7 @@ func (dd *DbData) updatePost(id int64, title, url, body string) bool {
     defer updateStmt.Close()
     _, err := updateStmt.Exec(title, url, body, id)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return false
     }
     return true
@@ -252,7 +251,7 @@ func (dd *DbData) author(username string) (*Author, error) {
 func (dd *DbData) deleteComment(id string) bool {
     _, err := dd.db.Exec("delete from comment where id=?", id)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return false
     }
     return true
@@ -261,7 +260,7 @@ func (dd *DbData) deleteComment(id string) bool {
 func (dd *DbData) updateComment(id, text string) bool {
     _, err := dd.db.Exec("update comment set body=? where id=?", text, id)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return false
     }
     return true
@@ -273,7 +272,7 @@ func loadPosts(db *sql.DB, limit, offset int, url string) []*Entry {
     }
     data, err := queryPosts(db, limit, offset, url)
     if err != nil {
-        println(err.Error())
+        logger.Println(err.Error())
         return nil
     }
     return data
@@ -301,7 +300,7 @@ func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, er
     query := fmt.Sprintf(queryFmt, postUrlWhereClause, limitClause, offsetClause)
     rows, err := db.Query(query)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return
     }
     defer rows.Close()
@@ -312,7 +311,7 @@ func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, er
         err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
             &entry.RawBody, &entry.Url)
         if err != nil {
-            fmt.Println(err.Error())
+            logger.Println(err.Error())
             continue
         }
         entry.Body = string(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
@@ -330,13 +329,13 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
                              where t.id = tm.tag_id
                                    and tm.post_id = ?`)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return nil
     }
     defer stmt.Close()
     rows, err := stmt.Query(postId)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return nil
     }
     defer rows.Close()
@@ -345,7 +344,7 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
         tag := new(Tag)
         err = rows.Scan(&tag.TagName, &tag.TagUrl)
         if err != nil {
-            fmt.Println(err.Error())
+            logger.Println(err.Error())
             continue
         }
         tags = append(tags, tag)
@@ -361,13 +360,13 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
                                    and c.post_id = ?
                              order by c.timestamp asc`)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return nil
     }
     defer stmt.Close()
     data, err := stmt.Query(postId)
     if err != nil {
-        fmt.Println(err.Error())
+        logger.Println(err.Error())
         return nil
     }
     defer data.Close()
@@ -378,7 +377,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
         err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
             &comment.CommentId, &unixDate, &comment.RawBody)
         if err != nil {
-            fmt.Printf("error scanning comment row: %s\n", err.Error())
+            logger.Printf("error scanning comment row: %s\n", err.Error())
         }
         hash := md5.New()
         hash.Write([]byte(strings.ToLower(comment.Email)))
@@ -393,7 +392,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
 func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
     query, err := xaction.Prepare("select id from tag where url=?")
     if err != nil {
-        fmt.Println("Failed to prepare select tag stmt: " + err.Error())
+        logger.Println("Failed to prepare select tag stmt: " + err.Error())
         return
     }
     defer query.Close()
@@ -406,17 +405,17 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
                                               (name, url)
                                               values (?, ?)`)
         if err != nil {
-            fmt.Println("Failed to prepare insert tag stmt: " + err.Error())
+            logger.Println("Failed to prepare insert tag stmt: " + err.Error())
             return -1, err
         }
         defer insertTagSql.Close()
         result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
         if err != nil {
-            fmt.Println("Failed to insert tag: " + err.Error())
+            logger.Println("Failed to insert tag: " + err.Error())
         }
         return result.LastInsertId()
     default:
-        fmt.Printf("err: %s", err.Error())
+        logger.Printf("err: %s", err.Error())
         return -1, sql.ErrNoRows
     }
     return -1, sql.ErrNoRows
@@ -427,7 +426,7 @@ func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
                                   (tag_id, post_id)
                                   values (?, ?)`)
     if err != nil {
-        fmt.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
+        logger.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
     }
     defer stmt.Close()
     stmt.Exec(tagId, postId)
