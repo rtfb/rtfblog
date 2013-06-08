@@ -11,8 +11,9 @@ import (
     "strings"
     "testing"
 
+    "code.google.com/p/go-html-transform/css/selector"
     "code.google.com/p/go-html-transform/h5"
-    "code.google.com/p/go-html-transform/html/transform"
+    "code.google.com/p/go.net/html"
 )
 
 type Jar struct {
@@ -238,7 +239,7 @@ func TestEntryListHasAuthor(t *testing.T) {
     nodes := query(t, "", "#author")
     for _, node := range nodes {
         assertElem(t, node, "div")
-        if len(node.Children) == 0 {
+        if len(h5.Children(node)) == 0 {
             t.Fatalf("No author specified in author div!")
         }
         checkAuthorSection(T{t}, node)
@@ -249,42 +250,44 @@ func TestEntriesHaveTagsInList(t *testing.T) {
     nodes := query(t, "", "#tags")
     for _, node := range nodes {
         assertElem(t, node, "div")
-        if len(node.Children) == 0 {
+        if len(h5.Children(node)) == 0 {
             t.Fatalf("Empty tags div found!")
         }
         checkTagsSection(T{t}, node)
     }
 }
 
-func checkTagsSection(t T, node *h5.Node) {
-    if strings.Contains(node.String(), "&nbsp;") {
-        return
+func cssSelect(t T, node *html.Node, query string) []*html.Node {
+    chain, err := selector.Selector(query)
+    if err != nil {
+        t.Fatalf("WTF? Err=%s", query, err.Error())
     }
-    doc, err := transform.NewDoc(node.String())
-    t.failIf(err != nil, "Error parsing tags section!")
-    q := transform.NewSelectorQuery("a")
-    n2 := q.Apply(doc)
-    t.failIf(len(n2) == 0, "Tags node not found in section: %q", node.String())
+    return chain.Find(node)
 }
 
-func checkAuthorSection(t T, node *h5.Node) {
-    date := node.Children[0].Data()
+func checkTagsSection(t T, node *html.Node) {
+    if strings.Contains(h5.NewTree(node).String(), "&nbsp;") {
+        return
+    }
+    n2 := cssSelect(t, node, "a")
+    t.failIf(len(n2) == 0, "Tags node not found in section: %q", h5.NewTree(node).String())
+}
+
+func checkAuthorSection(t T, node *html.Node) {
+    date := node.FirstChild.Data
     dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
     m := dateRe.FindString(date)
     t.failIf(m == "", "No date found in author section!")
-    doc, err := transform.NewDoc(node.String())
-    t.failIf(err != nil, "Error parsing author section!")
-    q := transform.NewSelectorQuery("strong")
-    n2 := q.Apply(doc)
-    t.failIf(len(n2) != 1, "Author node not found in section: %q", node.String())
-    t.failIf(n2[0].Children == nil, "Author node not found in section: %q", node.String())
+    n2 := cssSelect(t, node, "strong")
+    t.failIf(len(n2) != 1, "Author node not found in section: %q", h5.NewTree(node).String())
+    t.failIf(h5.Children(n2[0]) == nil, "Author node not found in section: %q", h5.NewTree(node).String())
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
     for _, e := range test_posts {
         node := query1(t, e.Url, "#author")
         assertElem(t, node, "div")
-        if len(node.Children) == 0 {
+        if len(h5.Children(node)) == 0 {
             t.Fatalf("No author specified in author div!")
         }
         checkAuthorSection(T{t}, node)
@@ -307,28 +310,28 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
     }
 }
 
-func checkCommentsSection(t T, node *h5.Node) {
-    noComments := transform.NewSelectorQuery("p").Apply(node)
-    comments := transform.NewSelectorQuery("strong").Apply(node)
+func checkCommentsSection(t T, node *html.Node) {
+    noComments := cssSelect(t, node, "p")
+    comments := cssSelect(t, node, "strong")
     t.failIf(len(noComments) == 0 && len(comments) == 0,
-        "Comments node not found in section: %q", node.String())
+        "Comments node not found in section: %q", h5.NewTree(node).String())
     if len(comments) > 0 {
-        headers := transform.NewSelectorQuery("#comment-container").Apply(node)
+        headers := cssSelect(t, node, "#comment-container")
         t.failIf(len(headers) == 0,
-            "Comment header not found in section: %q", node.String())
-        bodies := transform.NewSelectorQuery("#bubble-container").Apply(node)
+            "Comment header not found in section: %q", h5.NewTree(node).String())
+        bodies := cssSelect(t, node, "#bubble-container")
         t.failIf(len(bodies) == 0,
-            "Comment body not found in section: %q", node.String())
+            "Comment body not found in section: %q", h5.NewTree(node).String())
     }
 }
 
-func emptyChildren(node *h5.Node) bool {
-    if len(node.Children) == 0 {
+func emptyChildren(node *html.Node) bool {
+    if len(h5.Children(node)) == 0 {
         return true
     }
     sum := ""
-    for _, ch := range node.Children {
-        sum += ch.Data()
+    for _, ch := range h5.Children(node) {
+        sum += ch.Data
     }
     return strings.TrimSpace(sum) == ""
 }
@@ -339,7 +342,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
         if len(nodes) > 0 {
             for _, node := range nodes {
                 assertElem(t, node, "div")
-                if len(node.Children) == 0 {
+                if len(h5.Children(node)) == 0 {
                     t.Fatalf("Empty tags div found!")
                 }
                 checkTagsSection(T{t}, node)
@@ -389,7 +392,7 @@ func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     assertElem(t, node, "form")
 }
 
-func query(t *testing.T, url, query string) []*h5.Node {
+func query(t *testing.T, url, query string) []*html.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
         t.Fatalf("No nodes found: %q", query)
@@ -397,17 +400,16 @@ func query(t *testing.T, url, query string) []*h5.Node {
     return nodes
 }
 
-func query0(t *testing.T, url, query string) []*h5.Node {
+func query0(t *testing.T, url, query string) []*html.Node {
     html := curl(url)
-    doc, err := transform.NewDoc(html)
+    doctree, err := h5.NewFromString(html)
     if err != nil {
-        t.Fatalf("Error parsing document! URL=%q, Err=%s", url, err.Error())
+        t.Fatalf("Error in NewFromString! doc=%q, Err=%s", html, err.Error())
     }
-    q := transform.NewSelectorQuery(query)
-    return q.Apply(doc)
+    return cssSelect(T{t}, doctree.Top(), query)
 }
 
-func query1(t *testing.T, url, q string) *h5.Node {
+func query1(t *testing.T, url, q string) *html.Node {
     nodes := query(t, url, q)
     if len(nodes) > 1 {
         t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
@@ -415,9 +417,9 @@ func query1(t *testing.T, url, q string) *h5.Node {
     return nodes[0]
 }
 
-func assertElem(t *testing.T, node *h5.Node, elem string) {
-    if !strings.HasPrefix(node.Data(), elem) {
-        T{t}.failIf(true, "<%s> expected, but <%s> found!", elem, node.Data())
+func assertElem(t *testing.T, node *html.Node, elem string) {
+    if !strings.HasPrefix(node.Data, elem) {
+        T{t}.failIf(true, "<%s> expected, but <%s> found!", elem, node.Data)
     }
 }
 
