@@ -421,7 +421,10 @@ func assertElem(t *testing.T, node *h5.Node, elem string) {
 }
 
 func forgeTestUser(uname, passwd string) {
-    salt, passwdHash := util.Encrypt(passwd)
+    salt, passwdHash, err := util.Encrypt(passwd)
+    if err != nil {
+        panic(fmt.Sprintf("Error in util.Encrypt(): %s\n", err))
+    }
     test_author.Salt = salt
     test_author.Passwd = passwdHash
     test_author.UserName = uname

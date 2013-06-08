@@ -88,7 +88,11 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
                            values(?, ?, ?, ?, ?, ?, ?)`)
     defer stmt.Close()
-    salt, passwdHash := util.Encrypt(passwd)
+    salt, passwdHash, err := util.Encrypt(passwd)
+    if err != nil {
+        fmt.Printf("Error in util.Encrypt(): %s\n", err)
+        return
+    }
     stmt.Exec(1, uname, salt, passwdHash, fullname, email, www)
 }
 
