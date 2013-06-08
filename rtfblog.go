@@ -320,7 +320,6 @@ func upload_image_handler(ctx *web.Context) {
     for err == nil {
         if name := part.FormName(); name != "" {
             if part.FileName() != "" {
-                fmt.Printf("filename: %s\n", part.FileName())
                 files += fmt.Sprintf("[foo]: /%s", part.FileName())
                 handleUpload(ctx.Request, part)
             }
