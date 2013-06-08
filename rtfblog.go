@@ -433,12 +433,7 @@ func runServer(_data Data) {
 func main() {
     root, _ := filepath.Split(filepath.Clean(os.Args[0]))
     conf = loadConfig(filepath.Join(root, "server.conf"))
-    f, err := os.Create(conf.Get("log"))
-    if err != nil {
-        println("create log: " + err.Error())
-        return
-    }
-    logger = log.New(f, "", log.Ldate|log.Ltime|log.Lshortfile)
+    logger = util.MkLogger(conf.Get("log"))
     db, err := sql.Open("sqlite3", conf.Get("database"))
     if err != nil {
         logger.Println("sql: " + err.Error())

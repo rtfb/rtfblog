@@ -5,6 +5,8 @@ import (
     "crypto/sha1"
     "encoding/base64"
     "io"
+    "log"
+    "os"
 )
 
 func SaltAndPepper(salt, passwd string) string {
@@ -22,4 +24,12 @@ func Encrypt(passwd string) (salt, hash string, err error) {
     salt = base64.URLEncoding.EncodeToString(b)
     hash = SaltAndPepper(salt, passwd)
     return
+}
+
+func MkLogger(fname string) *log.Logger {
+    f, err := os.Create(fname)
+    if err != nil {
+        panic("MkLogger: " + err.Error())
+    }
+    return log.New(f, "", log.Ldate|log.Ltime|log.Lshortfile)
 }

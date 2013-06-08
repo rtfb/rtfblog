@@ -160,6 +160,7 @@ func mustContain(t *testing.T, page string, what string) {
 
 func init() {
     conf = loadConfig("server.conf")
+    logger = util.MkLogger("tests.log")
     forgeTestUser("testuser", "testpasswd")
     auth := "Author"
     date := "2013-03-19"
