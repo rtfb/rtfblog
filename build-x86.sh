@@ -41,10 +41,7 @@ fi
 cp /vagrant/git-arch-for-deploy.tar.gz /home/vagrant/$builddir/
 cd /home/vagrant/$builddir
 tar xzvf git-arch-for-deploy.tar.gz
-cp /vagrant/testdata/foo.db /home/vagrant/$builddir/
 /home/vagrant/go/bin/go get
-/home/vagrant/go/bin/go build
-cd dbtool
 /home/vagrant/go/bin/go build
 
 cd /home/vagrant/$builddir/
