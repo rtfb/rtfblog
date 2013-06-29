@@ -226,7 +226,7 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
             }
             if strings.Contains(c.content, "Honesty is the rarest wealth anyone can possess") ||
                 strings.Contains(c.content, "I do that you are going to be elaborating more on this issue") {
-                fmt.Printf("spam comment, skipping. id=%d, text=%q\n", cid, c.content)
+                fmt.Printf("skipping spam comment, id=%d\n", cid)
                 continue
             }
             c.postId_sqlite = p.id_sqlite
@@ -412,9 +412,6 @@ func importLegacyDb(sqliteFile, dbConf string) {
         cat = append(cat, &Category{id, parent_id.Int64, name, url})
     }
     fmt.Printf("#categories: %d\n", len(cat))
-    for _, c := range cat {
-        fmt.Printf("%+v\n", c)
-    }
     posts, err := xferPosts(sconn, mconn)
     if err != nil {
         fmt.Printf("err: " + err.Error())
