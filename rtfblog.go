@@ -386,7 +386,9 @@ func comment_handler(ctx *web.Context) {
     data.commit()
     redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
     url := conf.Get("url") + conf.Get("port") + redir
-    go SendEmail(name, email, website, body, url, refUrl)
+    if conf.Get("notif_send_email") == "true" {
+        go SendEmail(name, email, website, body, url, refUrl)
+    }
     ctx.Redirect(http.StatusFound, redir)
 }
 
