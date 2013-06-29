@@ -24,67 +24,12 @@ func usage() {
 }
 
 func init_db(fileName, uname, passwd, fullname, email, www string) {
-    createTables := []string{
-        `create table tag (
-            id integer not null primary key,
-            name text,
-            url text
-        )`,
-        `create table author (
-            id integer not null primary key,
-            disp_name text,
-            salt text,
-            passwd text,
-            full_name text,
-            email text,
-            www text
-        )`,
-        `create table post (
-            id integer not null primary key,
-            author_id integer not null references author(id) on delete cascade on update cascade,
-            title text,
-            date long,
-            url text,
-            body text
-        )`,
-        `create table tagmap (
-            id integer not null primary key,
-            tag_id integer not null references tag(id) on delete cascade on update cascade,
-            post_id integer not null references post(id) on delete cascade on update cascade
-        )`,
-        `create table commenter (
-            id integer not null primary key,
-            name text,
-            email text,
-            www text,
-            ip text
-        )`,
-        `create table comment (
-            id integer not null primary key,
-            commenter_id integer not null references commenter(id) on delete cascade on update cascade,
-            post_id integer not null references post(id) on delete cascade on update cascade,
-            timestamp long,
-            body text
-        )`,
-    }
-    err := os.Remove(fileName)
-    if err != nil {
-        fmt.Println(err.Error())
-        return
-    }
     db, err := sql.Open("sqlite3", fileName)
     if err != nil {
         fmt.Println(err.Error())
         return
     }
     defer db.Close()
-    for _, sql := range createTables {
-        _, err := db.Exec(sql)
-        if err != nil {
-            fmt.Printf("%q: %s\n", err, sql)
-            return
-        }
-    }
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
                            values(?, ?, ?, ?, ?, ?, ?)`)
     defer stmt.Close()
