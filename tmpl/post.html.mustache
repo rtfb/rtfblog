@@ -95,6 +95,24 @@
                 -moz-hyphens: auto;
                 hyphens: auto;
             }
+            .captcha-alert-box {
+                background-color: #faafb4;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                border-radius: 5px;
+                padding: 0 4px;
+                text-align: center;
+            }
+            .captcha-alert-box input {
+                margin: 8px 0;
+            }
+            .captcha-alert-box p {
+                margin: 0;
+                padding-top: 4px;
+            }
+            .captcha-prompt {
+                margin: 0;
+            }
         </style>
     </head>
     <body>
@@ -253,6 +271,20 @@
                 <div><input class="text" name="name" placeholder="Name" type="text" /></div>
                 <div><input class="text" name="email" placeholder="Email (will stay private)" type="text" /></div>
                 <div><input class="text" name="website" placeholder="Web site" type="text" /></div>
+            </div>
+            <div class="six columns captcha-alert-box">
+                <p>
+                My Nazi spam-filter presumes everybody is a bot.<br />
+                Please solve this captcha to prove you're not:</p>
+                <p class="captcha-prompt">
+                    8 + 4 =
+                    <input
+                        name="captcha-text"
+                        type="text"
+                        style="display: inline"
+                        placeholder="lietuviškai, žodžiu"
+                        />
+                </p>
             </div>
         </div>
 
