@@ -418,7 +418,7 @@ func serve_favicon(ctx *web.Context) {
 
 func runServer(_data Data) {
     data = _data
-    web.Post("/comment_submit", comment_handler)
+    web.Get("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
     web.Get("/delete_comment", delete_comment_handler)
     web.Post("/moderate_comment", moderate_comment_handler)
