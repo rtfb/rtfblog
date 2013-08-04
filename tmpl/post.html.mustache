@@ -290,6 +290,7 @@
              editor.run();
              })();
 
+        {{#AdminLogin}}
         function showElement(id, visible) {
             elem = document.getElementById(id);
             elem.style.display = visible ? 'inline-block' : 'none';
@@ -333,6 +334,7 @@
                 window.open(url, '_self', false);
             }
         }
+        {{/AdminLogin}}
         </script>
     </body>
 </html>
