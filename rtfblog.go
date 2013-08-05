@@ -250,7 +250,7 @@ func delete_comment_handler(ctx *web.Context) {
 
 func moderate_comment_handler(ctx *web.Context) {
     action := ctx.Params["action"]
-    text := ctx.Params["text"]
+    text := ctx.Params["edit-comment-text"]
     id := ctx.Params["id"]
     if action == "edit" && !data.updateComment(id, text) {
         return
