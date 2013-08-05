@@ -279,7 +279,9 @@
                 <p class="captcha-prompt">
                     8 + 4 =
                     <input
-                        name="captcha-text"
+                        id="captcha-input"
+                        class="text"
+                        name="captcha"
                         type="text"
                         style="display: inline"
                         placeholder="lietuviškai, žodžiu"
@@ -374,6 +376,11 @@
         }
         {{/AdminLogin}}
 
+        function inputToUri(fieldName) {
+            var rawValue = document.getElementsByName(fieldName)[0].value;
+            return fieldName + "=" + encodeURIComponent(rawValue);
+        }
+
         function submitComment(redirectTo) {
             var xhr;
             try {
@@ -396,16 +403,26 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
-                        alert("success in ajax");
-                    }
-                    else {
-                        alert("error in ajax: " + xhr.status);
+                        var response = JSON.parse(xhr.responseText);
+                        if (response["status"] === "rejected") {
+                            document.getElementById('captcha-input').value = '';
+                        } else {
+                            window.location.href = response["redir"];
+                            window.location.reload(true);
+                        }
+                    } else {
+                        alert("Error submitting comment. Status = " + xhr.status);
                     }
                 }
             };
 
             try {
-                xhr.open("GET", "comment_submit?post=" + redirectTo, true);
+                var params = inputToUri('name');
+                params += "&" + inputToUri('captcha');
+                params += "&" + inputToUri('email');
+                params += "&" + inputToUri('website');
+                params += "&" + inputToUri('text');
+                xhr.open("GET", "comment_submit?" + params, true);
                 xhr.send(null);
             }
             catch (err) {

@@ -366,6 +366,23 @@ func comment_handler(ctx *web.Context) {
     email := ctx.Params["email"]
     website := ctx.Params["website"]
     body := ctx.Params["text"]
+    captcha := ctx.Params["captcha"]
+    if captcha != "dvylika" {
+        var response = map[string]interface{}{
+            "status":  "rejected",
+            "name":    name,
+            "email":   email,
+            "website": website,
+            "body":    body,
+        }
+        b, err := json.Marshal(response)
+        if err != nil {
+            logger.Println(err.Error())
+            return
+        }
+        ctx.WriteString(string(b))
+        return
+    }
     if !data.begin() {
         return
     }
@@ -389,7 +406,17 @@ func comment_handler(ctx *web.Context) {
     if conf.Get("notif_send_email") == "true" {
         go SendEmail(name, email, website, body, url, refUrl)
     }
-    ctx.Redirect(http.StatusFound, redir)
+    var response = map[string]interface{}{
+        "status":  "accepted",
+        "redir":   redir,
+    }
+    b, err := json.Marshal(response)
+    if err != nil {
+        logger.Println(err.Error())
+        return
+    }
+    ctx.WriteString(string(b))
+    return
 }
 
 func SendEmail(author, mail, www, comment, url, postTitle string) {
