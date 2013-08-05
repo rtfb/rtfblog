@@ -362,12 +362,13 @@ func comment_handler(ctx *web.Context) {
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
-    if !data.begin() {
-        return
-    }
     name := ctx.Params["name"]
     email := ctx.Params["email"]
     website := ctx.Params["website"]
+    body := ctx.Params["text"]
+    if !data.begin() {
+        return
+    }
     ip := ctx.Request.RemoteAddr
     commenterId, err := data.selOrInsCommenter(name, email, website, ip)
     if err != nil {
@@ -376,7 +377,6 @@ func comment_handler(ctx *web.Context) {
         data.rollback()
         return
     }
-    body := ctx.Params["text"]
     commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
         ctx.Abort(http.StatusInternalServerError, "Server Error")
