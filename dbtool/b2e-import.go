@@ -101,7 +101,11 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
         }
         newBody := fixupBody(p.body)
         rows := stmt.QueryRow(1, p.title, p.date.Unix(), p.url, newBody)
-        rows.Scan(&p.id_sqlite)
+        err = rows.Scan(&p.id_sqlite)
+        if err != nil {
+            fmt.Println(err)
+            return posts, err
+        }
         //fmt.Printf("%+v\n", p)
         //fmt.Printf("%q | %q\n", p.title, p.url)
     }
@@ -258,6 +262,7 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
             err = rows.Scan(&authorId)
             if err != nil {
                 fmt.Println("Failed to insert commenter: " + err.Error())
+                continue
             }
         } else if err != nil {
             fmt.Println("err: " + err.Error())
@@ -296,9 +301,12 @@ func getCommenterId(xaction *sql.Tx, mconn *sql.DB, comment *Comment) (id int64,
             &comment.authorUrl,
             &comment.authorIp)
     }
-    query, _ := xaction.Prepare(`select c.id from commenter as c
-                                 where c.email like $1`)
+    query, err := xaction.Prepare(`select c.id from commenter as c
+                                   where c.email like $1`)
     defer query.Close()
+    if err != nil {
+        fmt.Println(err)
+    }
     err = query.QueryRow(comment.authorEmail.String).Scan(&id)
     return
 }
