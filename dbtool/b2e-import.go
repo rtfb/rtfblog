@@ -84,7 +84,8 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
     for _, p := range posts {
         stmt, err := xaction.Prepare(`insert into post
                                       (author_id, title, date, url, body)
-                                      values($1, $2, $3, $4, $5)`)
+                                      values($1, $2, $3, $4, $5)
+                                      returning id`)
         if err != nil {
             fmt.Println(err)
             return posts, err
@@ -99,8 +100,8 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
             p.body = p.body[:startLinks] + fixupLinks(p.body[startLinks:startLinks+357]) + p.body[startLinks+357:]
         }
         newBody := fixupBody(p.body)
-        result, err := stmt.Exec(1, p.title, p.date.Unix(), p.url, newBody)
-        p.id_sqlite, _ = result.LastInsertId()
+        rows := stmt.QueryRow(1, p.title, p.date.Unix(), p.url, newBody)
+        rows.Scan(&p.id_sqlite)
         //fmt.Printf("%+v\n", p)
         //fmt.Printf("%q | %q\n", p.title, p.url)
     }
@@ -245,18 +246,16 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
         if err == sql.ErrNoRows {
             insertCommenter, _ := xaction.Prepare(`insert into commenter
                                                    (name, email, www, ip)
-                                                   values ($1, $2, $3, $4)`)
+                                                   values ($1, $2, $3, $4)
+                                                   returning id`)
             defer insertCommenter.Close()
             ip := ""
             if c.authorIp.Valid {
                 ip = c.authorIp.String
             }
-            result, err := insertCommenter.Exec(c.author, c.authorEmail,
+            rows := insertCommenter.QueryRow(c.author, c.authorEmail,
                 c.authorUrl, ip)
-            if err != nil {
-                fmt.Println("Failed to insert commenter: " + err.Error())
-            }
-            authorId, err = result.LastInsertId()
+            err = rows.Scan(&authorId)
             if err != nil {
                 fmt.Println("Failed to insert commenter: " + err.Error())
             }
@@ -328,14 +327,15 @@ func xferTags(sconn, mconn *sql.DB, posts []*Post) {
                 if err == sql.ErrNoRows {
                     stmt, err := sconn.Prepare(`insert into tag
                                                 (name, url)
-                                                values($1, $2)`)
+                                                values($1, $2)
+                                                returning id`)
                     if err != nil {
                         fmt.Println(err)
                         continue
                     }
                     defer stmt.Close()
-                    result, err := stmt.Exec(strings.Title(tag), fixedTag)
-                    tagId, _ = result.LastInsertId()
+                    rows := stmt.QueryRow(strings.Title(tag), fixedTag)
+                    err = rows.Scan(&tagId)
                 } else {
                     fmt.Printf("err: %s\n", err.Error())
                 }

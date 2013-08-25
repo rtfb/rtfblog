@@ -159,13 +159,14 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
     case sql.ErrNoRows:
         insertCommenter, _ := dd.tx.Prepare(`insert into commenter
                                              (name, email, www, ip)
-                                             values ($1, $2, $3, $4)`)
+                                             values ($1, $2, $3, $4)
+                                             returning id`)
         defer insertCommenter.Close()
-        result, err := insertCommenter.Exec(name, email, website, ip)
+        err = insertCommenter.QueryRow(name, email, website, ip).Scan(&id)
         if err != nil {
             logger.Println("Failed to insert commenter: " + err.Error())
         }
-        return result.LastInsertId()
+        return
     default:
         logger.Println("err: " + err.Error())
         return
@@ -182,18 +183,19 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
     }
     stmt, err := dd.tx.Prepare(`insert into comment
                                 (commenter_id, post_id, timestamp, body)
-                                values ($1, $2, $3, $4)`)
+                                values ($1, $2, $3, $4)
+                                returning id`)
     if err != nil {
         logger.Println("Failed to prepare insert comment stmt: " + err.Error())
         return
     }
     defer stmt.Close()
-    result, err := stmt.Exec(commenterId, postId, time.Now().Unix(), body)
+    err = stmt.QueryRow(commenterId, postId, time.Now().Unix(), body).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert comment: " + err.Error())
         return
     }
-    return result.LastInsertId()
+    return
 }
 
 func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, err error) {
@@ -205,15 +207,16 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
     }
     insertPostSql, _ := dd.tx.Prepare(`insert into post
                                        (author_id, title, date, url, body)
-                                       values ($1, $2, $3, $4, $5)`)
+                                       values ($1, $2, $3, $4, $5)
+                                       returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    result, err := insertPostSql.Exec(author, title, date, url, body)
+    err = insertPostSql.QueryRow(author, title, date, url, body).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
         return
     }
-    return result.LastInsertId()
+    return
 }
 
 func (dd *DbData) updatePost(id int64, title, url, body string) bool {
@@ -403,17 +406,18 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
     case sql.ErrNoRows:
         insertTagSql, err := xaction.Prepare(`insert into tag
                                               (name, url)
-                                              values ($1, $2)`)
+                                              values ($1, $2)
+                                              returning id`)
         if err != nil {
             logger.Println("Failed to prepare insert tag stmt: " + err.Error())
             return -1, err
         }
         defer insertTagSql.Close()
-        result, err := insertTagSql.Exec(tag.TagName, tag.TagUrl)
+        err = insertTagSql.QueryRow(tag.TagName, tag.TagUrl).Scan(&tagId)
         if err != nil {
             logger.Println("Failed to insert tag: " + err.Error())
         }
-        return result.LastInsertId()
+        return tagId, err
     default:
         logger.Printf("err: %s", err.Error())
         return -1, sql.ErrNoRows
