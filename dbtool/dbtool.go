@@ -31,7 +31,7 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
     }
     defer db.Close()
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
-                           values(?, ?, ?, ?, ?, ?, ?)`)
+                           values($1, $2, $3, $4, $5, $6, $7)`)
     defer stmt.Close()
     salt, passwdHash, err := util.Encrypt(passwd)
     if err != nil {
@@ -53,7 +53,7 @@ func populate(fileName string) {
         fmt.Println(err)
         return
     }
-    stmt, _ := xaction.Prepare("insert into post(id, author_id, title, date, url, body) values(?, ?, ?, ?, ?, ?)")
+    stmt, _ := xaction.Prepare("insert into post(id, author_id, title, date, url, body) values($1, $2, $3, $4, $5, $6)")
     defer stmt.Close()
     stmt.Exec(1, 1, "Labadėna", 123456, "labadena", "Nieko aš čia nerašysiu.")
     imgpost := `This is a post with a figure.
@@ -67,19 +67,19 @@ halfimage:
 [fullimg]: /no-dox.png
 [halfimg]: /no-dox-halfsize.png`
     stmt.Exec(2, 1, "Iliustruotas", 1359308741, "iliustruotas", imgpost)
-    stmt, _ = xaction.Prepare("insert into tag(id, name, url) values(?, ?, ?)")
+    stmt, _ = xaction.Prepare("insert into tag(id, name, url) values($1, $2, $3)")
     defer stmt.Close()
     stmt.Exec(1, "Testas", "testas")
     stmt.Exec(2, "Žąsyčiai", "geese")
-    stmt, _ = xaction.Prepare("insert into tagmap(id, tag_id, post_id) values(?, ?, ?)")
+    stmt, _ = xaction.Prepare("insert into tagmap(id, tag_id, post_id) values($1, $2, $3)")
     defer stmt.Close()
     stmt.Exec(1, 1, 1)
     stmt.Exec(2, 2, 1)
-    stmt, _ = xaction.Prepare("insert into commenter(id, name, email, www, ip) values(?, ?, ?, ?, ?)")
+    stmt, _ = xaction.Prepare("insert into commenter(id, name, email, www, ip) values($1, $2, $3, $4, $5)")
     defer stmt.Close()
     stmt.Exec(1, "Vytautas Šaltenis", "Vytautas.Shaltenis@gmail.com", "http://rtfb.lt", "127.0.0.1")
     stmt.Exec(2, "Vardenis Pavardenis", "niekas@niekur.com", "http://delfi.lt", "127.0.0.1")
-    stmt, _ = xaction.Prepare("insert into comment(id, commenter_id, post_id, timestamp, body) values(?, ?, ?, ?, ?)")
+    stmt, _ = xaction.Prepare("insert into comment(id, commenter_id, post_id, timestamp, body) values($1, $2, $3, $4, $5)")
     defer stmt.Close()
     stmt.Exec(1, 2, 1, 1356872181, "Nu ir nerašyk, _niekam_ čia neįdomu tavo pisulkos.")
     stmt.Exec(2, 1, 1, 1356879181, "O tu čia tada **nekomentuok** ten kur neparašyta nieko. Eik [ten](http://google.com/)")
@@ -99,17 +99,17 @@ func populate2(fileName string, data []*Entry) {
         return
     }
     for _, e := range data {
-        stmt, _ := xaction.Prepare("insert into post(author_id, title, date, url, body) values(?, ?, ?, ?, ?)")
+        stmt, _ := xaction.Prepare("insert into post(author_id, title, date, url, body) values($1, $2, $3, $4, $5)")
         defer stmt.Close()
         date, _ := time.Parse("2006-01-02", e.Date)
         result, _ := stmt.Exec(1, e.Title, date.Unix(), e.Url, e.Body)
         postId, _ := result.LastInsertId()
         for _, t := range e.Tags {
-            stmt, _ = xaction.Prepare("insert into tag(name, url) values(?, ?)")
+            stmt, _ = xaction.Prepare("insert into tag(name, url) values($1, $2)")
             defer stmt.Close()
             result, _ = stmt.Exec(t.TagName, t.TagUrl)
             tagId, _ := result.LastInsertId()
-            stmt, _ = xaction.Prepare("insert into tagmap(tag_id, post_id) values(?, ?)")
+            stmt, _ = xaction.Prepare("insert into tagmap(tag_id, post_id) values($1, $2)")
             defer stmt.Close()
             stmt.Exec(tagId, postId)
         }

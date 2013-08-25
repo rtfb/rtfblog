@@ -84,7 +84,7 @@ func xferPosts(sconn, mconn *sql.DB) (posts []*Post, err error) {
     for _, p := range posts {
         stmt, err := xaction.Prepare(`insert into post
                                       (author_id, title, date, url, body)
-                                      values(?, ?, ?, ?, ?)`)
+                                      values($1, $2, $3, $4, $5)`)
         if err != nil {
             fmt.Println(err)
             return posts, err
@@ -245,7 +245,7 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
         if err == sql.ErrNoRows {
             insertCommenter, _ := xaction.Prepare(`insert into commenter
                                                    (name, email, www, ip)
-                                                   values (?, ?, ?, ?)`)
+                                                   values ($1, $2, $3, $4)`)
             defer insertCommenter.Close()
             ip := ""
             if c.authorIp.Valid {
@@ -266,7 +266,7 @@ func xferComments(sconn, mconn *sql.DB, posts []*Post) {
         }
         stmt, err := xaction.Prepare(`insert into comment
                                       (commenter_id, post_id, timestamp, body)
-                                      values(?, ?, ?, ?)`)
+                                      values($1, $2, $3, $4)`)
         defer stmt.Close()
         if err != nil {
             fmt.Printf("err: %s\n", err.Error())
@@ -298,7 +298,7 @@ func getCommenterId(xaction *sql.Tx, mconn *sql.DB, comment *Comment) (id int64,
             &comment.authorIp)
     }
     query, _ := xaction.Prepare(`select c.id from commenter as c
-                                 where c.email like ?`)
+                                 where c.email like $1`)
     defer query.Close()
     err = query.QueryRow(comment.authorEmail.String).Scan(&id)
     return
@@ -321,14 +321,14 @@ func xferTags(sconn, mconn *sql.DB, posts []*Post) {
                 fmt.Printf("err: %s\n" + err.Error())
             }
             fixedTag := strings.Replace(tag, " ", "-", -1)
-            row := sconn.QueryRow(`select id from tag where url=?`, fixedTag)
+            row := sconn.QueryRow(`select id from tag where url=$1`, fixedTag)
             var tagId int64
             err = row.Scan(&tagId)
             if err != nil {
                 if err == sql.ErrNoRows {
                     stmt, err := sconn.Prepare(`insert into tag
                                                 (name, url)
-                                                values(?, ?)`)
+                                                values($1, $2)`)
                     if err != nil {
                         fmt.Println(err)
                         continue
@@ -342,7 +342,7 @@ func xferTags(sconn, mconn *sql.DB, posts []*Post) {
             }
             stmt, err := sconn.Prepare(`insert into tagmap
                                         (tag_id, post_id)
-                                        values(?, ?)`)
+                                        values($1, $2)`)
             if err != nil {
                 fmt.Println(err)
                 continue

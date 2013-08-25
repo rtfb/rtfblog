@@ -77,7 +77,7 @@ func (dd *DbData) post(url string) *Entry {
 }
 
 func (dd *DbData) postId(url string) (id int64, err error) {
-    query, err := dd.db.Prepare("select id from post where url = ?")
+    query, err := dd.db.Prepare("select id from post where url = $1")
     if err != nil {
         return
     }
@@ -109,7 +109,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
                   from post as p
                   order by p.date desc`
     if limit > 0 {
-        selectSql = selectSql + " limit ?"
+        selectSql = selectSql + " limit $1"
     }
     stmt, err := dd.db.Prepare(selectSql)
     if err != nil {
@@ -148,9 +148,9 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
         return
     }
     query, _ := dd.tx.Prepare(`select c.id from commenter as c
-                               where c.name = ?
-                                 and c.email = ?
-                                 and c.www = ?`)
+                               where c.name = $1
+                                 and c.email = $2
+                                 and c.www = $3`)
     defer query.Close()
     err = query.QueryRow(name, email, website).Scan(&id)
     switch err {
@@ -159,7 +159,7 @@ func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, 
     case sql.ErrNoRows:
         insertCommenter, _ := dd.tx.Prepare(`insert into commenter
                                              (name, email, www, ip)
-                                             values (?, ?, ?, ?)`)
+                                             values ($1, $2, $3, $4)`)
         defer insertCommenter.Close()
         result, err := insertCommenter.Exec(name, email, website, ip)
         if err != nil {
@@ -182,7 +182,7 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
     }
     stmt, err := dd.tx.Prepare(`insert into comment
                                 (commenter_id, post_id, timestamp, body)
-                                values (?, ?, ?, ?)`)
+                                values ($1, $2, $3, $4)`)
     if err != nil {
         logger.Println("Failed to prepare insert comment stmt: " + err.Error())
         return
@@ -205,7 +205,7 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
     }
     insertPostSql, _ := dd.tx.Prepare(`insert into post
                                        (author_id, title, date, url, body)
-                                       values (?, ?, ?, ?, ?)`)
+                                       values ($1, $2, $3, $4, $5)`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
     result, err := insertPostSql.Exec(author, title, date, url, body)
@@ -218,8 +218,8 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
 
 func (dd *DbData) updatePost(id int64, title, url, body string) bool {
     updateStmt, _ := dd.tx.Prepare(`update post
-                                    set title=?, url=?, body=?
-                                    where id=?`)
+                                    set title=$1, url=$2, body=$3
+                                    where id=$4`)
     defer updateStmt.Close()
     _, err := updateStmt.Exec(title, url, body, id)
     if err != nil {
@@ -230,7 +230,7 @@ func (dd *DbData) updatePost(id int64, title, url, body string) bool {
 }
 
 func (dd *DbData) updateTags(tags []*Tag, postId int64) {
-    delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=?")
+    delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=$1")
     defer delStmt.Close()
     delStmt.Exec(postId)
     for _, t := range tags {
@@ -241,7 +241,7 @@ func (dd *DbData) updateTags(tags []*Tag, postId int64) {
 
 func (dd *DbData) author(username string) (*Author, error) {
     row := dd.db.QueryRow(`select salt, passwd, full_name, email, www
-                           from author where disp_name=?`, username)
+                           from author where disp_name=$1`, username)
     var a Author
     a.UserName = username
     err := row.Scan(&a.Salt, &a.Passwd, &a.FullName, &a.Email, &a.Www)
@@ -249,7 +249,7 @@ func (dd *DbData) author(username string) (*Author, error) {
 }
 
 func (dd *DbData) deleteComment(id string) bool {
-    _, err := dd.db.Exec("delete from comment where id=?", id)
+    _, err := dd.db.Exec("delete from comment where id=$1", id)
     if err != nil {
         logger.Println(err.Error())
         return false
@@ -258,7 +258,7 @@ func (dd *DbData) deleteComment(id string) bool {
 }
 
 func (dd *DbData) updateComment(id, text string) bool {
-    _, err := dd.db.Exec("update comment set body=? where id=?", text, id)
+    _, err := dd.db.Exec("update comment set body=$1 where id=$2", text, id)
     if err != nil {
         logger.Println(err.Error())
         return false
@@ -327,7 +327,7 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
     stmt, err := db.Prepare(`select t.name, t.url
                              from tag as t, tagmap as tm
                              where t.id = tm.tag_id
-                                   and tm.post_id = ?`)
+                                   and tm.post_id = $1`)
     if err != nil {
         logger.Println(err.Error())
         return nil
@@ -357,7 +357,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
                                     c.id, c.timestamp, c.body
                              from commenter as a, comment as c
                              where a.id = c.commenter_id
-                                   and c.post_id = ?
+                                   and c.post_id = $1
                              order by c.timestamp asc`)
     if err != nil {
         logger.Println(err.Error())
@@ -390,7 +390,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
 }
 
 func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
-    query, err := xaction.Prepare("select id from tag where url=?")
+    query, err := xaction.Prepare("select id from tag where url=$1")
     if err != nil {
         logger.Println("Failed to prepare select tag stmt: " + err.Error())
         return
@@ -403,7 +403,7 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
     case sql.ErrNoRows:
         insertTagSql, err := xaction.Prepare(`insert into tag
                                               (name, url)
-                                              values (?, ?)`)
+                                              values ($1, $2)`)
         if err != nil {
             logger.Println("Failed to prepare insert tag stmt: " + err.Error())
             return -1, err
@@ -424,7 +424,7 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
 func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
     stmt, err := xaction.Prepare(`insert into tagmap
                                   (tag_id, post_id)
-                                  values (?, ?)`)
+                                  values ($1, $2)`)
     if err != nil {
         logger.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
     }
