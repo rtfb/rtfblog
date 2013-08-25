@@ -20,8 +20,8 @@ import (
 
     "github.com/gorilla/feeds"
     "github.com/hoisie/web"
+    _ "github.com/lib/pq"
     "github.com/lye/mustache"
-    _ "github.com/mattn/go-sqlite3"
     email "github.com/ungerik/go-mail"
 )
 
@@ -504,7 +504,7 @@ func main() {
     root, _ := filepath.Split(filepath.Clean(os.Args[0]))
     conf = loadConfig(filepath.Join(root, "server.conf"))
     logger = util.MkLogger(conf.Get("log"))
-    db, err := sql.Open("sqlite3", conf.Get("database"))
+    db, err := sql.Open("postgres", conf.Get("database"))
     if err != nil {
         logger.Println("sql: " + err.Error())
         return

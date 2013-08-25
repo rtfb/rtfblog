@@ -14,7 +14,7 @@ import (
     "strings"
     "time"
 
-    _ "github.com/mattn/go-sqlite3"
+    _ "github.com/lib/pq"
 )
 
 func usage() {
@@ -24,7 +24,7 @@ func usage() {
 }
 
 func init_db(fileName, uname, passwd, fullname, email, www string) {
-    db, err := sql.Open("sqlite3", fileName)
+    db, err := sql.Open("postgres", fileName)
     if err != nil {
         fmt.Println(err.Error())
         return
@@ -207,14 +207,7 @@ func main() {
         usage()
         return
     }
-    root, _ := filepath.Split(filepath.Clean(*dbconf))
-    db, uname, passwd, fullname, email, www := readDbConf(*dbconf)
-    if !strings.HasSuffix(db, ".db") {
-        fmt.Printf("File name is supposed to have a .db extension, but was %q\n", db)
-        usage()
-        return
-    }
-    dbFile := filepath.Join(root, db)
+    dbFile, uname, passwd, fullname, email, www := readDbConf(*dbconf)
     init_db(dbFile, uname, passwd, fullname, email, www)
     srcFile, err := os.Open(*srcData)
     if err != nil {

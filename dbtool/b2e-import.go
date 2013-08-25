@@ -9,7 +9,7 @@ import (
     "strings"
     "time"
 
-    _ "github.com/mattn/go-sqlite3"
+    _ "github.com/lib/pq"
     _ "github.com/ziutek/mymysql/godrv"
 )
 
@@ -379,7 +379,7 @@ func importLegacyDb(sqliteFile, dbConf string) {
         return
     }
     defer mconn.Close()
-    sconn, err := sql.Open("sqlite3", sqliteFile)
+    sconn, err := sql.Open("postgres", sqliteFile)
     if err != nil {
         fmt.Println(err.Error())
         return
