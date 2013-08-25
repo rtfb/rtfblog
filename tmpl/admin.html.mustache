@@ -90,16 +90,13 @@
             var xhr;
             try {
                 xhr = new ActiveXObject('Msxml2.XMLHTTP');
-            }
-            catch (e) {
+            } catch (e) {
                 try {
                     xhr = new ActiveXObject('Microsoft.XMLHTTP');
-                }
-                catch (e2) {
+                } catch (e2) {
                     try {
                         xhr = new XMLHttpRequest();
-                    }
-                    catch (e3) {
+                    } catch (e3) {
                         xhr = false;
                     }
                 }
@@ -111,8 +108,7 @@
                         var post = JSON.parse(xhr.responseText);
                         document.getElementById('wmd-input').innerHTML = post.RawBody;
                         document.getElementById('comments_dropdown').innerHTML = makeCommentList(post);
-                    }
-                    else {
+                    } else {
                         document.getElementById('comments_dropdown').innerHTML = xhr.status;
                     }
                 }
@@ -121,8 +117,7 @@
             try {
                 xhr.open("GET", "load_comments?post=" + postUrl, true);
                 xhr.send(null);
-            }
-            catch (err) {
+            } catch (err) {
                 alert("exc: " + err);
             }
         }

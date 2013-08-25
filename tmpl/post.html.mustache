@@ -385,16 +385,13 @@
             var xhr;
             try {
                 xhr = new ActiveXObject('Msxml2.XMLHTTP');
-            }
-            catch (e) {
+            } catch (e) {
                 try {
                     xhr = new ActiveXObject('Microsoft.XMLHTTP');
-                }
-                catch (e2) {
+                } catch (e2) {
                     try {
                         xhr = new XMLHttpRequest();
-                    }
-                    catch (e3) {
+                    } catch (e3) {
                         xhr = false;
                     }
                 }
@@ -424,8 +421,7 @@
                 params += "&" + inputToUri('text');
                 xhr.open("GET", "comment_submit?" + params, true);
                 xhr.send(null);
-            }
-            catch (err) {
+            } catch (err) {
                 alert("exc: " + err);
             }
         }
