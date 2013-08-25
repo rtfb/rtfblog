@@ -3,7 +3,7 @@ server.log
 tests.log
 server.conf
 vim-session
-testdata/foo.db
+testdata/rtfblog-dump.sql
 testdata/legacy-db.conf
 testdata/db.conf
 dbtool/dbtool

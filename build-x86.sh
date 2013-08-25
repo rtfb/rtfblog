@@ -44,15 +44,23 @@ tar xzvf git-arch-for-deploy.tar.gz
 /home/vagrant/go/bin/go get
 /home/vagrant/go/bin/go build
 
+cd /home/vagrant
+git clone https://bitbucket.org/liamstask/goose.git
+cd goose
+/home/vagrant/go/bin/go get
+/home/vagrant/go/bin/go build
+
 cd /home/vagrant/$builddir/
 cp /vagrant/server.conf $package
 cp /vagrant/run $package
+cp /home/vagrant/goose/goose $package
+cp -r /vagrant/db $package
 cp /home/vagrant/$builddir/rtfblog $package
 cp -d /home/vagrant/$sqlite/.libs/libsqlite3.so* $package/sqlite-fix
 cp -r /vagrant/static $package
 cp -r /vagrant/tmpl $package
 cp /vagrant/stuff/images/* $package/static/
-cp /vagrant/testdata/foo.db $package/main.db
+cp /vagrant/testdata/rtfblog-dump.sql $package/rtfblog-dump.sql
 tar czvf package.tar.gz ./package
 rm -rf $package
 
@@ -60,4 +68,6 @@ rm -rf $package
 scp -q package.tar.gz rtfb@rtfb.lt:/home/rtfb/package.tar.gz
 scp -q /vagrant/unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
 ssh rtfb@rtfb.lt /home/rtfb/unpack.sh
+ssh rtfb@rtfb.lt "/home/rtfb/package/goose -env=development up"
+ssh rtfb@rtfb.lt "psql tstdb < /home/rtfb/package/rtfblog-dump.sql"
 ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./run &"
