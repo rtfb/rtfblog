@@ -354,6 +354,61 @@ func handleUpload(r *http.Request, p *multipart.Part) {
     return
 }
 
+func wrongCaptchaReply(ctx *web.Context) {
+    var response = map[string]interface{}{
+        "status":  "rejected",
+        "name":    ctx.Params["name"],
+        "email":   ctx.Params["email"],
+        "website": ctx.Params["website"],
+        "body":    ctx.Params["text"],
+    }
+    b, err := json.Marshal(response)
+    if err != nil {
+        logger.Println(err.Error())
+        return
+    }
+    ctx.WriteString(string(b))
+}
+
+func rightCaptchaReply(ctx *web.Context, redir string) {
+    var response = map[string]interface{}{
+        "status": "accepted",
+        "redir":  redir,
+    }
+    b, err := json.Marshal(response)
+    if err != nil {
+        logger.Println(err.Error())
+        return
+    }
+    ctx.WriteString(string(b))
+}
+
+func publishComment(ctx *web.Context, postId int64, refUrl string) string {
+    if !data.begin() {
+        return ""
+    }
+    ip := ctx.Request.RemoteAddr
+    name := ctx.Params["name"]
+    email := ctx.Params["email"]
+    website := ctx.Params["website"]
+    commenterId, err := data.selOrInsCommenter(name, email, website, ip)
+    if err != nil {
+        logger.Println("data.selOrInsCommenter() failed: " + err.Error())
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        data.rollback()
+        return ""
+    }
+    body := ctx.Params["text"]
+    commentId, err := data.insertComment(commenterId, postId, body)
+    if err != nil {
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        data.rollback()
+        return ""
+    }
+    data.commit()
+    return fmt.Sprintf("#comment-%d", commentId)
+}
+
 func comment_handler(ctx *web.Context) {
     refUrl := xtractReferer(ctx)
     postId, err := data.postId(refUrl)
@@ -362,60 +417,18 @@ func comment_handler(ctx *web.Context) {
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
-    name := ctx.Params["name"]
-    email := ctx.Params["email"]
-    website := ctx.Params["website"]
-    body := ctx.Params["text"]
     captcha := ctx.Params["captcha"]
     if captcha != "dvylika" {
-        var response = map[string]interface{}{
-            "status":  "rejected",
-            "name":    name,
-            "email":   email,
-            "website": website,
-            "body":    body,
-        }
-        b, err := json.Marshal(response)
-        if err != nil {
-            logger.Println(err.Error())
-            return
-        }
-        ctx.WriteString(string(b))
+        wrongCaptchaReply(ctx)
         return
     }
-    if !data.begin() {
-        return
-    }
-    ip := ctx.Request.RemoteAddr
-    commenterId, err := data.selOrInsCommenter(name, email, website, ip)
-    if err != nil {
-        logger.Println("data.selOrInsCommenter() failed: " + err.Error())
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        data.rollback()
-        return
-    }
-    commentId, err := data.insertComment(commenterId, postId, body)
-    if err != nil {
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        data.rollback()
-        return
-    }
-    data.commit()
-    redir := fmt.Sprintf("/%s#comment-%d", refUrl, commentId)
+    redir := "/" + refUrl + publishComment(ctx, postId, refUrl)
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
-        go SendEmail(name, email, website, body, url, refUrl)
+        go SendEmail(ctx.Params["name"], ctx.Params["email"],
+            ctx.Params["website"], ctx.Params["text"], url, refUrl)
     }
-    var response = map[string]interface{}{
-        "status":  "accepted",
-        "redir":   redir,
-    }
-    b, err := json.Marshal(response)
-    if err != nil {
-        logger.Println(err.Error())
-        return
-    }
-    ctx.WriteString(string(b))
+    rightCaptchaReply(ctx, redir)
     return
 }
 
