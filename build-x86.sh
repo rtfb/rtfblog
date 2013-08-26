@@ -10,10 +10,14 @@ apt-get install --yes git
 apt-get install --yes gcc libc6-dev mercurial
 
 if ! [ -d /home/vagrant/go ]; then
-    hg clone -u release https://code.google.com/p/go
+    hg clone -u release-branch.go1.1 https://code.google.com/p/go
     cd go/src
     ./all.bash
 fi
+
+gopkgs=/home/vagrant/gopkgs
+mkdir -p $gopkgs
+export GOPATH=$gopkgs
 
 builddir=rtfblog
 rm -rf /home/vagrant/$builddir
