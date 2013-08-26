@@ -18,7 +18,7 @@ fi
 builddir=rtfblog
 rm -rf /home/vagrant/$builddir
 package=/home/vagrant/$builddir/package
-mkdir /home/vagrant/$builddir
+mkdir -p $package
 
 cp /vagrant/git-arch-for-deploy.tar.gz /home/vagrant/$builddir/
 cd /home/vagrant/$builddir
