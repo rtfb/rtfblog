@@ -53,5 +53,4 @@ scp -q package.tar.gz rtfb@rtfb.lt:/home/rtfb/package.tar.gz
 scp -q /vagrant/unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
 ssh rtfb@rtfb.lt /home/rtfb/unpack.sh
 ssh rtfb@rtfb.lt "/home/rtfb/package/goose -env=development up"
-ssh rtfb@rtfb.lt "psql tstdb < /home/rtfb/package/rtfblog-dump.sql"
 ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./rtfblog &"
