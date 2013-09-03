@@ -1,5 +1,9 @@
 #!/bin/sh
 
+cd dbtool
+go build
+cd ..
+go build
 git archive HEAD -o git-arch-for-deploy.tar.gz
 dropdb tstdb
 createdb tstdb
