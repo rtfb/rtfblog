@@ -127,6 +127,8 @@ func handler(ctx *web.Context, path string) {
     numTotalPosts := data.numPosts()
     var basicData = map[string]interface{}{
         "PageTitle":       "",
+        "BlogTitle":       conf.Get("blog_title"),
+        "BlogSubtitle":    conf.Get("blog_descr"),
         "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
         "ListOfPages":     listOfPages(numTotalPosts, 0),
         "entries":         data.posts(POSTS_PER_PAGE, 0),
