@@ -15,6 +15,7 @@ if ! [ -d /home/vagrant/go ]; then
     ./all.bash
 fi
 
+go=/home/vagrant/go/bin/go
 gopkgs=/home/vagrant/gopkgs
 mkdir -p $gopkgs
 export GOPATH=$gopkgs
@@ -27,14 +28,14 @@ mkdir -p $package
 cp /vagrant/git-arch-for-deploy.tar.gz /home/vagrant/$builddir/
 cd /home/vagrant/$builddir
 tar xzvf git-arch-for-deploy.tar.gz
-/home/vagrant/go/bin/go get
-/home/vagrant/go/bin/go build
+$go get
+$go build
 
 cd /home/vagrant
 git clone https://bitbucket.org/liamstask/goose.git
 cd goose
-/home/vagrant/go/bin/go get
-/home/vagrant/go/bin/go build
+$go get
+$go build
 
 cd /home/vagrant/$builddir/
 cp /vagrant/server.conf $package
