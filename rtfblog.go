@@ -3,6 +3,7 @@ package main
 import (
     "./util"
     "bufio"
+    "bytes"
     "database/sql"
     "encoding/json"
     "fmt"
@@ -381,6 +382,33 @@ func rightCaptchaReply(ctx *web.Context, redir string) {
         return
     }
     ctx.WriteString(string(b))
+}
+
+func detectLanguage(text string) string {
+    var rq = map[string]string{
+        "document": text,
+    }
+    b, err := json.Marshal(rq)
+    if err != nil {
+        logger.Println(err.Error())
+    }
+    url := "https://services.open.xerox.com/RestOp/LanguageIdentifier/GetLanguageForString"
+    client := &http.Client{}
+    req, err := http.NewRequest("POST", url, bytes.NewReader(b))
+    // XXX: the docs say I need to specify Content-Length, but in practice I
+    // see that it works without it:
+    //req.Header.Add("Content-Length", fmt.Sprintf("%d", len(string(b))))
+    req.Header.Add("Content-Type", "application/json; charset=utf-8")
+    resp, err := client.Do(req)
+    defer resp.Body.Close()
+    if err != nil {
+        logger.Println(err.Error())
+    }
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        logger.Println(err.Error())
+    }
+    return string(body)
 }
 
 func publishComment(ctx *web.Context, postId int64, refUrl string) string {
