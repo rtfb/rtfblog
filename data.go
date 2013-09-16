@@ -38,6 +38,12 @@ type Comment struct {
     CommentId string
 }
 
+type CommentWithPostTitle struct {
+    Comment
+    PostTitle string
+    PostUrl   string
+}
+
 type EntryLink struct {
     Title string
     Url   string

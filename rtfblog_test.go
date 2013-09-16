@@ -70,6 +70,18 @@ func (dd *TestData) titles(limit int) (links []*EntryLink) {
     return
 }
 
+func (dd *TestData) allComments() []*CommentWithPostTitle {
+    comments := make([]*CommentWithPostTitle, 0)
+    for _, c := range test_comm {
+        comment := new(CommentWithPostTitle)
+        comment.Comment = *c
+        comment.PostUrl = test_posts[0].Url
+        comment.PostTitle = test_posts[0].Title
+        comments = append(comments, comment)
+    }
+    return comments
+}
+
 func (dd *TestData) author(username string) (*Author, error) {
     return test_author, nil
 }
@@ -390,6 +402,19 @@ func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     login()
     node := query1(t, test_posts[0].Url, "#edit-comment-form")
     assertElem(t, node, "form")
+}
+
+func TestAdminPageHasAllCommentsButton(t *testing.T) {
+    login()
+    node := query1(t, "/admin", "#display-all-comments")
+    assertElem(t, node, "input")
+}
+
+func TestAllCommentsPageHasAllComments(t *testing.T) {
+    nodes := query(t, "/all_comments", "#comment")
+    if len(nodes) != len(test_comm) {
+        t.Fatalf("Not all comments in /all_comments!")
+    }
 }
 
 func query(t *testing.T, url, query string) []*html.Node {

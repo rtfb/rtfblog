@@ -15,6 +15,7 @@ type Data interface {
     postId(url string) (id int64, err error)
     posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
+    allComments() []*CommentWithPostTitle
     numPosts() int
     author(username string) (*Author, error)
     deleteComment(id string) bool
@@ -138,6 +139,45 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
         links = append(links, entryLink)
     }
     return
+}
+
+func (dd *DbData) allComments() []*CommentWithPostTitle {
+    stmt, err := dd.db.Prepare(`select a.name, a.email, a.www, a.ip,
+                                       c.id, c.timestamp, c.body,
+                                       p.title, p.url
+                                from commenter as a, comment as c, post as p
+                                where a.id = c.commenter_id
+                                      and c.post_id = p.id
+                                order by c.timestamp desc`)
+    if err != nil {
+        logger.Println(err.Error())
+        return nil
+    }
+    defer stmt.Close()
+    data, err := stmt.Query()
+    if err != nil {
+        logger.Println(err.Error())
+        return nil
+    }
+    defer data.Close()
+    comments := make([]*CommentWithPostTitle, 0)
+    for data.Next() {
+        comment := new(CommentWithPostTitle)
+        var unixDate int64
+        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
+            &comment.CommentId, &unixDate, &comment.RawBody,
+            &comment.PostTitle, &comment.PostUrl)
+        if err != nil {
+            logger.Printf("error scanning comment row: %s\n", err.Error())
+        }
+        hash := md5.New()
+        hash.Write([]byte(strings.ToLower(comment.Email)))
+        comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
+        comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
+        comment.Body = string(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
+        comments = append(comments, comment)
+    }
+    return comments
 }
 
 func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {

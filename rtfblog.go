@@ -164,6 +164,11 @@ func handler(ctx *web.Context, path string) {
         basicData["all_entries"] = data.titles(-1)
         render(ctx, "archive", basicData)
         return
+    case "all_comments":
+        basicData["PageTitle"] = "All Comments"
+        basicData["all_comments"] = data.allComments()
+        render(ctx, "all_comments", basicData)
+        return
     case "login":
         referer := xtractReferer(ctx)
         if referer == "login" {

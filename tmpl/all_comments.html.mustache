@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>{{{PageTitle}}}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/base.css">
+        <link rel="stylesheet" href="/css/skeleton.css">
+        <style>
+            input[type="button"].inline {
+                margin-bottom: 0px;
+                padding: 4px 10px;
+                vertical-align: text-bottom;
+            }
+            .two-paragraphs-excerpt > p:nth-child(n+3) {
+                display:none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            {{> header}}
+
+            <hr />
+            <div class="twelve columns content" id="content">
+                <p>All comments:</p>
+                {{#all_comments}}
+                <div id="comment">
+                    <div id="commenter">
+                        <strong>
+                            {{Name}}
+                        </strong>
+                        &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt; <br />
+                        <strong>
+                            {{#Website}}
+                            <a href="{{Website}}">{{Website}}</a> <br />
+                            {{/Website}}
+                        </strong>
+                        <a
+                            href="{{PostUrl}}#comment-{{CommentId}}"
+                            name="comment-{{CommentId}}"
+                            >{{Time}}</a> <br />
+                    </div>
+                    <div class="two-paragraphs-excerpt">
+                        {{{Body}}}
+                    </div>
+                    <input
+                        id="delete-comment-button"
+                        type="button"
+                        class="inline"
+                        onclick="deleteWithConfirm({{CommentId}}, 'all_comments')"
+                        value="Delete"
+                        />
+                    Posted in:
+                    <a id="post" href="{{PostUrl}}">{{PostTitle}}</a>
+                </div>
+                <hr />
+                {{/all_comments}}
+                {{^all_comments}}
+                    <h2>No comments. This is most likely an error.</h2>
+                {{/all_comments}}
+            </div>
+
+            {{> sidebar}}
+
+            <hr />
+            <div id="footer">
+            </div>
+        </div>
+        <script type="text/javascript">
+        function deleteWithConfirm(id, redirectTo) {
+            if (confirm('You are about to delete this comment!\nThis cannot be undone!')) {
+                var url = "/delete_comment?id=" + id
+                          + "&action=delete&redirect_to=" + redirectTo;
+                window.open(url, '_self', false);
+            }
+        }
+        </script>
+    </body>
+</html>
