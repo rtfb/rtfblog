@@ -135,7 +135,8 @@ func handler(ctx *web.Context, path string) {
         "sidebar_entries": data.titles(NUM_RECENT_POSTS),
     }
     value, found := ctx.GetSecureCookie("adminlogin")
-    basicData["AdminLogin"] = found && value == "yesplease"
+    adminLogin := found && value == "yesplease"
+    basicData["AdminLogin"] = adminLogin
     if strings.HasPrefix(path, "page/") {
         pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
         if err != nil {
@@ -156,6 +157,10 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "main", basicData)
         return
     case "admin":
+        if !adminLogin {
+            ctx.Abort(http.StatusForbidden, "Verboten")
+            return
+        }
         basicData["PageTitle"] = "Admin Console"
         render(ctx, "admin", basicData)
         return
@@ -165,6 +170,10 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "archive", basicData)
         return
     case "all_comments":
+        if !adminLogin {
+            ctx.Abort(http.StatusForbidden, "Verboten")
+            return
+        }
         basicData["PageTitle"] = "All Comments"
         basicData["all_comments"] = data.allComments()
         render(ctx, "all_comments", basicData)
@@ -184,6 +193,10 @@ func handler(ctx *web.Context, path string) {
         ctx.Redirect(http.StatusFound, "/"+xtractReferer(ctx))
         return
     case "edit_post":
+        if !adminLogin {
+            ctx.Abort(http.StatusForbidden, "Verboten")
+            return
+        }
         basicData["PageTitle"] = "Edit Post"
         url := ctx.Params["post"]
         if url != "" {
@@ -197,6 +210,10 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "edit_post", basicData)
         return
     case "load_comments":
+        if !adminLogin {
+            ctx.Abort(http.StatusForbidden, "Verboten")
+            return
+        }
         if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
             b, err := json.Marshal(post)
             if err != nil {
@@ -491,14 +508,26 @@ func serve_favicon(ctx *web.Context) {
     http.ServeFile(ctx, ctx.Request, conf.Get("favicon"))
 }
 
+func checkAdmin(handler func(ctx *web.Context)) func(ctx *web.Context) {
+    return func(ctx *web.Context) {
+        value, found := ctx.GetSecureCookie("adminlogin")
+        adminLogin := found && value == "yesplease"
+        if !adminLogin {
+            ctx.Abort(http.StatusForbidden, "Verboten")
+            return
+        }
+        handler(ctx)
+    }
+}
+
 func runServer(_data Data) {
     data = _data
     web.Get("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
-    web.Get("/delete_comment", delete_comment_handler)
-    web.Post("/moderate_comment", moderate_comment_handler)
-    web.Post("/submit_post", submit_post_handler)
-    web.Post("/upload_images", upload_image_handler)
+    web.Get("/delete_comment", checkAdmin(delete_comment_handler))
+    web.Post("/moderate_comment", checkAdmin(moderate_comment_handler))
+    web.Post("/submit_post", checkAdmin(submit_post_handler))
+    web.Post("/upload_images", checkAdmin(upload_image_handler))
     web.Get("/favicon.ico", serve_favicon)
     web.Get("/(.*)", handler)
     web.SetLogger(logger)

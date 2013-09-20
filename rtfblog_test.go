@@ -142,6 +142,10 @@ func login() {
     resp.Body.Close()
 }
 
+func logout() {
+    curl("logout")
+}
+
 func (t T) failIf(cond bool, msg string, params ...interface{}) {
     if cond {
         println("============================================")
@@ -154,8 +158,8 @@ func (t T) failIf(cond bool, msg string, params ...interface{}) {
     }
 }
 
-func curl(url string) string {
-    if r, err := tclient.Get("http://localhost:8080/" + url); err == nil {
+func curlParam(url string, method func(string) (*http.Response, error)) string {
+    if r, err := method(url); err == nil {
         b, err := ioutil.ReadAll(r.Body)
         r.Body.Close()
         if err == nil {
@@ -163,6 +167,26 @@ func curl(url string) string {
         }
     }
     return ""
+}
+
+func curl(url string) string {
+    return curlParam(url, tclientGet)
+}
+
+func curlPost(url string) string {
+    return curlParam(url, tclientPostForm)
+}
+
+func localhostUrl(url string) string {
+    return "http://localhost:8080/" + url
+}
+
+func tclientGet(rqUrl string) (*http.Response, error) {
+    return tclient.Get(localhostUrl(rqUrl))
+}
+
+func tclientPostForm(rqUrl string) (*http.Response, error) {
+    return tclient.PostForm(localhostUrl(rqUrl), url.Values{})
 }
 
 func mustContain(t *testing.T, page string, what string) {
@@ -390,6 +414,30 @@ func TestArchiveContainsAllEntries(t *testing.T) {
 
 func TestPostPager(t *testing.T) {
     mustContain(t, curl(""), "/page/2")
+}
+
+func TestNonAdminCantAccessAdminPages(t *testing.T) {
+    logout()
+    urls := []string{
+        "all_comments",
+        "admin",
+        "edit_post",
+        "load_comments",
+        "delete_comment",
+    }
+    for _, u := range urls {
+        html := curl(u)
+        mustContain(t, html, "Verboten")
+    }
+    postUrls := []string{
+        "moderate_comment",
+        "submit_post",
+        "upload_images",
+    }
+    for _, u := range postUrls {
+        html := curlPost(u)
+        mustContain(t, html, "Verboten")
+    }
 }
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
