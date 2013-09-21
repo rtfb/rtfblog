@@ -22,16 +22,7 @@
             <div class="twelve columns content" id="content">
     <p>All posts:</p>
 {{#all_entries}}
-<a id="post" href="{{Url}}">{{Title}}</a>
-{{#AdminLogin}}
-<input
-    id="edit-post-button"
-    type="button"
-    class="inline"
-    onclick="location.href = '/edit_post?post={{Url}}'"
-    value="Edit"
-    />
-{{/AdminLogin}}
+{{> post-title}}
 <br />
 {{/all_entries}}
 {{^all_entries}}
