@@ -34,6 +34,9 @@ var (
 
 type TestData struct{}
 
+func (db *TestData) hiddenPosts(flag bool) {
+}
+
 func (db *TestData) post(url string) *Entry {
     for _, e := range test_posts {
         if e.Url == url {

@@ -546,5 +546,5 @@ func main() {
         return
     }
     defer db.Close()
-    runServer(&DbData{db, nil})
+    runServer(&DbData{db, nil, false})
 }

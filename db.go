@@ -11,6 +11,7 @@ import (
 )
 
 type Data interface {
+    hiddenPosts(flag bool)
     post(url string) *Entry
     postId(url string) (id int64, err error)
     posts(limit, offset int) []*Entry
@@ -31,8 +32,13 @@ type Data interface {
 }
 
 type DbData struct {
-    db  *sql.DB
-    tx  *sql.Tx
+    db            *sql.DB
+    tx            *sql.Tx
+    includeHidden bool
+}
+
+func (dd *DbData) hiddenPosts(flag bool) {
+    dd.includeHidden = flag
 }
 
 func (dd *DbData) begin() bool {
