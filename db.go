@@ -74,7 +74,7 @@ func (dd *DbData) rollback() {
 }
 
 func (dd *DbData) post(url string) *Entry {
-    posts := loadPosts(dd.db, -1, -1, url)
+    posts := loadPosts(dd.db, -1, -1, url, dd.includeHidden)
     if len(posts) != 1 {
         msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
         logger.Println(fmt.Sprintf(msg, url, len(posts)))
@@ -94,11 +94,15 @@ func (dd *DbData) postId(url string) (id int64, err error) {
 }
 
 func (dd *DbData) posts(limit, offset int) []*Entry {
-    return loadPosts(dd.db, limit, offset, "")
+    return loadPosts(dd.db, limit, offset, "", dd.includeHidden)
 }
 
 func (dd *DbData) numPosts() int {
-    rows, err := dd.db.Query(`select count(*) from post`)
+    selectSql := "select count(*) from post"
+    if !dd.includeHidden {
+        selectSql = selectSql + " where p.hidden=FALSE"
+    }
+    rows, err := dd.db.Query(selectSql)
     if err != nil {
         logger.Println(err.Error())
         return 0
@@ -112,9 +116,12 @@ func (dd *DbData) numPosts() int {
 }
 
 func (dd *DbData) titles(limit int) (links []*EntryLink) {
-    selectSql := `select p.title, p.url
-                  from post as p
-                  order by p.date desc`
+    selectSql := `select p.title, p.url, p.hidden
+                  from post as p`
+    if !dd.includeHidden {
+        selectSql = selectSql + " where p.hidden=FALSE"
+    }
+    selectSql = selectSql + " order by p.date desc"
     if limit > 0 {
         selectSql = selectSql + " limit $1"
     }
@@ -137,7 +144,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     defer rows.Close()
     for rows.Next() {
         entryLink := new(EntryLink)
-        err = rows.Scan(&entryLink.Title, &entryLink.Url)
+        err = rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
         if err != nil {
             logger.Println(err.Error())
             continue
@@ -315,11 +322,11 @@ func (dd *DbData) updateComment(id, text string) bool {
     return true
 }
 
-func loadPosts(db *sql.DB, limit, offset int, url string) []*Entry {
+func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []*Entry {
     if db == nil {
         return nil
     }
-    data, err := queryPosts(db, limit, offset, url)
+    data, err := queryPosts(db, limit, offset, url, includeHidden)
     if err != nil {
         logger.Println(err.Error())
         return nil
@@ -327,10 +334,15 @@ func loadPosts(db *sql.DB, limit, offset int, url string) []*Entry {
     return data
 }
 
-func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, err error) {
+func queryPosts(db *sql.DB, limit, offset int,
+    url string, includeHidden bool) (entries []*Entry, err error) {
     postUrlWhereClause := ""
     if url != "" {
         postUrlWhereClause = fmt.Sprintf("and p.url='%s'", url)
+    }
+    postHiddenWhereClause := ""
+    if !includeHidden {
+        postHiddenWhereClause = "and p.hidden=FALSE"
     }
     limitClause := ""
     if limit >= 0 {
@@ -340,13 +352,15 @@ func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, er
     if offset > 0 {
         offsetClause = fmt.Sprintf("offset %d", offset)
     }
-    queryFmt := `select a.disp_name, p.id, p.title, p.date, p.body, p.url
+    queryFmt := `select a.disp_name, p.id, p.title, p.date, p.body,
+                        p.url, p.hidden
                  from author as a, post as p
                  where a.id=p.author_id
-                 %s
+                 %s %s
                  order by p.date desc
                  %s %s`
-    query := fmt.Sprintf(queryFmt, postUrlWhereClause, limitClause, offsetClause)
+    query := fmt.Sprintf(queryFmt, postUrlWhereClause, postHiddenWhereClause,
+        limitClause, offsetClause)
     rows, err := db.Query(query)
     if err != nil {
         logger.Println(err.Error())
@@ -358,7 +372,7 @@ func queryPosts(db *sql.DB, limit, offset int, url string) (entries []*Entry, er
         var id int64
         var unixDate int64
         err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
-            &entry.RawBody, &entry.Url)
+            &entry.RawBody, &entry.Url, &entry.Hidden)
         if err != nil {
             logger.Println(err.Error())
             continue

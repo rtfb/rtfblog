@@ -45,8 +45,9 @@ type CommentWithPostTitle struct {
 }
 
 type EntryLink struct {
-    Title string
-    Url   string
+    Title  string
+    Url    string
+    Hidden bool
 }
 
 type Entry struct {

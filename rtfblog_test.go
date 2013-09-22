@@ -67,7 +67,7 @@ func (db *TestData) numPosts() int {
 
 func (dd *TestData) titles(limit int) (links []*EntryLink) {
     for _, p := range test_posts {
-        entryLink := &EntryLink{p.Title, p.Url}
+        entryLink := &EntryLink{p.Title, p.Url, false}
         links = append(links, entryLink)
     }
     return
