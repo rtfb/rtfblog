@@ -246,12 +246,12 @@ func (dd *DbData) insertPost(author int64, title, url, body string) (id int64, e
         return
     }
     insertPostSql, _ := dd.tx.Prepare(`insert into post
-                                       (author_id, title, date, url, body)
-                                       values ($1, $2, $3, $4, $5)
+                                       (author_id, title, date, url, body, hidden)
+                                       values ($1, $2, $3, $4, $5, $6)
                                        returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    err = insertPostSql.QueryRow(author, title, date, url, body).Scan(&id)
+    err = insertPostSql.QueryRow(author, title, date, url, body, false).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
         return
