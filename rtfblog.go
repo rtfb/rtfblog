@@ -296,7 +296,7 @@ func submit_post_handler(ctx *web.Context) {
     if idErr != nil {
         if idErr == sql.ErrNoRows {
             authorId := int64(1) // XXX: it's only me now
-            newPostId, err := data.insertPost(authorId, title, url, text)
+            newPostId, err := data.insertPost(authorId, title, url, text, false)
             if err != nil {
                 ctx.Abort(http.StatusInternalServerError, "Server Error")
                 data.rollback()
@@ -310,7 +310,7 @@ func submit_post_handler(ctx *web.Context) {
             return
         }
     } else {
-        if !data.updatePost(postId, title, url, text) {
+        if !data.updatePost(postId, title, url, text, false) {
             ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
             return

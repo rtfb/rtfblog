@@ -112,11 +112,11 @@ func (dd *TestData) insertComment(commenterId, postId int64, body string) (id in
     return
 }
 
-func (dd *TestData) insertPost(author int64, title, url, body string) (id int64, err error) {
+func (dd *TestData) insertPost(author int64, title, url, body string, hidden bool) (id int64, err error) {
     return
 }
 
-func (dd *TestData) updatePost(id int64, title, url, body string) bool {
+func (dd *TestData) updatePost(id int64, title, url, body string, hidden bool) bool {
     return true
 }
 
