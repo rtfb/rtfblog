@@ -67,6 +67,17 @@
                     value="{{TagsWithUrls}}"
                     />
                 <br />
+                <input
+                    id="post-hidden"
+                    type="checkbox"
+                    class="text"
+                    name="hidden"
+                    {{#IsHidden}}
+                    checked
+                    {{/IsHidden}}
+                    />
+                Hidden
+                <br />
 
                 <div id="upload-progress-section"></div>
                 <input type="button" value="Upload File" onclick="$('#fileid').click();" />

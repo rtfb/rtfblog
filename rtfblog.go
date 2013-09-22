@@ -124,6 +124,9 @@ func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
 }
 
 func handler(ctx *web.Context, path string) {
+    value, found := ctx.GetSecureCookie("adminlogin")
+    adminLogin := found && value == "yesplease"
+    data.hiddenPosts(adminLogin)
     numTotalPosts := data.numPosts()
     var basicData = map[string]interface{}{
         "PageTitle":       "",
@@ -134,8 +137,6 @@ func handler(ctx *web.Context, path string) {
         "entries":         data.posts(POSTS_PER_PAGE, 0),
         "sidebar_entries": data.titles(NUM_RECENT_POSTS),
     }
-    value, found := ctx.GetSecureCookie("adminlogin")
-    adminLogin := found && value == "yesplease"
     basicData["AdminLogin"] = adminLogin
     if strings.HasPrefix(path, "page/") {
         pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
@@ -198,6 +199,7 @@ func handler(ctx *web.Context, path string) {
             return
         }
         basicData["PageTitle"] = "Edit Post"
+        basicData["IsHidden"] = true // Assume hidden for a new post
         url := ctx.Params["post"]
         if url != "" {
             if post := data.post(url); post != nil {
@@ -205,6 +207,7 @@ func handler(ctx *web.Context, path string) {
                 basicData["Url"] = post.Url
                 basicData["TagsWithUrls"] = post.TagsWithUrls()
                 basicData["RawBody"] = post.RawBody
+                basicData["IsHidden"] = post.Hidden
             }
         }
         render(ctx, "edit_post", basicData)
@@ -289,6 +292,7 @@ func submit_post_handler(ctx *web.Context) {
     url := ctx.Params["url"]
     tagsWithUrls := ctx.Params["tags"]
     text := ctx.Params["text"]
+    hidden := ctx.Params["hidden"] == "on"
     postId, idErr := data.postId(url)
     if !data.begin() {
         return
@@ -296,7 +300,7 @@ func submit_post_handler(ctx *web.Context) {
     if idErr != nil {
         if idErr == sql.ErrNoRows {
             authorId := int64(1) // XXX: it's only me now
-            newPostId, err := data.insertPost(authorId, title, url, text, false)
+            newPostId, err := data.insertPost(authorId, title, url, text, hidden)
             if err != nil {
                 ctx.Abort(http.StatusInternalServerError, "Server Error")
                 data.rollback()
@@ -310,7 +314,7 @@ func submit_post_handler(ctx *web.Context) {
             return
         }
     } else {
-        if !data.updatePost(postId, title, url, text, false) {
+        if !data.updatePost(postId, title, url, text, hidden) {
             ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
             return
