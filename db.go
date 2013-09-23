@@ -23,8 +23,8 @@ type Data interface {
     updateComment(id, text string) bool
     selOrInsCommenter(name, email, website, ip string) (id int64, err error)
     insertComment(commenterId, postId int64, body string) (id int64, err error)
-    insertPost(author int64, title, url, body string, hidden bool) (id int64, err error)
-    updatePost(id int64, tiel, url, body string, hidden bool) bool
+    insertPost(author int64, e *Entry) (id int64, err error)
+    updatePost(id int64, e *Entry) bool
     updateTags(tags []*Tag, postId int64)
     begin() bool
     commit()
@@ -251,7 +251,7 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
     return
 }
 
-func (dd *DbData) insertPost(author int64, title, url, body string, hidden bool) (id int64, err error) {
+func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
     id = -1
     err = sql.ErrNoRows
     if dd.tx == nil {
@@ -264,7 +264,7 @@ func (dd *DbData) insertPost(author int64, title, url, body string, hidden bool)
                                        returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    err = insertPostSql.QueryRow(author, title, date, url, body, hidden).Scan(&id)
+    err = insertPostSql.QueryRow(e.Author, e.Title, date, e.Url, e.Body, e.Hidden).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
         return
@@ -272,12 +272,12 @@ func (dd *DbData) insertPost(author int64, title, url, body string, hidden bool)
     return
 }
 
-func (dd *DbData) updatePost(id int64, title, url, body string, hidden bool) bool {
+func (dd *DbData) updatePost(id int64, e *Entry) bool {
     updateStmt, _ := dd.tx.Prepare(`update post
                                     set title=$1, url=$2, body=$3, hidden=$4
                                     where id=$5`)
     defer updateStmt.Close()
-    _, err := updateStmt.Exec(title, url, body, hidden, id)
+    _, err := updateStmt.Exec(e.Title, e.Url, e.Body, e.Hidden, id)
     if err != nil {
         logger.Println(err.Error())
         return false

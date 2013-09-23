@@ -288,11 +288,16 @@ func moderate_comment_handler(ctx *web.Context) {
 }
 
 func submit_post_handler(ctx *web.Context) {
-    title := ctx.Params["title"]
-    url := ctx.Params["url"]
     tagsWithUrls := ctx.Params["tags"]
-    text := ctx.Params["text"]
-    hidden := ctx.Params["hidden"] == "on"
+    url := ctx.Params["url"]
+    e := Entry {
+        EntryLink: EntryLink {
+            Title: ctx.Params["title"],
+            Url: url,
+            Hidden: ctx.Params["hidden"] == "on",
+        },
+        Body: ctx.Params["text"],
+    }
     postId, idErr := data.postId(url)
     if !data.begin() {
         return
@@ -300,7 +305,7 @@ func submit_post_handler(ctx *web.Context) {
     if idErr != nil {
         if idErr == sql.ErrNoRows {
             authorId := int64(1) // XXX: it's only me now
-            newPostId, err := data.insertPost(authorId, title, url, text, hidden)
+            newPostId, err := data.insertPost(authorId, &e)
             if err != nil {
                 ctx.Abort(http.StatusInternalServerError, "Server Error")
                 data.rollback()
@@ -314,7 +319,7 @@ func submit_post_handler(ctx *web.Context) {
             return
         }
     } else {
-        if !data.updatePost(postId, title, url, text, hidden) {
+        if !data.updatePost(postId, &e) {
             ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
             return
