@@ -266,22 +266,28 @@
         <div class="row clearfix">
             <div class="four columns">
                 <input
+                    id="name"
                     class="text"
                     name="name"
                     placeholder="Name"
                     type="text"
+                    value=""
                     />
                 <input
+                    id="email"
                     class="text"
                     name="email"
                     placeholder="Email (will stay private)"
                     type="text"
+                    value=""
                     />
                 <input
+                    id="website"
                     class="text"
                     name="website"
                     placeholder="Web site"
                     type="text"
+                    value=""
                     />
             </div>
             <div class="six columns captcha-alert-box">
@@ -393,7 +399,23 @@
             return fieldName + "=" + encodeURIComponent(rawValue);
         }
 
+        function validateForm() {
+            var name = document.getElementById('name').value;
+            if (name === "") {
+                alert("Name field is mandatory.");
+                return;
+            }
+
+            var email = document.getElementById('email').value;
+            if (email === "") {
+                alert("Email field is mandatory.");
+                return;
+            }
+        }
+
         function submitComment(redirectTo) {
+            validateForm();
+
             var xhr;
             try {
                 xhr = new ActiveXObject('Msxml2.XMLHTTP');
