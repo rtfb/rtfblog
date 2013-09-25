@@ -40,8 +40,7 @@ type Comment struct {
 
 type CommentWithPostTitle struct {
     Comment
-    PostTitle string
-    PostUrl   string
+    EntryLink
 }
 
 type EntryLink struct {

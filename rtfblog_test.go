@@ -78,8 +78,8 @@ func (dd *TestData) allComments() []*CommentWithPostTitle {
     for _, c := range test_comm {
         comment := new(CommentWithPostTitle)
         comment.Comment = *c
-        comment.PostUrl = test_posts[0].Url
-        comment.PostTitle = test_posts[0].Title
+        comment.Url = test_posts[0].Url
+        comment.Title = test_posts[0].Title
         comments = append(comments, comment)
     }
     return comments

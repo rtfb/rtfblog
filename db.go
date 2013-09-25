@@ -179,7 +179,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
         var unixDate int64
         err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
             &comment.CommentId, &unixDate, &comment.RawBody,
-            &comment.PostTitle, &comment.PostUrl)
+            &comment.Title, &comment.Url)
         if err != nil {
             logger.Printf("error scanning comment row: %s\n", err.Error())
         }
