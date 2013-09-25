@@ -334,7 +334,7 @@
             <input
                 type="button"
                 value="Submit"
-                onclick="submitComment('{{Url}}')"
+                onclick="submitComment()"
                 />
         </div>
     </form>
@@ -418,7 +418,7 @@
             }
         }
 
-        function submitComment(redirectTo) {
+        function submitComment() {
             validateForm();
 
             var xhr;
