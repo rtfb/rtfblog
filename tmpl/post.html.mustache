@@ -55,6 +55,9 @@
             #post-body * img {
                 max-width: 100%;
             }
+            .user-supplied-text * a {
+                color: #11a;
+            }
             .shadow {
                 -moz-box-shadow: inset 0 0 10px #000000;
                 -webkit-box-shadow: inset 0 0 10px #000000;
@@ -129,7 +132,7 @@
 </h3>
 {{> author}}
 <hr />
-<div id="post-body" class="nine columns container">{{{Body}}}</div>
+<div id="post-body" class="user-supplied-text nine columns container">{{{Body}}}</div>
 <div class="three columns container">&nbsp;</div>
     <div class="twelve columns container">
     {{#HasTags}}
@@ -192,7 +195,9 @@
                             <a class="dimmed" href="#comment-{{CommentId}}" name="comment-{{CommentId}}">{{Time}}</a><br />
                             </p>
                         </div>
-                        {{{Body}}}
+                        <div class="user-supplied-text">
+                            {{{Body}}}
+                        </div>
                     </div>
                 </div>
                 {{#AdminLogin}}

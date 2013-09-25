@@ -15,6 +15,9 @@
             .two-paragraphs-excerpt > p:nth-child(n+3) {
                 display:none;
             }
+            .user-supplied-text * a {
+                color: #11a;
+            }
         </style>
     </head>
     <body>
@@ -41,7 +44,7 @@
                             name="comment-{{CommentId}}"
                             >{{Time}}</a> <br />
                     </div>
-                    <div class="two-paragraphs-excerpt">
+                    <div class="two-paragraphs-excerpt user-supplied-text">
                         {{{Body}}}
                     </div>
                     <input
