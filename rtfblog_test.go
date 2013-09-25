@@ -462,6 +462,7 @@ func TestAdminPageHasAllCommentsButton(t *testing.T) {
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
+    login()
     nodes := query(t, "/all_comments", "#comment")
     if len(nodes) != len(test_comm) {
         t.Fatalf("Not all comments in /all_comments!")
