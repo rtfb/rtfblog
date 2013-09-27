@@ -290,10 +290,10 @@ func moderate_comment_handler(ctx *web.Context) {
 func submit_post_handler(ctx *web.Context) {
     tagsWithUrls := ctx.Params["tags"]
     url := ctx.Params["url"]
-    e := Entry {
-        EntryLink: EntryLink {
-            Title: ctx.Params["title"],
-            Url: url,
+    e := Entry{
+        EntryLink: EntryLink{
+            Title:  ctx.Params["title"],
+            Url:    url,
             Hidden: ctx.Params["hidden"] == "on",
         },
         Body: ctx.Params["text"],
