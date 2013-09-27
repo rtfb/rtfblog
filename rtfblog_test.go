@@ -32,13 +32,16 @@ var (
     test_author = new(Author)
 )
 
-type TestData struct{}
+type TestData struct {
+    includeHidden bool
+}
 
 func (db *TestData) hiddenPosts(flag bool) {
+    db.includeHidden = flag
 }
 
 func (db *TestData) post(url string) *Entry {
-    for _, e := range test_posts {
+    for _, e := range db.testPosts() {
         if e.Url == url {
             return e
         }
@@ -51,22 +54,38 @@ func (db *TestData) postId(url string) (id int64, err error) {
     return
 }
 
+func (db *TestData) testPosts() []*Entry {
+    if db.includeHidden {
+        return test_posts
+    } else {
+        posts := make([]*Entry, 0)
+        for _, p := range test_posts {
+            if p.Hidden {
+                continue
+            }
+            posts = append(posts, p)
+        }
+        return posts
+    }
+}
+
 func (db *TestData) posts(limit, offset int) []*Entry {
     if offset < 0 {
         offset = 0
     }
-    if limit > 0 && limit < len(test_posts) {
-        return test_posts[offset:limit]
+    tp := db.testPosts()
+    if limit > 0 && limit < len(tp) {
+        return tp[offset:limit]
     }
-    return test_posts
+    return tp
 }
 
 func (db *TestData) numPosts() int {
-    return len(test_posts)
+    return len(db.testPosts())
 }
 
 func (dd *TestData) titles(limit int) (links []*EntryLink) {
-    for _, p := range test_posts {
+    for _, p := range dd.testPosts() {
         entryLink := &EntryLink{p.Title, p.Url, false}
         links = append(links, entryLink)
     }
@@ -198,26 +217,33 @@ func mustContain(t *testing.T, page string, what string) {
     }
 }
 
+func mkTestEntry(i int, hidden bool) *Entry {
+    auth := "Author"
+    date := "2013-03-19"
+    return &Entry{
+        EntryLink: EntryLink{
+            Title:  fmt.Sprintf("Hi%d", i),
+            Url:    fmt.Sprintf("hello%d", i),
+            Hidden: hidden,
+        },
+        Author:   auth,
+        Date:     date,
+        Body:     fmt.Sprintf("Body%d", i),
+        RawBody:  fmt.Sprintf("RawBody%d", i),
+        Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
+        Comments: test_comm,
+    }
+}
+
 func init() {
     conf = loadConfig("server.conf")
     logger = util.MkLogger("tests.log")
     forgeTestUser("testuser", "testpasswd")
-    auth := "Author"
-    date := "2013-03-19"
     for i := 1; i <= 11; i++ {
-        e := &Entry{
-            EntryLink: EntryLink{
-                Title: fmt.Sprintf("Hi%d", i),
-                Url:   fmt.Sprintf("hello%d", i),
-            },
-            Author:   auth,
-            Date:     date,
-            Body:     fmt.Sprintf("Body%d", i),
-            RawBody:  fmt.Sprintf("RawBody%d", i),
-            Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
-            Comments: test_comm,
-        }
-        test_posts = append(test_posts, e)
+        test_posts = append(test_posts, mkTestEntry(i, false))
+    }
+    for i := 1; i <= 2; i++ {
+        test_posts = append(test_posts, mkTestEntry(i+1000, true))
     }
     go runServer(&TestData{})
 }
