@@ -217,6 +217,12 @@ func mustContain(t *testing.T, page string, what string) {
     }
 }
 
+func mustNotContain(t *testing.T, page string, what string) {
+    if strings.Contains(page, what) {
+        t.Errorf("Test page incorrectly contained %q", what)
+    }
+}
+
 func mkTestEntry(i int, hidden bool) *Entry {
     auth := "Author"
     date := "2013-03-19"
@@ -493,6 +499,41 @@ func TestAllCommentsPageHasAllComments(t *testing.T) {
     if len(nodes) != len(test_comm) {
         t.Fatalf("Not all comments in /all_comments!")
     }
+}
+
+func TestHiddenPosts(t *testing.T) {
+    var positiveTests = []struct {
+        url, content string
+    }{
+        {"hello1001", "Body"},
+        {"", "hello1001"},
+        {"archive", "hello1001"},
+    }
+    var negativeTests = []struct {
+        url, content string
+    }{
+        {"", "hello1001"},
+        {"archive", "hello1001"},
+    }
+    login()
+    for _, i := range positiveTests {
+        html := curl(i.url)
+        mustContain(t, html, i.content)
+    }
+    logout()
+    for _, i := range negativeTests {
+        html := curl(i.url)
+        mustNotContain(t, html, i.content)
+    }
+}
+
+func TestHiddenPostAccess(t *testing.T) {
+    login()
+    html := curl("hello1001")
+    mustContain(t, html, "Body")
+    logout()
+    html = curl("hello1001")
+    mustContain(t, html, "Page not found")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
