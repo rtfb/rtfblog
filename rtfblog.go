@@ -542,9 +542,40 @@ func runServer(_data Data) {
     web.Run(conf.Get("port"))
 }
 
+func obtainConfiguration() SrvConfig {
+    hardcodedConf := SrvConfig{}
+    conf := hardcodedConf
+    basedir, _ := filepath.Split(filepath.Clean(os.Args[0]))
+    home, err := util.GetHomeDir()
+    if err != nil {
+        fmt.Println("Error acquiring user home dir. That can't be good.")
+        fmt.Println("Err = %q", err.Error())
+    }
+    // Read the most generic config first, then more specific, each latter will
+    // override the former values:
+    confPaths := []string{
+        "/etc/rtfblogrc",
+        filepath.Join(home, ".rtfblogrc"),
+        filepath.Join(basedir, ".rtfblogrc"),
+        filepath.Join(basedir, "server.conf"),
+    }
+    for _, p := range confPaths {
+        exists, err := util.FileExists(p)
+        if err != nil {
+            fmt.Printf("Can't check %q for existence, skipping...", p)
+            continue
+        }
+        if exists {
+            for k, v := range loadConfig(p) {
+                conf[k] = v
+            }
+        }
+    }
+    return conf
+}
+
 func main() {
-    root, _ := filepath.Split(filepath.Clean(os.Args[0]))
-    conf = loadConfig(filepath.Join(root, "server.conf"))
+    conf = obtainConfiguration()
     logger = util.MkLogger(conf.Get("log"))
     db, err := sql.Open("postgres", conf.Get("database"))
     if err != nil {
