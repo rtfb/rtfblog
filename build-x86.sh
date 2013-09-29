@@ -38,7 +38,6 @@ $go get
 $go build
 
 cd /home/vagrant/$builddir/
-cp /vagrant/server.conf $package
 cp /home/vagrant/goose/goose $package
 cp -r /vagrant/db $package
 cp /home/vagrant/$builddir/rtfblog $package
