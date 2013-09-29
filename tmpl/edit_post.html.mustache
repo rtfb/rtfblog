@@ -40,6 +40,7 @@
                 method="post"
                 >
             <div class="twelve columns content" id="content">
+                {{#post}}
                 <label for="post_title">Title:</label>
                 <input
                     id="post_title"
@@ -104,6 +105,7 @@
                     value="Submit"
                     />
                 <input id="fileid" type="file" name="file" style="visibility:hidden" />
+                {{/post}}
             </div>
             </form>
 

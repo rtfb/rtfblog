@@ -536,6 +536,22 @@ func TestHiddenPostAccess(t *testing.T) {
     mustContain(t, html, "Page not found")
 }
 
+func TestEditPost(t *testing.T) {
+    login()
+    // test with non-hidden post
+    html := curl("edit_post?post=hello3")
+    mustContain(t, html, "Body3")
+    mustContain(t, html, "Hi3")
+    mustContain(t, html, "u3")
+    mustNotContain(t, html, "checked")
+    // now test with hidden post
+    html = curl("edit_post?post=hello1002")
+    mustContain(t, html, "Body1002")
+    mustContain(t, html, "Hi1002")
+    mustContain(t, html, "u1002")
+    mustContain(t, html, "checked")
+}
+
 func query(t *testing.T, url, query string) []*html.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {

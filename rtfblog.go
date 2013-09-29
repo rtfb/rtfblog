@@ -203,11 +203,8 @@ func handler(ctx *web.Context, path string) {
         url := ctx.Params["post"]
         if url != "" {
             if post := data.post(url); post != nil {
-                basicData["Title"] = post.Title
-                basicData["Url"] = post.Url
-                basicData["TagsWithUrls"] = post.TagsWithUrls()
-                basicData["RawBody"] = post.RawBody
                 basicData["IsHidden"] = post.Hidden
+                basicData["post"] = post
             }
         }
         render(ctx, "edit_post", basicData)
