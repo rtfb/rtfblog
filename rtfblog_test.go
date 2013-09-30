@@ -533,7 +533,7 @@ func TestHiddenPostAccess(t *testing.T) {
     mustContain(t, html, "Body")
     logout()
     html = curl("hello1001")
-    mustContain(t, html, "Page not found")
+    mustContain(t, html, "Page Not Found")
 }
 
 func TestEditPost(t *testing.T) {

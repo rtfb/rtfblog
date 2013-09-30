@@ -119,7 +119,8 @@ func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
     if post := data.post(url); post != nil {
         return post
     }
-    ctx.NotFound("Page not found: " + url)
+    html := mustache.RenderFile("tmpl/404.html.mustache", map[string]interface{}{})
+    ctx.NotFound(html)
     return nil
 }
 
