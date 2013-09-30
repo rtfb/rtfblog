@@ -52,5 +52,5 @@ rm -rf $package
 scp -q package.tar.gz rtfb@rtfb.lt:/home/rtfb/package.tar.gz
 scp -q /vagrant/unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
 ssh rtfb@rtfb.lt /home/rtfb/unpack.sh
-ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./goose -env=development up"
+ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./goose -env=production up"
 ssh rtfb@rtfb.lt "./rtfblog &"

@@ -1,3 +1,7 @@
+production:
+    driver: postgres
+    open: $RTFBLOG_DB_URL
+
 development:
     driver: postgres
     open: user=tstusr dbname=tstdb password=tstpwd
