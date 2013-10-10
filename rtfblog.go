@@ -155,7 +155,9 @@ func handler(ctx *web.Context, path string) {
     }
     if strings.HasPrefix(path, "tag/") {
         tag := path[4:]
-        basicData["PageTitle"] = "Posts tagged '" + tag + "'"
+        heading := "Posts tagged '" + tag + "'"
+        basicData["PageTitle"] = heading
+        basicData["HeadingText"] = heading + ":"
         basicData["all_entries"] = data.titlesByTag(tag)
         render(ctx, "archive", basicData)
         return
@@ -175,6 +177,7 @@ func handler(ctx *web.Context, path string) {
         return
     case "archive":
         basicData["PageTitle"] = "Archive"
+        basicData["HeadingText"] = "All posts:"
         basicData["all_entries"] = data.titles(-1)
         render(ctx, "archive", basicData)
         return
