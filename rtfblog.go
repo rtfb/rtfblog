@@ -153,6 +153,13 @@ func handler(ctx *web.Context, path string) {
         render(ctx, "main", basicData)
         return
     }
+    if strings.HasPrefix(path, "tag/") {
+        tag := path[4:]
+        basicData["PageTitle"] = "Posts tagged '" + tag + "'"
+        basicData["all_entries"] = data.titlesByTag(tag)
+        render(ctx, "archive", basicData)
+        return
+    }
     switch path {
     case "":
         basicData["PageTitle"] = "Velkam"

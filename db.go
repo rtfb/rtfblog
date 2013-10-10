@@ -16,6 +16,7 @@ type Data interface {
     postId(url string) (id int64, err error)
     posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
+    titlesByTag(tag string) []*EntryLink
     allComments() []*CommentWithPostTitle
     numPosts() int
     author(username string) (*Author, error)
@@ -138,6 +139,40 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
     } else {
         rows, err = stmt.Query()
     }
+    if err != nil {
+        logger.Println(err.Error())
+        return
+    }
+    defer rows.Close()
+    for rows.Next() {
+        entryLink := new(EntryLink)
+        err = rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
+        if err != nil {
+            logger.Println(err.Error())
+            continue
+        }
+        links = append(links, entryLink)
+    }
+    return
+}
+
+func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
+    selectSql := `select p.title, p.url, p.hidden
+                  from post as p
+                  where p.id in (select tm.post_id from tagmap as tm
+                                 inner join tag as t
+                                 on tm.tag_id = t.id and t.url=$1)`
+    if !dd.includeHidden {
+        selectSql = selectSql + " and p.hidden=FALSE"
+    }
+    selectSql = selectSql + " order by p.date desc"
+    stmt, err := dd.db.Prepare(selectSql)
+    if err != nil {
+        logger.Println(err.Error())
+        return
+    }
+    defer stmt.Close()
+    rows, err := stmt.Query(tag)
     if err != nil {
         logger.Println(err.Error())
         return

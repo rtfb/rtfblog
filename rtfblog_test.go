@@ -131,6 +131,10 @@ func (dd *TestData) titles(limit int) (links []*EntryLink) {
     return
 }
 
+func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
+    return
+}
+
 func (dd *TestData) allComments() []*CommentWithPostTitle {
     comments := make([]*CommentWithPostTitle, 0)
     for _, c := range test_comm {
