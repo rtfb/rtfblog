@@ -98,7 +98,7 @@ func (dd *DbData) posts(limit, offset int) []*Entry {
 }
 
 func (dd *DbData) numPosts() int {
-    selectSql := "select count(*) from post"
+    selectSql := "select count(*) from post as p"
     if !dd.includeHidden {
         selectSql = selectSql + " where p.hidden=FALSE"
     }
