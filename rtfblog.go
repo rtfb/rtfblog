@@ -224,7 +224,7 @@ func handler(ctx *web.Context, path string) {
             ctx.WriteString(string(b))
         }
         return
-    case "feed.xml":
+    case "feeds/rss.xml":
         produceFeedXml(ctx, data.posts(NUM_FEED_ITEMS, 0))
         return
     default:
