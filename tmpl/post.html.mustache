@@ -19,23 +19,23 @@
                 max-height: 500px;
                 max-width: 500px;
             }
-            #comment-container {
+            .comment-container {
                 position: relative;
             }
-            #bubble-container {
+            .bubble-container {
                 position: relative;
                 left: -30px;
                 float: right;
             }
-            #commenter-avatar {
+            .commenter-avatar {
                 display: block;
                 margin-left: auto;
                 margin-right: auto;
             }
-            #avatar-container {
+            .avatar-container {
                 margin: 1em 0 3em;
             }
-            #commenter {
+            .commenter {
                 position: relative;
                 vertical-align: bottom;
                 line-height: 1.1em;
@@ -165,23 +165,23 @@
         </div>
         <div class="twelve columns">
             {{#Comments}}
-            <div id="comment-container">
-                <div id="avatar-container" class="two columns alpha">
+            <div class="comment-container">
+                <div class="avatar-container two columns alpha">
                     <div class="shadow">
                         <img
-                            id="commenter-avatar"
+                            class="commenter-avatar"
                             alt="avatar"
                             src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
                     </div>
                 </div>
-                <div id="bubble-container" class="ten columns omega">
+                <div class="bubble-container ten columns omega">
                     <div id="comment-text-{{CommentId}}"
                         class="comment-body-container speech-bubble left"
                         {{#AdminLogin}}
                         onclick="toggleEdit('{{CommentId}}')"
                         {{/AdminLogin}}
                         >
-                        <div id="commenter">
+                        <div class="commenter">
                             <p>
                             <strong>
                                 {{#Website}}

@@ -307,7 +307,7 @@ func TestNonEmptyDatasetHasEntries(t *testing.T) {
 }
 
 func TestEntryListHasAuthor(t *testing.T) {
-    nodes := query(t, "", "#author")
+    nodes := query(t, "", ".author")
     for _, node := range nodes {
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
@@ -318,7 +318,7 @@ func TestEntryListHasAuthor(t *testing.T) {
 }
 
 func TestEntriesHaveTagsInList(t *testing.T) {
-    nodes := query(t, "", "#tags")
+    nodes := query(t, "", ".tags")
     for _, node := range nodes {
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
@@ -356,7 +356,7 @@ func checkAuthorSection(t T, node *html.Node) {
 
 func TestEveryEntryHasAuthor(t *testing.T) {
     for _, e := range test_posts {
-        node := query1(t, e.Url, "#author")
+        node := query1(t, e.Url, ".author")
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
             t.Fatalf("No author specified in author div!")
@@ -387,10 +387,10 @@ func checkCommentsSection(t T, node *html.Node) {
     t.failIf(len(noComments) == 0 && len(comments) == 0,
         "Comments node not found in section: %q", h5.NewTree(node).String())
     if len(comments) > 0 {
-        headers := cssSelect(t, node, "#comment-container")
+        headers := cssSelect(t, node, ".comment-container")
         t.failIf(len(headers) == 0,
             "Comment header not found in section: %q", h5.NewTree(node).String())
-        bodies := cssSelect(t, node, "#bubble-container")
+        bodies := cssSelect(t, node, ".bubble-container")
         t.failIf(len(bodies) == 0,
             "Comment body not found in section: %q", h5.NewTree(node).String())
     }
@@ -409,7 +409,7 @@ func emptyChildren(node *html.Node) bool {
 
 func TestTagFormattingInPostPage(t *testing.T) {
     for _, e := range test_posts {
-        nodes := query0(t, e.Url, "#tags")
+        nodes := query0(t, e.Url, ".tags")
         if len(nodes) > 0 {
             for _, node := range nodes {
                 assertElem(t, node, "div")
@@ -435,7 +435,7 @@ func TestLoginPage(t *testing.T) {
 }
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
-    nodes := query0(t, "", "#post")
+    nodes := query0(t, "", ".post")
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
 }
 
@@ -443,7 +443,7 @@ func TestArchiveContainsAllEntries(t *testing.T) {
     if len(test_posts) <= NUM_RECENT_POSTS {
         t.Fatalf("This test only makes sense if len(test_posts) > NUM_RECENT_POSTS")
     }
-    nodes := query0(t, "archive", "#post")
+    nodes := query0(t, "archive", ".post")
     T{t}.failIf(len(nodes) != len(test_posts), "Not all posts rendered in archive!")
 }
 
@@ -477,7 +477,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
     login()
-    nodes := query(t, "", "#edit-post-button")
+    nodes := query(t, "", ".edit-post-button")
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have Edit button!")
 }
 
