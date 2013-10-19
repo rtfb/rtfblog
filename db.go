@@ -144,16 +144,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
         return
     }
     defer rows.Close()
-    for rows.Next() {
-        entryLink := new(EntryLink)
-        err = rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
-        if err != nil {
-            logger.Println(err.Error())
-            continue
-        }
-        links = append(links, entryLink)
-    }
-    return
+    return scanEntryLinks(rows)
 }
 
 func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
@@ -178,9 +169,13 @@ func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
         return
     }
     defer rows.Close()
+    return scanEntryLinks(rows)
+}
+
+func scanEntryLinks(rows *sql.Rows) (links []*EntryLink) {
     for rows.Next() {
         entryLink := new(EntryLink)
-        err = rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
+        err := rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
         if err != nil {
             logger.Println(err.Error())
             continue
