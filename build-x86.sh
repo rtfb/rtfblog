@@ -5,22 +5,16 @@ if ! [ $(id -un) = vagrant ]; then
     exit 1
 fi
 
-# Needed to go get stuff from github
-apt-get install --yes git
+# Needed to go get stuff from various sources
+apt-get install --yes git mercurial
 
-# Now, I'd love to `apt-get install --yes golang`, but its installer has a
-# stupid TUI dialog with a silly question that I couldn't find a way to dismiss
-# and it fucks everything up. So install prerequisites to build Go from source
-# instead.
-apt-get install --yes gcc libc6-dev mercurial
-
-if ! [ -d /home/vagrant/go ]; then
-    hg clone -u release-branch.go1.1 https://code.google.com/p/go
-    cd go/src
-    ./all.bash
+if ! hash go 2>/dev/null; then
+    wget -q https://godeb.s3.amazonaws.com/godeb-386.tar.gz
+    tar xzvf godeb-386.tar.gz
+    ./godeb install 1.1.2
 fi
 
-go=/home/vagrant/go/bin/go
+go=/usr/bin/go
 gopkgs=/home/vagrant/gopkgs
 mkdir -p $gopkgs
 export GOPATH=$gopkgs
