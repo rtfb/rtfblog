@@ -38,12 +38,12 @@ $go build
 
 cd /home/vagrant
 git clone https://bitbucket.org/liamstask/goose.git
-cd goose
+cd goose/cmd/goose
 $go get
 $go build
 
 cd /home/vagrant/$builddir/
-cp /home/vagrant/goose/goose $package
+cp /home/vagrant/goose/cmd/goose/goose $package
 cp -r /vagrant/db $package
 cp /home/vagrant/$builddir/rtfblog $package
 cp -r /vagrant/static $package
