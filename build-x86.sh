@@ -31,7 +31,9 @@ $go get
 $go build
 
 cd /home/vagrant
-git clone https://bitbucket.org/liamstask/goose.git
+if ! [ -d goose ]; then
+    git clone https://bitbucket.org/liamstask/goose.git
+fi
 cd goose/cmd/goose
 $go get
 $go build
