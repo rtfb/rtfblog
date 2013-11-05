@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if ! [ $(id -un) = vagrant ]; then
+    echo "You're supposed to run this inside a vagrant box!" 1>&2
+    exit 1
+fi
+
 # Needed to go get stuff from github
 apt-get install --yes git
 
