@@ -180,6 +180,10 @@ func (dd *TestData) selOrInsCommenter(name, email, website, ip string) (id int64
     return
 }
 
+func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
+    return
+}
+
 func (dd *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
     return
 }

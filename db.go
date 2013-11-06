@@ -23,6 +23,7 @@ type Data interface {
     deleteComment(id string) bool
     deletePost(url string) bool
     updateComment(id, text string) bool
+    commenter(name, email, website, ip string) (id int64, err error)
     selOrInsCommenter(name, email, website, ip string) (id int64, err error)
     insertComment(commenterId, postId int64, body string) (id int64, err error)
     insertPost(author int64, e *Entry) (id int64, err error)
@@ -222,6 +223,24 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
         comments = append(comments, comment)
     }
     return comments
+}
+
+func (dd *DbData) commenter(name, email, website, ip string) (id int64, err error) {
+    id = -1
+    query, err := dd.db.Prepare(`select c.id from commenter as c
+                                 where c.name = $1
+                                   and c.email = $2
+                                   and c.www = $3`)
+    if err != nil {
+        logger.Println("err: " + err.Error())
+        return
+    }
+    defer query.Close()
+    err = query.QueryRow(name, email, website).Scan(&id)
+    if err != nil {
+        logger.Println("err: " + err.Error())
+    }
+    return
 }
 
 func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {

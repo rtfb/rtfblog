@@ -403,9 +403,9 @@ func handleUpload(r *http.Request, p *multipart.Part) {
     return
 }
 
-func wrongCaptchaReply(ctx *web.Context) {
+func wrongCaptchaReply(ctx *web.Context, status string) {
     var response = map[string]interface{}{
-        "status":  "rejected",
+        "status":  status,
         "name":    ctx.Params["name"],
         "email":   ctx.Params["email"],
         "website": ctx.Params["website"],
@@ -459,7 +459,7 @@ func detectLanguage(text string) string {
     return string(body)
 }
 
-func publishComment(ctx *web.Context, postId int64, refUrl string) string {
+func publishCommentWithInsert(ctx *web.Context, postId int64, refUrl string) string {
     if !data.begin() {
         return ""
     }
@@ -485,6 +485,21 @@ func publishComment(ctx *web.Context, postId int64, refUrl string) string {
     return fmt.Sprintf("#comment-%d", commentId)
 }
 
+func publishComment(ctx *web.Context, postId, commenterId int64, refUrl string) string {
+    if !data.begin() {
+        return ""
+    }
+    body := ctx.Params["text"]
+    commentId, err := data.insertComment(commenterId, postId, body)
+    if err != nil {
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        data.rollback()
+        return ""
+    }
+    data.commit()
+    return fmt.Sprintf("#comment-%d", commentId)
+}
+
 func comment_handler(ctx *web.Context) {
     refUrl := xtractReferer(ctx)
     postId, err := data.postId(refUrl)
@@ -493,12 +508,32 @@ func comment_handler(ctx *web.Context) {
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
-    captcha := ctx.Params["captcha"]
-    if captcha != "dvylika" {
-        wrongCaptchaReply(ctx)
+    ip := ctx.Request.RemoteAddr
+    name := ctx.Params["name"]
+    email := ctx.Params["email"]
+    website := ctx.Params["website"]
+    commenterId, err := data.commenter(name, email, website, ip)
+    redir := ""
+    if err == nil {
+        // This is a returning commenter, pass his comment through:
+        redir = "/" + refUrl + publishComment(ctx, postId, commenterId, refUrl)
+    } else if err == sql.ErrNoRows {
+        captcha := ctx.Params["captcha"]
+        if captcha == "" {
+            wrongCaptchaReply(ctx, "showcaptcha")
+            return
+        }
+        if captcha != "dvylika" {
+            wrongCaptchaReply(ctx, "rejected")
+            return
+        } else {
+            redir = "/" + refUrl + publishCommentWithInsert(ctx, postId, refUrl)
+        }
+    } else {
+        logger.Println("err: " + err.Error())
+        wrongCaptchaReply(ctx, "rejected")
         return
     }
-    redir := "/" + refUrl + publishComment(ctx, postId, refUrl)
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
         go SendEmail(ctx.Params["name"], ctx.Params["email"],
