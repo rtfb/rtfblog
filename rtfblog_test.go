@@ -183,6 +183,9 @@ func (dd *TestData) insertCommenter(name, email, website, ip string) (id int64, 
 }
 
 func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
+    if name == "N" && email == "@" && website == "w" {
+        return 1, nil
+    }
     return -1, sql.ErrNoRows
 }
 
@@ -642,6 +645,17 @@ func TestShowCaptcha(t *testing.T) {
         t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
     }
     T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
+}
+
+func TestReturningCommenterSkipsCaptcha(t *testing.T) {
+    url := "comment_submit?name=N&captcha=&email=@&website=w&text=cmmnt%20txt"
+    respJson := curl(url)
+    var resp map[string]interface{}
+    err := json.Unmarshal([]byte(respJson), &resp)
+    if err != nil {
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+    }
+    T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
