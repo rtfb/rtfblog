@@ -176,7 +176,7 @@ func (dd *TestData) commit() {
 func (dd *TestData) rollback() {
 }
 
-func (dd *TestData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {
+func (dd *TestData) insertCommenter(name, email, website, ip string) (id int64, err error) {
     return
 }
 

@@ -24,7 +24,7 @@ type Data interface {
     deletePost(url string) bool
     updateComment(id, text string) bool
     commenter(name, email, website, ip string) (id int64, err error)
-    selOrInsCommenter(name, email, website, ip string) (id int64, err error)
+    insertCommenter(name, email, website, ip string) (id int64, err error)
     insertComment(commenterId, postId int64, body string) (id int64, err error)
     insertPost(author int64, e *Entry) (id int64, err error)
     updatePost(id int64, e *Entry) bool
@@ -243,36 +243,21 @@ func (dd *DbData) commenter(name, email, website, ip string) (id int64, err erro
     return
 }
 
-func (dd *DbData) selOrInsCommenter(name, email, website, ip string) (id int64, err error) {
+func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, err error) {
     id = -1
     err = sql.ErrNoRows
     if dd.tx == nil {
-        logger.Println("DbData.selOrInsCommenter() can only be called within xaction!")
+        logger.Println("DbData.insertCommenter() can only be called within xaction!")
         return
     }
-    query, _ := dd.tx.Prepare(`select c.id from commenter as c
-                               where c.name = $1
-                                 and c.email = $2
-                                 and c.www = $3`)
-    defer query.Close()
-    err = query.QueryRow(name, email, website).Scan(&id)
-    switch err {
-    case nil:
-        return
-    case sql.ErrNoRows:
-        insertCommenter, _ := dd.tx.Prepare(`insert into commenter
-                                             (name, email, www, ip)
-                                             values ($1, $2, $3, $4)
-                                             returning id`)
-        defer insertCommenter.Close()
-        err = insertCommenter.QueryRow(name, email, website, ip).Scan(&id)
-        if err != nil {
-            logger.Println("Failed to insert commenter: " + err.Error())
-        }
-        return
-    default:
-        logger.Println("err: " + err.Error())
-        return
+    insertCommenter, _ := dd.tx.Prepare(`insert into commenter
+                                         (name, email, www, ip)
+                                         values ($1, $2, $3, $4)
+                                         returning id`)
+    defer insertCommenter.Close()
+    err = insertCommenter.QueryRow(name, email, website, ip).Scan(&id)
+    if err != nil {
+        logger.Println("Failed to insert commenter: " + err.Error())
     }
     return
 }

@@ -467,9 +467,9 @@ func publishCommentWithInsert(ctx *web.Context, postId int64, refUrl string) str
     name := ctx.Params["name"]
     email := ctx.Params["email"]
     website := ctx.Params["website"]
-    commenterId, err := data.selOrInsCommenter(name, email, website, ip)
+    commenterId, err := data.insertCommenter(name, email, website, ip)
     if err != nil {
-        logger.Println("data.selOrInsCommenter() failed: " + err.Error())
+        logger.Println("data.insertCommenter() failed: " + err.Error())
         ctx.Abort(http.StatusInternalServerError, "Server Error")
         data.rollback()
         return ""
