@@ -439,6 +439,7 @@ func detectLanguage(text string) string {
     b, err := json.Marshal(rq)
     if err != nil {
         logger.Println(err.Error())
+        return ""
     }
     url := "https://services.open.xerox.com/RestOp/LanguageIdentifier/GetLanguageForString"
     client := &http.Client{}
@@ -448,13 +449,15 @@ func detectLanguage(text string) string {
     //req.Header.Add("Content-Length", fmt.Sprintf("%d", len(string(b))))
     req.Header.Add("Content-Type", "application/json; charset=utf-8")
     resp, err := client.Do(req)
-    defer resp.Body.Close()
     if err != nil {
         logger.Println(err.Error())
+        return ""
     }
+    defer resp.Body.Close()
     body, err := ioutil.ReadAll(resp.Body)
     if err != nil {
         logger.Println(err.Error())
+        return ""
     }
     return string(body)
 }
