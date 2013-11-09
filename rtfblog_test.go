@@ -112,6 +112,10 @@ func (dd *TestData) deleteComment(id string) bool {
     return false
 }
 
+func (td *TestData) deletePost(url string) bool {
+    return false
+}
+
 func (dd *TestData) updateComment(id, text string) bool {
     return false
 }
@@ -459,6 +463,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
         "edit_post",
         "load_comments",
         "delete_comment",
+        "delete_post",
     }
     for _, u := range urls {
         html := curl(u)
@@ -543,12 +548,14 @@ func TestEditPost(t *testing.T) {
     mustContain(t, html, "Body3")
     mustContain(t, html, "Hi3")
     mustContain(t, html, "u3")
+    mustContain(t, html, "Delete!")
     mustNotContain(t, html, "checked")
     // now test with hidden post
     html = curl("edit_post?post=hello1002")
     mustContain(t, html, "Body1002")
     mustContain(t, html, "Hi1002")
     mustContain(t, html, "u1002")
+    mustContain(t, html, "Delete!")
     mustContain(t, html, "checked")
 }
 

@@ -274,6 +274,13 @@ func delete_comment_handler(ctx *web.Context) {
     ctx.Redirect(http.StatusFound, "/"+redir)
 }
 
+func delete_post_handler(ctx *web.Context) {
+    if !data.deletePost(ctx.Params["id"]) {
+        return
+    }
+    ctx.Redirect(http.StatusFound, "/admin")
+}
+
 func moderate_comment_handler(ctx *web.Context) {
     action := ctx.Params["action"]
     text := ctx.Params["edit-comment-text"]
@@ -532,6 +539,7 @@ func runServer(_data Data) {
     web.Get("/comment_submit", comment_handler)
     web.Post("/login_submit", login_handler)
     web.Get("/delete_comment", checkAdmin(delete_comment_handler))
+    web.Get("/delete_post", checkAdmin(delete_post_handler))
     web.Post("/moderate_comment", checkAdmin(moderate_comment_handler))
     web.Post("/submit_post", checkAdmin(submit_post_handler))
     web.Post("/upload_images", checkAdmin(upload_image_handler))

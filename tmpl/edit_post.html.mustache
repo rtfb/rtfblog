@@ -104,6 +104,12 @@
                     type="submit"
                     value="Submit"
                     />
+                <input
+                    id="delete-post-button-{{PostId}}"
+                    type="button"
+                    onclick="deleteWithConfirm('{{Url}}')"
+                    value="Delete!"
+                    />
                 <input id="fileid" type="file" name="file" style="visibility:hidden" />
                 {{/post}}
             </div>
@@ -169,6 +175,13 @@
 
         function mkUploadHtml(filename, uploadNo) {
             return '<p id="progress_' + (uploadNo + 1) + '">' + filename + '</p>';
+        }
+
+        function deleteWithConfirm(postUrl) {
+            if (confirm('You are about to delete this post!\nThis cannot be undone!')) {
+                var url = "/delete_post?id=" + postUrl;
+                window.open(url, '_self', false);
+            }
         }
         </script>
     </body>

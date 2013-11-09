@@ -20,6 +20,7 @@ type Data interface {
     numPosts() int
     author(username string) (*Author, error)
     deleteComment(id string) bool
+    deletePost(url string) bool
     updateComment(id, text string) bool
     selOrInsCommenter(name, email, website, ip string) (id int64, err error)
     insertComment(commenterId, postId int64, body string) (id int64, err error)
@@ -306,6 +307,15 @@ func (dd *DbData) author(username string) (*Author, error) {
 
 func (dd *DbData) deleteComment(id string) bool {
     _, err := dd.db.Exec("delete from comment where id=$1", id)
+    if err != nil {
+        logger.Println(err.Error())
+        return false
+    }
+    return true
+}
+
+func (dd *DbData) deletePost(url string) bool {
+    _, err := dd.db.Exec("delete from post where url=$1", url)
     if err != nil {
         logger.Println(err.Error())
         return false
