@@ -2,6 +2,8 @@ package main
 
 import (
     "./util"
+    "database/sql"
+    "encoding/json"
     "fmt"
     "io/ioutil"
     "net/http"
@@ -181,7 +183,7 @@ func (dd *TestData) insertCommenter(name, email, website, ip string) (id int64, 
 }
 
 func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
-    return
+    return -1, sql.ErrNoRows
 }
 
 func (dd *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
@@ -629,6 +631,17 @@ func TestDeleteCommentCallsDbFunc(t *testing.T) {
     defer test_data.reset()
     curl("delete_comment?id=1&action=delete")
     test_data.expect(t, (*TestData).deleteComment, "1")
+}
+
+func TestShowCaptcha(t *testing.T) {
+    url := "comment_submit?name=joe&captcha=&email=snailmail&text=cmmnt%20txt"
+    respJson := curl(url)
+    var resp map[string]interface{}
+    err := json.Unmarshal([]byte(respJson), &resp)
+    if err != nil {
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+    }
+    T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
