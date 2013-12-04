@@ -435,7 +435,7 @@ func TestLoginPage(t *testing.T) {
 }
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
-    nodes := query0(t, "", ".post")
+    nodes := query0(t, "", ".post-title")
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
 }
 
@@ -443,7 +443,7 @@ func TestArchiveContainsAllEntries(t *testing.T) {
     if len(test_posts) <= NUM_RECENT_POSTS {
         t.Fatalf("This test only makes sense if len(test_posts) > NUM_RECENT_POSTS")
     }
-    nodes := query0(t, "archive", ".post")
+    nodes := query0(t, "archive", ".post-title")
     T{t}.failIf(len(nodes) != len(test_posts), "Not all posts rendered in archive!")
 }
 
