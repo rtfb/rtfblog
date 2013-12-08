@@ -6,7 +6,9 @@ import (
     "io/ioutil"
     "net/http"
     "net/url"
+    "reflect"
     "regexp"
+    "runtime"
     "runtime/debug"
     "strings"
     "testing"
@@ -30,10 +32,47 @@ var (
     test_comm   = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
     test_posts  = make([]*Entry, 0)
     test_author = new(Author)
+    test_data   TestData
 )
 
+type TestDataI interface {
+    reset()
+    calls() string
+    pushCall(paramStr string)
+    expect(t *testing.T, f interface{}, paramStr string)
+}
+
 type TestData struct {
+    Data
+    TestDataI
     includeHidden bool
+    lastCalls     []string
+}
+
+func (td *TestData) reset() {
+    td.lastCalls = nil
+}
+
+func (td *TestData) calls() string {
+    return strings.Join(td.lastCalls, "\n")
+}
+
+func (td *TestData) pushCall(paramStr string) {
+    pc, _, _, ok := runtime.Caller(1)
+    if !ok {
+        panic("runtime.Caller(1) != ok, dafuq?")
+    }
+    funcName := runtime.FuncForPC(pc).Name()
+    sig := fmt.Sprintf("%s('%s')", funcName, paramStr)
+    td.lastCalls = append(td.lastCalls, sig)
+}
+
+func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
+    funcName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+    sig := fmt.Sprintf("%s('%s')", funcName, paramStr)
+    if td.calls() != sig {
+        t.Fatalf("%s() exptected, but got %s", funcName, test_data.calls())
+    }
 }
 
 func (db *TestData) hiddenPosts(flag bool) {
@@ -255,7 +294,8 @@ func init() {
     for i := 1; i <= 2; i++ {
         test_posts = append(test_posts, mkTestEntry(i+1000, true))
     }
-    go runServer(&TestData{})
+    test_data = TestData{}
+    go runServer(&test_data)
 }
 
 func TestMainPage(t *testing.T) {
