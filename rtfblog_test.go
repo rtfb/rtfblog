@@ -147,7 +147,8 @@ func (dd *TestData) author(username string) (*Author, error) {
     return test_author, nil
 }
 
-func (dd *TestData) deleteComment(id string) bool {
+func (td *TestData) deleteComment(id string) bool {
+    td.pushCall(id)
     return false
 }
 
@@ -604,6 +605,12 @@ func TestDeletePostCallsDbFunc(t *testing.T) {
     defer test_data.reset()
     curl("delete_post?id=hello1001")
     test_data.expect(t, (*TestData).deletePost, "hello1001")
+}
+
+func TestDeleteCommentCallsDbFunc(t *testing.T) {
+    defer test_data.reset()
+    curl("delete_comment?id=1&action=delete")
+    test_data.expect(t, (*TestData).deleteComment, "1")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
