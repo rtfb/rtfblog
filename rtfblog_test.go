@@ -132,6 +132,7 @@ func (dd *TestData) titles(limit int) (links []*EntryLink) {
 }
 
 func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
+    td.pushCall(tag)
     return
 }
 
@@ -603,6 +604,15 @@ func TestEditPost(t *testing.T) {
     mustContain(t, html, "u1002")
     mustContain(t, html, "Delete!")
     mustContain(t, html, "checked")
+}
+
+func TestTitleByTagGetsCalled(t *testing.T) {
+    defer test_data.reset()
+    tag := "taaag"
+    html := curl("/tag/" + tag)
+    test_data.expect(t, (*TestData).titlesByTag, tag)
+    mustContain(t, html, "Posts tagged ")
+    mustContain(t, html, tag)
 }
 
 func TestDeletePostCallsDbFunc(t *testing.T) {
