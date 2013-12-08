@@ -462,6 +462,19 @@ func detectLanguage(text string) string {
     return string(body)
 }
 
+func detectLanguageWithTimeout(text string) string {
+    c := make(chan string, 1)
+    go func() {
+        c <- detectLanguage(text)
+    }()
+    select {
+    case lang := <-c:
+        return lang
+    case <-time.After(500 * time.Millisecond):
+        return "timedout"
+    }
+}
+
 func publishCommentWithInsert(ctx *web.Context, postId int64, refUrl string) string {
     if !data.begin() {
         return ""
@@ -521,16 +534,24 @@ func comment_handler(ctx *web.Context) {
         // This is a returning commenter, pass his comment through:
         redir = "/" + refUrl + publishComment(ctx, postId, commenterId, refUrl)
     } else if err == sql.ErrNoRows {
-        captcha := ctx.Params["captcha"]
-        if captcha == "" {
-            wrongCaptchaReply(ctx, "showcaptcha")
-            return
-        }
-        if captcha != "dvylika" {
-            wrongCaptchaReply(ctx, "rejected")
-            return
-        } else {
+        body := ctx.Params["text"]
+        lang := detectLanguageWithTimeout(body)
+        log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
+        logger.Println(log)
+        if lang == "\"lt\"" {
             redir = "/" + refUrl + publishCommentWithInsert(ctx, postId, refUrl)
+        } else {
+            captcha := ctx.Params["captcha"]
+            if captcha == "" {
+                wrongCaptchaReply(ctx, "showcaptcha")
+                return
+            }
+            if captcha != "dvylika" {
+                wrongCaptchaReply(ctx, "rejected")
+                return
+            } else {
+                redir = "/" + refUrl + publishCommentWithInsert(ctx, postId, refUrl)
+            }
         }
     } else {
         logger.Println("err: " + err.Error())
