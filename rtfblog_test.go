@@ -152,6 +152,7 @@ func (dd *TestData) deleteComment(id string) bool {
 }
 
 func (td *TestData) deletePost(url string) bool {
+    td.pushCall(url)
     return false
 }
 
@@ -597,6 +598,12 @@ func TestEditPost(t *testing.T) {
     mustContain(t, html, "u1002")
     mustContain(t, html, "Delete!")
     mustContain(t, html, "checked")
+}
+
+func TestDeletePostCallsDbFunc(t *testing.T) {
+    defer test_data.reset()
+    curl("delete_post?id=hello1001")
+    test_data.expect(t, (*TestData).deletePost, "hello1001")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
