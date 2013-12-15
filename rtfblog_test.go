@@ -77,12 +77,12 @@ func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
     }
 }
 
-func (db *TestData) hiddenPosts(flag bool) {
-    db.includeHidden = flag
+func (td *TestData) hiddenPosts(flag bool) {
+    td.includeHidden = flag
 }
 
-func (db *TestData) post(url string) *Entry {
-    for _, e := range db.testPosts() {
+func (td *TestData) post(url string) *Entry {
+    for _, e := range td.testPosts() {
         if e.Url == url {
             return e
         }
@@ -90,13 +90,13 @@ func (db *TestData) post(url string) *Entry {
     return nil
 }
 
-func (db *TestData) postId(url string) (id int64, err error) {
+func (td *TestData) postId(url string) (id int64, err error) {
     id = 0
     return
 }
 
-func (db *TestData) testPosts() []*Entry {
-    if db.includeHidden {
+func (td *TestData) testPosts() []*Entry {
+    if td.includeHidden {
         return test_posts
     } else {
         posts := make([]*Entry, 0)
@@ -110,23 +110,23 @@ func (db *TestData) testPosts() []*Entry {
     }
 }
 
-func (db *TestData) posts(limit, offset int) []*Entry {
+func (td *TestData) posts(limit, offset int) []*Entry {
     if offset < 0 {
         offset = 0
     }
-    tp := db.testPosts()
+    tp := td.testPosts()
     if limit > 0 && limit < len(tp) {
         return tp[offset:limit]
     }
     return tp
 }
 
-func (db *TestData) numPosts() int {
-    return len(db.testPosts())
+func (td *TestData) numPosts() int {
+    return len(td.testPosts())
 }
 
-func (dd *TestData) titles(limit int) (links []*EntryLink) {
-    for _, p := range dd.testPosts() {
+func (td *TestData) titles(limit int) (links []*EntryLink) {
+    for _, p := range td.testPosts() {
         entryLink := &EntryLink{p.Title, p.Url, false}
         links = append(links, entryLink)
     }
@@ -138,7 +138,7 @@ func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
     return
 }
 
-func (dd *TestData) allComments() []*CommentWithPostTitle {
+func (td *TestData) allComments() []*CommentWithPostTitle {
     comments := make([]*CommentWithPostTitle, 0)
     for _, c := range test_comm {
         comment := new(CommentWithPostTitle)
@@ -150,7 +150,7 @@ func (dd *TestData) allComments() []*CommentWithPostTitle {
     return comments
 }
 
-func (dd *TestData) author(username string) (*Author, error) {
+func (td *TestData) author(username string) (*Author, error) {
     return test_author, nil
 }
 
@@ -164,21 +164,21 @@ func (td *TestData) deletePost(url string) bool {
     return false
 }
 
-func (dd *TestData) updateComment(id, text string) bool {
+func (td *TestData) updateComment(id, text string) bool {
     return false
 }
 
-func (dd *TestData) begin() bool {
+func (td *TestData) begin() bool {
     return true
 }
 
-func (dd *TestData) commit() {
+func (td *TestData) commit() {
 }
 
-func (dd *TestData) rollback() {
+func (td *TestData) rollback() {
 }
 
-func (dd *TestData) insertCommenter(name, email, website, ip string) (id int64, err error) {
+func (td *TestData) insertCommenter(name, email, website, ip string) (id int64, err error) {
     return
 }
 
@@ -189,19 +189,19 @@ func (td *TestData) commenter(name, email, website, ip string) (id int64, err er
     return -1, sql.ErrNoRows
 }
 
-func (dd *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
+func (td *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
     return
 }
 
-func (dd *TestData) insertPost(author int64, e *Entry) (id int64, err error) {
+func (td *TestData) insertPost(author int64, e *Entry) (id int64, err error) {
     return
 }
 
-func (dd *TestData) updatePost(id int64, e *Entry) bool {
+func (td *TestData) updatePost(id int64, e *Entry) bool {
     return true
 }
 
-func (dd *TestData) updateTags(tags []*Tag, postId int64) {
+func (td *TestData) updateTags(tags []*Tag, postId int64) {
 }
 
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
