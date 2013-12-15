@@ -1,5 +1,6 @@
 #!/bin/sh
 
+make browserify
 cd dbtool
 go build
 cd ..

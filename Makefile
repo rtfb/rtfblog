@@ -4,9 +4,12 @@ GOFILES=\
 	*.go\
 	dbtool/*.go
 
-all:
+all: browserify
 	go build
 	./rtfblog
+
+browserify:
+	browserify js/main.js -o static/js/bundle.js
 
 fmt:
 	${GOFMT} -w ${GOFILES}
