@@ -4,7 +4,7 @@ GOFILES=\
 	*.go\
 	dbtool/*.go
 
-all: browserify
+all: fmt browserify
 	go build
 	./rtfblog
 
