@@ -658,6 +658,13 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
     T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
+func TestRssFeed(t *testing.T) {
+    xml := curl("feeds/rss.xml")
+    mustContain(t, xml, "<title>rtfb&#39;s blog</title>")
+    mustContain(t, xml, "<title>Hi3</title>")
+    mustContain(t, xml, "<link>hello3</link>")
+}
+
 func query(t *testing.T, url, query string) []*html.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {
