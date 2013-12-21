@@ -139,6 +139,7 @@ func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
 }
 
 func (td *TestData) allComments() []*CommentWithPostTitle {
+    td.pushCall("")
     comments := make([]*CommentWithPostTitle, 0)
     for _, c := range test_comm {
         comment := new(CommentWithPostTitle)
@@ -555,11 +556,13 @@ func TestAdminPageHasAllCommentsButton(t *testing.T) {
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
+    defer test_data.reset()
     login()
     nodes := query(t, "/all_comments", "#comment")
     if len(nodes) != len(test_comm) {
         t.Fatalf("Not all comments in /all_comments!")
     }
+    test_data.expect(t, (*TestData).allComments, "")
 }
 
 func TestHiddenPosts(t *testing.T) {
