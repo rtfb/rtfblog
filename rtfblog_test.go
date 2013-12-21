@@ -679,6 +679,13 @@ func TestPagination(t *testing.T) {
     }
 }
 
+func TestNewPostShowsEmptyForm(t *testing.T) {
+    titleInput := query1(t, "edit_post", "#post_title")
+    assertElem(t, titleInput, "input")
+    bodyTextArea := query1(t, "edit_post", "#wmd-input")
+    assertElem(t, bodyTextArea, "textarea")
+}
+
 func query(t *testing.T, url, query string) []*html.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {

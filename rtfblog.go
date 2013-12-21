@@ -217,6 +217,8 @@ func handler(ctx *web.Context, path string) {
                 basicData["IsHidden"] = post.Hidden
                 basicData["post"] = post
             }
+        } else {
+            basicData["post"] = Entry{}
         }
         render(ctx, "edit_post", basicData)
         return
