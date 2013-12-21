@@ -116,7 +116,7 @@ func (td *TestData) posts(limit, offset int) []*Entry {
     }
     tp := td.testPosts()
     if limit > 0 && limit < len(tp) {
-        return tp[offset:limit]
+        return tp[offset:(offset + limit)]
     }
     return tp
 }
@@ -663,6 +663,17 @@ func TestRssFeed(t *testing.T) {
     mustContain(t, xml, "<title>rtfb&#39;s blog</title>")
     mustContain(t, xml, "<title>Hi3</title>")
     mustContain(t, xml, "<link>hello3</link>")
+}
+
+func TestPagination(t *testing.T) {
+    nodes := query0(t, "page/2", ".post-title")
+    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
+    if nodes[0].Attr[1].Val != "/hello6" {
+        t.Fatalf("Wrong post!")
+    }
+    if nodes[4].Attr[1].Val != "/hello10" {
+        t.Fatalf("Wrong post!")
+    }
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
