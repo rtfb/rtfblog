@@ -246,7 +246,11 @@ func curlParam(url string, method func(string) (*http.Response, error)) string {
         r.Body.Close()
         if err == nil {
             return string(b)
+        } else {
+            println(err.Error())
         }
+    } else {
+        println(err.Error())
     }
     return ""
 }
