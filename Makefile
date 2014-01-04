@@ -5,7 +5,7 @@ GOFILES=\
 	data.go\
 	db.go\
 	rtfblog_test.go\
-	util/util.go\
+	util.go\
 	dbtool/dbtool.go\
 	dbtool/b2e-import.go\
 

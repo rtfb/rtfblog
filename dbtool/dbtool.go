@@ -1,12 +1,15 @@
 package main
 
 import (
-    "../util"
     "bytes"
+    "crypto/rand"
+    "crypto/sha1"
     "database/sql"
+    "encoding/base64"
     "encoding/json"
     "flag"
     "fmt"
+    "io"
     "io/ioutil"
     "net/mail"
     "os"
@@ -16,6 +19,23 @@ import (
 
     _ "github.com/lib/pq"
 )
+
+func SaltAndPepper(salt, passwd string) string {
+    sha := sha1.New()
+    sha.Write([]byte(salt + passwd))
+    return base64.URLEncoding.EncodeToString(sha.Sum(nil))
+}
+
+func Encrypt(passwd string) (salt, hash string, err error) {
+    b := make([]byte, 16)
+    n, err := io.ReadFull(rand.Reader, b)
+    if n != len(b) || err != nil {
+        return
+    }
+    salt = base64.URLEncoding.EncodeToString(b)
+    hash = SaltAndPepper(salt, passwd)
+    return
+}
 
 func usage() {
     fmt.Fprintf(os.Stderr, "usage: %s [params]\n", filepath.Base(os.Args[0]))
@@ -33,9 +53,9 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
                            values($1, $2, $3, $4, $5, $6, $7)`)
     defer stmt.Close()
-    salt, passwdHash, err := util.Encrypt(passwd)
+    salt, passwdHash, err := Encrypt(passwd)
     if err != nil {
-        fmt.Printf("Error in util.Encrypt(): %s\n", err)
+        fmt.Printf("Error in Encrypt(): %s\n", err)
         return
     }
     stmt.Exec(1, uname, salt, passwdHash, fullname, email, www)

@@ -1,7 +1,6 @@
 package main
 
 import (
-    "./util"
     "bufio"
     "bytes"
     "database/sql"
@@ -263,7 +262,7 @@ func login_handler(ctx *web.Context) {
         return
     }
     passwd := ctx.Request.Form["passwd"][0]
-    hash := util.SaltAndPepper(a.Salt, passwd)
+    hash := SaltAndPepper(a.Salt, passwd)
     if hash == a.Passwd {
         ctx.SetSecureCookie("adminlogin", "yesplease", 3600*24)
         redir := ctx.Params["redirect_to"]
@@ -627,7 +626,7 @@ func obtainConfiguration() SrvConfig {
     hardcodedConf := SrvConfig{}
     conf := hardcodedConf
     basedir, _ := filepath.Split(filepath.Clean(os.Args[0]))
-    home, err := util.GetHomeDir()
+    home, err := GetHomeDir()
     if err != nil {
         fmt.Println("Error acquiring user home dir. That can't be good.")
         fmt.Println("Err = %q", err.Error())
@@ -641,7 +640,7 @@ func obtainConfiguration() SrvConfig {
         filepath.Join(basedir, "server.conf"),
     }
     for _, p := range confPaths {
-        exists, err := util.FileExists(p)
+        exists, err := FileExists(p)
         if err != nil {
             fmt.Printf("Can't check %q for existence, skipping...", p)
             continue
@@ -657,7 +656,7 @@ func obtainConfiguration() SrvConfig {
 
 func main() {
     conf = obtainConfiguration()
-    logger = util.MkLogger(conf.Get("log"))
+    logger = MkLogger(conf.Get("log"))
     db, err := sql.Open("postgres", conf.Get("database"))
     if err != nil {
         logger.Println("sql: " + err.Error())

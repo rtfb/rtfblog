@@ -1,7 +1,6 @@
 package main
 
 import (
-    "./util"
     "database/sql"
     "encoding/json"
     "fmt"
@@ -303,7 +302,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 
 func init() {
     conf = loadConfig("server.conf")
-    logger = util.MkLogger("tests.log")
+    logger = MkLogger("tests.log")
     forgeTestUser("testuser", "testpasswd")
     for i := 1; i <= 11; i++ {
         test_posts = append(test_posts, mkTestEntry(i, false))
@@ -718,9 +717,9 @@ func assertElem(t *testing.T, node *html.Node, elem string) {
 }
 
 func forgeTestUser(uname, passwd string) {
-    salt, passwdHash, err := util.Encrypt(passwd)
+    salt, passwdHash, err := Encrypt(passwd)
     if err != nil {
-        panic(fmt.Sprintf("Error in util.Encrypt(): %s\n", err))
+        panic(fmt.Sprintf("Error in Encrypt(): %s\n", err))
     }
     test_author.Salt = salt
     test_author.Passwd = passwdHash
