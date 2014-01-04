@@ -219,6 +219,7 @@ func login() {
     })
     if err != nil {
         println(err.Error())
+        return
     }
     resp.Body.Close()
 }
