@@ -563,6 +563,12 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
     }
 }
 
+func TestLoadComments(t *testing.T) {
+    login()
+    json := curl("/load_comments?post=hello1")
+    mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
+}
+
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
     login()
     nodes := query(t, "", ".edit-post-button")
