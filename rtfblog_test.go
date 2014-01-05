@@ -27,6 +27,11 @@ type T struct {
     *testing.T
 }
 
+type CallSpec struct {
+    function interface{}
+    params   string
+}
+
 var (
     jar         = new(Jar)
     tclient     = &http.Client{nil, nil, jar}
@@ -68,11 +73,26 @@ func (td *TestData) pushCall(paramStr string) {
     td.lastCalls = append(td.lastCalls, sig)
 }
 
+func getCallSig(call CallSpec) string {
+    funcName := runtime.FuncForPC(reflect.ValueOf(call.function).Pointer()).Name()
+    return fmt.Sprintf("%s('%s')", funcName, call.params)
+}
+
 func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
-    funcName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
-    sig := fmt.Sprintf("%s('%s')", funcName, paramStr)
+    sig := getCallSig(CallSpec{f, paramStr})
     if td.calls() != sig {
-        t.Fatalf("%s() exptected, but got %s", funcName, test_data.calls())
+        t.Fatalf("%s() exptected, but got %s", sig, test_data.calls())
+    }
+}
+
+func (td *TestData) expectSeries(t *testing.T, series []CallSpec) {
+    var seriesWithPackage []string
+    for _, call := range series {
+        seriesWithPackage = append(seriesWithPackage, getCallSig(call))
+    }
+    seriesWithPackageStr := strings.Join(seriesWithPackage, "\n")
+    if td.calls() != seriesWithPackageStr {
+        t.Fatalf("%s exptected, but got %s", seriesWithPackageStr, test_data.calls())
     }
 }
 
@@ -90,6 +110,7 @@ func (td *TestData) post(url string) *Entry {
 }
 
 func (td *TestData) postId(url string) (id int64, err error) {
+    td.pushCall(fmt.Sprintf("%s", url))
     id = 0
     return
 }
@@ -198,10 +219,12 @@ func (td *TestData) insertPost(author int64, e *Entry) (id int64, err error) {
 }
 
 func (td *TestData) updatePost(id int64, e *Entry) bool {
+    td.pushCall("0")
     return true
 }
 
 func (td *TestData) updateTags(tags []*Tag, postId int64) {
+    td.pushCall(fmt.Sprintf("%d: %+v", postId, *tags[0]))
 }
 
 func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
@@ -567,6 +590,26 @@ func TestLoadComments(t *testing.T) {
     login()
     json := curl("/load_comments?post=hello1")
     mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
+}
+
+func TestSubmitPost(t *testing.T) {
+    defer test_data.reset()
+    login()
+    values := url.Values{
+        "title":  {"T1tlE"},
+        "url":    {"shiny-url"},
+        "tags":   {"tagzorz"},
+        "hidden": {"off"},
+        "text":   {"contentzorz"},
+    }
+    if r, err := tclient.PostForm(localhostUrl("submit_post"), values); err == nil {
+        r.Body.Close()
+    } else {
+        println(err.Error())
+    }
+    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, "shiny-url"},
+        {(*TestData).updatePost, "0"},
+        {(*TestData).updateTags, "0: {TagUrl:tagzorz TagName:tagzorz}"}})
 }
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
