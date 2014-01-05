@@ -212,16 +212,26 @@ func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
     return jar.cookies
 }
 
-func login() {
+func loginWithCred(username, passwd string) string {
     resp, err := tclient.PostForm("http://localhost:8080/login_submit", url.Values{
-        "uname":  {"testuser"},
-        "passwd": {"testpasswd"},
+        "uname":  {username},
+        "passwd": {passwd},
     })
     if err != nil {
         println(err.Error())
-        return
+        return ""
     }
+    b, err := ioutil.ReadAll(resp.Body)
     resp.Body.Close()
+    if err != nil {
+        println(err.Error())
+        return ""
+    }
+    return string(b)
+}
+
+func login() {
+    loginWithCred("testuser", "testpasswd")
 }
 
 func logout() {
@@ -362,6 +372,12 @@ func TestLogin(t *testing.T) {
     login()
     html := curl(test_posts[0].Url)
     mustContain(t, html, "Logout")
+}
+
+func TestBadLogin(t *testing.T) {
+    loginWithCred("wronguser", "wrongpasswd")
+    html := curl("/login")
+    mustContain(t, html, "Login failed")
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
