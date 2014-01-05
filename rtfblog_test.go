@@ -516,6 +516,12 @@ func TestPostPager(t *testing.T) {
     mustContain(t, curl(""), "/page/2")
 }
 
+func TestInvalidPageDefaultsToPageOne(t *testing.T) {
+    page1 := curl("/page/1")
+    pageFoo := curl("/page/foo")
+    T{t}.failIf(page1 != pageFoo, "Invalid page did not produce /page/1")
+}
+
 func TestNonAdminCantAccessAdminPages(t *testing.T) {
     logout()
     urls := []string{
