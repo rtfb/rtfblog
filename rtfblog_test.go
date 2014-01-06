@@ -273,6 +273,12 @@ func (t T) failIf(cond bool, msg string, params ...interface{}) {
     }
 }
 
+func (t T) assertEqual(expected, actual string) {
+    if expected != actual {
+        t.T.Fatalf("Expected %q, but got %q", expected, actual)
+    }
+}
+
 func curlParam(url string, method func(string) (*http.Response, error)) string {
     if r, err := method(url); err == nil {
         b, err := ioutil.ReadAll(r.Body)
@@ -610,6 +616,20 @@ func TestSubmitPost(t *testing.T) {
     test_data.expectSeries(t, []CallSpec{{(*TestData).postId, "shiny-url"},
         {(*TestData).updatePost, "0"},
         {(*TestData).updateTags, "0: {TagUrl:tagzorz TagName:tagzorz}"}})
+}
+
+func TestExplodeTags(t *testing.T) {
+    var tagSpecs = []struct {
+        spec, expected string
+    }{
+        {"tag", "{TagUrl:tag TagName:tag}"},
+        {"Tag>taag", "{TagUrl:taag TagName:Tag}"},
+        {",tagg", "{TagUrl:tagg TagName:tagg}"},
+    }
+    for _, ts := range tagSpecs {
+        result := fmt.Sprintf("%+v", *explodeTags(ts.spec)[0])
+        T{t}.assertEqual(ts.expected, result)
+    }
 }
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
