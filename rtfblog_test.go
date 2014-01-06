@@ -236,7 +236,7 @@ func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
 }
 
 func loginWithCred(username, passwd string) string {
-    resp, err := tclient.PostForm("http://localhost:8080/login_submit", url.Values{
+    resp, err := tclient.PostForm(localhostUrl("login_submit"), url.Values{
         "uname":  {username},
         "passwd": {passwd},
     })
