@@ -11,3 +11,4 @@ stuff/
 git-arch-for-deploy.tar.gz
 priv_key
 .vagrant
+node_modules
