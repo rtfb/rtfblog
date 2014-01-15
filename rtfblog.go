@@ -470,7 +470,7 @@ func detectLanguageWithTimeout(text string) string {
     select {
     case lang := <-c:
         return lang
-    case <-time.After(500 * time.Millisecond):
+    case <-time.After(1500 * time.Millisecond):
         return "timedout"
     }
 }
