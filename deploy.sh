@@ -23,5 +23,5 @@ scp -q ./unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
 scp -q package.tar.gz rtfb@rtfb.lt:/home/rtfb/package.tar.gz
 rm ./package.tar.gz
 ssh rtfb@rtfb.lt /home/rtfb/unpack.sh
-ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./goose -env=production up"
+#ssh rtfb@rtfb.lt "cd /home/rtfb/package; ./goose -env=production up"
 ssh rtfb@rtfb.lt "cd /home/rtfb/package; nohup ./rtfblog </dev/null 1>&2&> nohup.log &"
