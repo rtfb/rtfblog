@@ -272,6 +272,7 @@ func login_handler(ctx *web.Context) {
     } else {
         ctx.Redirect(http.StatusFound, "/login")
     }
+    ctx.Params["passwd"] = "***"
 }
 
 func delete_comment_handler(ctx *web.Context) {
