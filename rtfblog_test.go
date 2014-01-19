@@ -345,7 +345,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 }
 
 func init() {
-    conf = obtainConfiguration()
+    conf = obtainConfiguration("")
     logger = MkLogger("tests.log")
     forgeTestUser("testuser", "testpasswd")
     for i := 1; i <= 11; i++ {

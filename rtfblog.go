@@ -623,7 +623,18 @@ func runServer(_data Data) {
     web.Run(conf.Get("port"))
 }
 
-func obtainConfiguration() SrvConfig {
+func fullPathToBinary() string {
+    if filepath.IsAbs(os.Args[0]) {
+        return os.Args[0]
+    }
+    cwd, err := os.Getwd()
+    if err != nil {
+        return filepath.Clean(os.Args[0])
+    }
+    return filepath.Join(cwd, os.Args[0])
+}
+
+func obtainConfiguration(basedir string) SrvConfig {
     hardcodedConf := SrvConfig{
         "database":         "user=tstusr dbname=tstdb password=tstpwd",
         "url":              "localhost",
@@ -636,7 +647,6 @@ func obtainConfiguration() SrvConfig {
         "email":            "blog_author@ema.il",
     }
     conf := hardcodedConf
-    basedir, _ := filepath.Split(filepath.Clean(os.Args[0]))
     home, err := GetHomeDir()
     if err != nil {
         fmt.Println("Error acquiring user home dir. That can't be good.")
@@ -666,7 +676,9 @@ func obtainConfiguration() SrvConfig {
 }
 
 func main() {
-    conf = obtainConfiguration()
+    basedir, _ := filepath.Split(fullPathToBinary())
+    os.Chdir(basedir)
+    conf = obtainConfiguration(basedir)
     logger = MkLogger(conf.Get("log"))
     db, err := sql.Open("postgres", conf.Get("database"))
     if err != nil {
