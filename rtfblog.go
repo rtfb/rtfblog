@@ -317,6 +317,7 @@ func submit_post_handler(ctx *web.Context) {
     }
     postId, idErr := data.postId(url)
     if !data.begin() {
+        ctx.Abort(http.StatusInternalServerError, "Server Error")
         return
     }
     if idErr != nil {
