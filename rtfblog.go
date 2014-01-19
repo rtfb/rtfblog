@@ -624,7 +624,17 @@ func runServer(_data Data) {
 }
 
 func obtainConfiguration() SrvConfig {
-    hardcodedConf := SrvConfig{}
+    hardcodedConf := SrvConfig{
+        "database":         "user=tstusr dbname=tstdb password=tstpwd",
+        "url":              "localhost",
+        "port":             ":8080",
+        "staticdir":        "static",
+        "notif_send_email": "false",
+        "log":              "server.log",
+        "cookie_secret":    "dont-forget-to-change-me",
+        "author":           "Mr. Blog Author",
+        "email":            "blog_author@ema.il",
+    }
     conf := hardcodedConf
     basedir, _ := filepath.Split(filepath.Clean(os.Args[0]))
     home, err := GetHomeDir()
