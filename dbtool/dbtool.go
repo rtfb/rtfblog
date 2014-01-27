@@ -2,14 +2,10 @@ package main
 
 import (
     "bytes"
-    "crypto/rand"
-    "crypto/sha1"
     "database/sql"
-    "encoding/base64"
     "encoding/json"
     "flag"
     "fmt"
-    "io"
     "io/ioutil"
     "net/mail"
     "os"
@@ -17,23 +13,13 @@ import (
     "strings"
     "time"
 
+    "code.google.com/p/go.crypto/bcrypt"
     _ "github.com/lib/pq"
 )
 
-func SaltAndPepper(salt, passwd string) string {
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    return base64.URLEncoding.EncodeToString(sha.Sum(nil))
-}
-
-func Encrypt(passwd string) (salt, hash string, err error) {
-    b := make([]byte, 16)
-    n, err := io.ReadFull(rand.Reader, b)
-    if n != len(b) || err != nil {
-        return
-    }
-    salt = base64.URLEncoding.EncodeToString(b)
-    hash = SaltAndPepper(salt, passwd)
+func Encrypt(passwd string) (hash string, err error) {
+    hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+    hash = string(hashBytes)
     return
 }
 
@@ -53,12 +39,12 @@ func init_db(fileName, uname, passwd, fullname, email, www string) {
     stmt, _ := db.Prepare(`insert into author(id, disp_name, salt, passwd, full_name, email, www)
                            values($1, $2, $3, $4, $5, $6, $7)`)
     defer stmt.Close()
-    salt, passwdHash, err := Encrypt(passwd)
+    passwdHash, err := Encrypt(passwd)
     if err != nil {
         fmt.Printf("Error in Encrypt(): %s\n", err)
         return
     }
-    stmt.Exec(1, uname, salt, passwdHash, fullname, email, www)
+    stmt.Exec(1, uname, "", passwdHash, fullname, email, www)
 }
 
 func populate(fileName string) {

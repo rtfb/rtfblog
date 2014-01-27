@@ -1,29 +1,16 @@
 package main
 
 import (
-    "crypto/rand"
-    "crypto/sha1"
-    "encoding/base64"
-    "io"
     "log"
     "os"
     "os/user"
+
+    "code.google.com/p/go.crypto/bcrypt"
 )
 
-func SaltAndPepper(salt, passwd string) string {
-    sha := sha1.New()
-    sha.Write([]byte(salt + passwd))
-    return base64.URLEncoding.EncodeToString(sha.Sum(nil))
-}
-
-func Encrypt(passwd string) (salt, hash string, err error) {
-    b := make([]byte, 16)
-    n, err := io.ReadFull(rand.Reader, b)
-    if n != len(b) || err != nil {
-        return
-    }
-    salt = base64.URLEncoding.EncodeToString(b)
-    hash = SaltAndPepper(salt, passwd)
+func Encrypt(passwd string) (hash string, err error) {
+    hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+    hash = string(hashBytes)
     return
 }
 

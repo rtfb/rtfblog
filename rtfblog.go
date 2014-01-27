@@ -17,6 +17,7 @@ import (
     "strings"
     "time"
 
+    "code.google.com/p/go.crypto/bcrypt"
     "github.com/gorilla/feeds"
     "github.com/hoisie/web"
     _ "github.com/lib/pq"
@@ -262,8 +263,8 @@ func login_handler(ctx *web.Context) {
         return
     }
     passwd := ctx.Request.Form["passwd"][0]
-    hash := SaltAndPepper(a.Salt, passwd)
-    if hash == a.Passwd {
+    err = bcrypt.CompareHashAndPassword([]byte(a.Passwd), []byte(passwd))
+    if err == nil {
         ctx.SetSecureCookie("adminlogin", "yesplease", 3600*24)
         redir := ctx.Params["redirect_to"]
         if redir == "login" {
