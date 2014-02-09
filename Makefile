@@ -8,6 +8,7 @@ GOFILES=\
 	util.go\
 	models.go\
 	controllers.go\
+	nlp.go\
 	dbtool/dbtool.go\
 	dbtool/b2e-import.go\
 

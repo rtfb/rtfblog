@@ -362,6 +362,9 @@ func init() {
     for i := 1; i <= 2; i++ {
         test_posts = append(test_posts, mkTestEntry(i+1000, true))
     }
+    DetectLanguage = func(string) string {
+        return "foo"
+    }
     test_data = TestData{}
     go runServer(&test_data)
 }
