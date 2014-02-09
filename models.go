@@ -23,14 +23,13 @@ func NewContext(req *http.Request) (*Context, error) {
     sess, err := store.Get(req, "rtfblog")
     ctx := &Context{
         Session:    sess,
-        AdminLogin: false,
+        AdminLogin: sess.Values["adminlogin"] == "yes",
     }
     return ctx, err
 }
 
 func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    data.hiddenPosts(adminLogin)
+    data.hiddenPosts(ctx.AdminLogin)
     numTotalPosts := data.numPosts()
     return map[string]interface{}{
         "PageTitle":       "Velkam",
@@ -40,6 +39,6 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
         "ListOfPages":     listOfPages(numTotalPosts, pageNo),
         "entries":         data.posts(POSTS_PER_PAGE, offset),
         "sidebar_entries": data.titles(NUM_RECENT_POSTS),
-        "AdminLogin":      adminLogin,
+        "AdminLogin":      ctx.AdminLogin,
     }
 }

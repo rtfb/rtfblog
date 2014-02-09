@@ -69,8 +69,7 @@ func reverse(name string, things ...interface{}) string {
 
 func checkPerm(handler Handler) Handler {
     return func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-        adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-        if !adminLogin {
+        if !ctx.AdminLogin {
             PerformStatus(w, req, http.StatusForbidden)
             return nil
         }

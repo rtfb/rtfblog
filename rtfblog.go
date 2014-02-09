@@ -254,7 +254,6 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     err = bcrypt.CompareHashAndPassword([]byte(a.Passwd), []byte(passwd))
     if err == nil {
         ctx.Session.Values["adminlogin"] = "yes"
-        ctx.AdminLogin = true
         redir := req.FormValue("redirect_to")
         if redir == "login" {
             redir = ""
