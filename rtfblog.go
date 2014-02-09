@@ -443,45 +443,36 @@ func detectLanguageWithTimeout(text string) string {
     }
 }
 
-func publishCommentWithInsert(w http.ResponseWriter, req *http.Request, postId int64, refUrl string) string {
+func publishCommentWithInsert(postId int64, ip, name, email, website, body string) (string, error) {
     if !data.begin() {
-        return ""
+        return "", nil
     }
-    ip := req.RemoteAddr
-    name := req.FormValue("name")
-    email := req.FormValue("email")
-    website := req.FormValue("website")
     commenterId, err := data.insertCommenter(name, email, website, ip)
     if err != nil {
         logger.Println("data.insertCommenter() failed: " + err.Error())
-        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
-        return ""
+        return "", err
     }
-    body := req.FormValue("text")
     commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
-        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
-        return ""
+        return "", err
     }
     data.commit()
-    return fmt.Sprintf("#comment-%d", commentId)
+    return fmt.Sprintf("#comment-%d", commentId), nil
 }
 
-func publishComment(w http.ResponseWriter, req *http.Request, postId, commenterId int64, refUrl string) string {
+func publishComment(postId, commenterId int64, body string) (string, error) {
     if !data.begin() {
-        return ""
+        return "", nil
     }
-    body := req.FormValue("text")
     commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
-        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
-        return ""
+        return "", err
     }
     data.commit()
-    return fmt.Sprintf("#comment-%d", commentId)
+    return fmt.Sprintf("#comment-%d", commentId), nil
 }
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -500,14 +491,24 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     redir := ""
     if err == nil {
         // This is a returning commenter, pass his comment through:
-        redir = "/" + refUrl + publishComment(w, req, postId, commenterId, refUrl)
+        commentUrl, err := publishComment(postId, commenterId, req.FormValue("text"))
+        if err != nil {
+            InternalError(w, req, "Server Error: "+err.Error())
+            return err
+        }
+        redir = "/" + refUrl + commentUrl
     } else if err == sql.ErrNoRows {
         body := req.FormValue("text")
         lang := detectLanguageWithTimeout(body)
         log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
         logger.Println(log)
         if lang == "\"lt\"" {
-            redir = "/" + refUrl + publishCommentWithInsert(w, req, postId, refUrl)
+            commentUrl, err := publishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
+            if err != nil {
+                InternalError(w, req, "Server Error: "+err.Error())
+                return err
+            }
+            redir = "/" + refUrl + commentUrl
         } else {
             captcha := req.FormValue("captcha")
             if captcha == "" {
@@ -518,7 +519,12 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                 wrongCaptchaReply(w, req, "rejected")
                 return nil
             } else {
-                redir = "/" + refUrl + publishCommentWithInsert(w, req, postId, refUrl)
+                commentUrl, err := publishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
+                if err != nil {
+                    InternalError(w, req, "Server Error: "+err.Error())
+                    return err
+                }
+                redir = "/" + refUrl + commentUrl
             }
         }
     } else {
