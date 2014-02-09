@@ -303,8 +303,14 @@ func curlPost(url string) string {
     return curlParam(url, tclientPostForm)
 }
 
-func localhostUrl(url string) string {
-    return "http://localhost:8080/" + url
+func localhostUrl(u string) string {
+    if u == "" {
+        return "http://localhost:8080/"
+    } else if u[0] == '/' {
+        return "http://localhost:8080/" + u[1:]
+    } else {
+        return "http://localhost:8080/" + u
+    }
 }
 
 func tclientGet(rqUrl string) (*http.Response, error) {
