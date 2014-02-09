@@ -16,7 +16,6 @@ import (
     "strings"
     "time"
 
-    "code.google.com/p/go.crypto/bcrypt"
     "github.com/gorilla/feeds"
     "github.com/gorilla/pat"
     "github.com/gorilla/sessions"
@@ -250,7 +249,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         return err
     }
     passwd := req.FormValue("passwd")
-    err = bcrypt.CompareHashAndPassword([]byte(a.Passwd), []byte(passwd))
+    err = Decrypt([]byte(a.Passwd), []byte(passwd))
     if err == nil {
         ctx.Session.Values["adminlogin"] = "yes"
         redir := req.FormValue("redirect_to")

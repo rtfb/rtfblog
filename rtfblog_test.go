@@ -3,6 +3,7 @@ package main
 import (
     "database/sql"
     "encoding/json"
+    "errors"
     "fmt"
     "io/ioutil"
     "net/http"
@@ -364,6 +365,12 @@ func init() {
     }
     DetectLanguage = func(string) string {
         return "foo"
+    }
+    Decrypt = func(hash, passwd []byte) error {
+        if string(passwd) == "testpasswd" {
+            return nil
+        }
+        return errors.New("Bad passwd")
     }
     test_data = TestData{}
     go runServer(&test_data)
