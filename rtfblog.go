@@ -144,11 +144,6 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     tmplData := MkBasicData(ctx, 0, 0)
     tmplData["PageTitle"] = "Admin Console"
     render(w, "admin", tmplData)
@@ -201,11 +196,6 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     tmplData := MkBasicData(ctx, 0, 0)
     tmplData["PageTitle"] = "All Comments"
     tmplData["all_comments"] = data.allComments()
@@ -214,11 +204,6 @@ func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     tmplData := MkBasicData(ctx, 0, 0)
     tmplData["PageTitle"] = "Edit Post"
     tmplData["IsHidden"] = true // Assume hidden for a new post
@@ -236,11 +221,6 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     url := req.FormValue("post")
     if post := data.post(url); post != nil {
         b, err := json.Marshal(post)
@@ -288,11 +268,6 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     action := req.FormValue("action")
     redir := req.FormValue("redirect_to")
     id := req.FormValue("id")
@@ -305,11 +280,6 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 }
 
 func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     if !data.deletePost(req.FormValue("id")) {
         // TODO: log nothing to del
         return nil
@@ -319,11 +289,6 @@ func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     action := req.FormValue("action")
     text := req.FormValue("edit-comment-text")
     id := req.FormValue("id")
@@ -337,11 +302,6 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 }
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     tagsWithUrls := req.FormValue("tags")
     url := req.FormValue("url")
     e := Entry{
@@ -404,11 +364,6 @@ func explodeTags(tagsWithUrls string) []*Tag {
 }
 
 func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
-    if !adminLogin {
-        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
-        return nil
-    }
     mr, _ := req.MultipartReader()
     files := ""
     part, err := mr.NextPart()
@@ -648,22 +603,22 @@ func runServer(_data Data) {
     r.Add("GET", "/login", Handler(LoginForm)).Name("login")
     r.Add("POST", "/login", Handler(Login))
     r.Add("GET", "/logout", Handler(Logout)).Name("logout")
-    r.Add("GET", "/admin", Handler(Admin)).Name("admin")
+    r.Add("GET", "/admin", checkPerm(Handler(Admin))).Name("admin")
     r.Add("GET", "/page/{pageNo:.*}", Handler(PageNum))
     r.Add("GET", "/tag/{tag:[0-9a-zA-Z]+}", Handler(PostsWithTag))
     r.Add("GET", "/archive", Handler(Archive)).Name("archive")
-    r.Add("GET", "/all_comments", Handler(AllComments)).Name("all_comments")
-    r.Add("GET", "/edit_post", Handler(EditPost)).Name("edit_post")
-    r.Add("GET", "/load_comments", Handler(LoadComments)).Name("load_comments")
+    r.Add("GET", "/all_comments", checkPerm(Handler(AllComments))).Name("all_comments")
+    r.Add("GET", "/edit_post", checkPerm(Handler(EditPost))).Name("edit_post")
+    r.Add("GET", "/load_comments", checkPerm(Handler(LoadComments))).Name("load_comments")
     r.Add("GET", "/feeds/rss.xml", Handler(RssFeed)).Name("rss_feed")
     r.Add("GET", "/favicon.ico", Handler(ServeFavicon)).Name("favicon")
     r.Add("GET", "/comment_submit", Handler(CommentHandler)).Name("comment")
-    r.Add("GET", "/delete_comment", Handler(DeleteComment)).Name("delete_comment")
-    r.Add("GET", "/delete_post", Handler(DeletePost)).Name("delete_post")
+    r.Add("GET", "/delete_comment", checkPerm(Handler(DeleteComment))).Name("delete_comment")
+    r.Add("GET", "/delete_post", checkPerm(Handler(DeletePost))).Name("delete_post")
 
-    r.Add("POST", "/moderate_comment", Handler(ModerateComment)).Name("moderate_comment")
-    r.Add("POST", "/submit_post", Handler(SubmitPost)).Name("submit_post")
-    r.Add("POST", "/upload_images", Handler(UploadImage)).Name("upload_image")
+    r.Add("POST", "/moderate_comment", checkPerm(Handler(ModerateComment))).Name("moderate_comment")
+    r.Add("POST", "/submit_post", checkPerm(Handler(SubmitPost))).Name("submit_post")
+    r.Add("POST", "/upload_images", checkPerm(Handler(UploadImage))).Name("upload_image")
 
     r.Add("GET", "/", Handler(Home)).Name("home_page")
 

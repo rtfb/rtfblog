@@ -44,7 +44,10 @@ func InternalError(w http.ResponseWriter, req *http.Request, err string) error {
 
 //PerformStatus runs the passed in status on the request and calls the appropriate block
 func PerformStatus(w http.ResponseWriter, req *http.Request, status int) error {
-    //return T(fmt.Sprintf("%d.html", status)).Execute(w, nil)
+    if status == 404 || status == 403 {
+        render(w, fmt.Sprintf("%d", status), nil)
+        return nil
+    }
     w.Write([]byte(fmt.Sprintf("Error %d", status)))
     return nil
 }
@@ -62,4 +65,16 @@ func reverse(name string, things ...interface{}) string {
         return "#"
     }
     return u.Path
+}
+
+func checkPerm(handler Handler) Handler {
+    return func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+        adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+        if !adminLogin {
+            PerformStatus(w, req, http.StatusForbidden)
+            return nil
+        }
+        handler(w, req, ctx)
+        return nil
+    }
 }
