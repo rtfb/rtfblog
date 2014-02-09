@@ -16,12 +16,8 @@
             <hr />
 
             <div id="content">
-                {{#LoginFailed}}
-                <p style="color: red"><strong>
-                    Login failed.
-                </strong></p>
-                {{/LoginFailed}}
-                <form action="login_submit" method="post" id="login_form">
+                {{{Flashes}}}
+                <form action="login" method="post" id="login_form">
                     <div><input class="text" name="uname" placeholder="Username" type="text" autofocus="autofocus" /></div>
                     <div><input class="text" name="passwd" placeholder="Password" type="password" /></div>
                     <div><input type="submit" value="Login" /></div>
