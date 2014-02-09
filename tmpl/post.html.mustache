@@ -420,18 +420,20 @@
             var name = document.getElementById('name').value;
             if (name === "") {
                 alert("Name field is mandatory.");
-                return;
+                return false;
             }
-
             var email = document.getElementById('email').value;
             if (email === "") {
                 alert("Email field is mandatory.");
-                return;
+                return false;
             }
+            return true;
         }
 
         function submitComment() {
-            validateForm();
+            if (!validateForm()) {
+                return;
+            }
 
             var xhr;
             try {
