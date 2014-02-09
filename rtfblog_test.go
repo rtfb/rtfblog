@@ -17,6 +17,7 @@ import (
     "code.google.com/p/go-html-transform/css/selector"
     "code.google.com/p/go-html-transform/h5"
     "code.google.com/p/go.net/html"
+    "github.com/gorilla/sessions"
 )
 
 type Jar struct {
@@ -347,6 +348,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 func init() {
     conf = obtainConfiguration("")
     logger = MkLogger("tests.log")
+    store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
     forgeTestUser("testuser", "testpasswd")
     for i := 1; i <= 11; i++ {
         test_posts = append(test_posts, mkTestEntry(i, false))
