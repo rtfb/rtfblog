@@ -1,7 +1,7 @@
 package main
 
 import (
-    //"fmt"
+    "fmt"
     "net/http"
 
     "github.com/gorilla/pat"
@@ -41,4 +41,36 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
         "sidebar_entries": data.titles(NUM_RECENT_POSTS),
         "AdminLogin":      ctx.AdminLogin,
     }
+}
+
+func PublishCommentWithInsert(postId int64, ip, name, email, website, body string) (string, error) {
+    if !data.begin() {
+        return "", nil
+    }
+    commenterId, err := data.insertCommenter(name, email, website, ip)
+    if err != nil {
+        logger.Println("data.insertCommenter() failed: " + err.Error())
+        data.rollback()
+        return "", err
+    }
+    commentId, err := data.insertComment(commenterId, postId, body)
+    if err != nil {
+        data.rollback()
+        return "", err
+    }
+    data.commit()
+    return fmt.Sprintf("#comment-%d", commentId), nil
+}
+
+func PublishComment(postId, commenterId int64, body string) (string, error) {
+    if !data.begin() {
+        return "", nil
+    }
+    commentId, err := data.insertComment(commenterId, postId, body)
+    if err != nil {
+        data.rollback()
+        return "", err
+    }
+    data.commit()
+    return fmt.Sprintf("#comment-%d", commentId), nil
 }
