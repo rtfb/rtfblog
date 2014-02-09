@@ -6,6 +6,8 @@ GOFILES=\
 	db.go\
 	rtfblog_test.go\
 	util.go\
+	models.go\
+	controllers.go\
 	dbtool/dbtool.go\
 	dbtool/b2e-import.go\
 

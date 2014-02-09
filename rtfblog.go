@@ -19,7 +19,8 @@ import (
 
     "code.google.com/p/go.crypto/bcrypt"
     "github.com/gorilla/feeds"
-    "github.com/hoisie/web"
+    "github.com/gorilla/pat"
+    "github.com/gorilla/sessions"
     _ "github.com/lib/pq"
     "github.com/lye/mustache"
     email "github.com/ungerik/go-mail"
@@ -55,13 +56,13 @@ func loadConfig(path string) (config SrvConfig) {
     return
 }
 
-func render(ctx *web.Context, tmpl string, data map[string]interface{}) {
-    html := mustache.RenderFile("tmpl/"+tmpl+".html.mustache", data)
-    ctx.WriteString(html)
+func render(w http.ResponseWriter, tmpl string, data map[string]interface{}) {
+    html := mustache.RenderFile(fmt.Sprintf("tmpl/%s.html.mustache", tmpl), data)
+    w.Write([]byte(html))
 }
 
-func xtractReferer(ctx *web.Context) string {
-    referers := ctx.Request.Header["Referer"]
+func xtractReferer(req *http.Request) string {
+    referers := req.Header["Referer"]
     if len(referers) == 0 {
         return ""
     }
@@ -84,7 +85,7 @@ func listOfPages(numPosts, currPage int) (list string) {
     return
 }
 
-func produceFeedXml(ctx *web.Context, posts []*Entry) {
+func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
     url := conf.Get("url") + conf.Get("port")
     blogTitle := conf.Get("blog_title")
     descr := conf.Get("blog_descr")
@@ -112,241 +113,277 @@ func produceFeedXml(ctx *web.Context, posts []*Entry) {
     if err != nil {
         logger.Println(err.Error())
     }
-    ctx.WriteString(rss)
+    w.Write([]byte(rss))
 }
 
-func getPostByUrl(ctx *web.Context, data Data, url string) *Entry {
-    if post := data.post(url); post != nil {
-        return post
+func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    if req.URL.Path == "/" {
+        render(w, "main", MkBasicData(ctx, 0, 0))
+        return nil
     }
-    html := mustache.RenderFile("tmpl/404.html.mustache", map[string]interface{}{})
-    ctx.NotFound(html)
+    if post := data.post(req.URL.Path[1:]); post != nil {
+        tmplData := MkBasicData(ctx, 0, 0)
+        tmplData["PageTitle"] = post.Title
+        tmplData["entry"] = post
+        render(w, "post", tmplData)
+    } else {
+        return PerformStatus(w, req, http.StatusNotFound)
+    }
     return nil
 }
 
-func handler(ctx *web.Context, path string) {
-    value, found := ctx.GetSecureCookie("adminlogin")
-    adminLogin := found && value == "yesplease"
-    data.hiddenPosts(adminLogin)
-    numTotalPosts := data.numPosts()
-    var basicData = map[string]interface{}{
-        "PageTitle":       "",
-        "BlogTitle":       conf.Get("blog_title"),
-        "BlogSubtitle":    conf.Get("blog_descr"),
-        "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
-        "ListOfPages":     listOfPages(numTotalPosts, 0),
-        "entries":         data.posts(POSTS_PER_PAGE, 0),
-        "sidebar_entries": data.titles(NUM_RECENT_POSTS),
+func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    pgNo, err := strconv.Atoi(req.URL.Query().Get(":pageNo"))
+    if err != nil {
+        pgNo = 1
+        err = nil
     }
-    basicData["AdminLogin"] = adminLogin
-    if strings.HasPrefix(path, "page/") {
-        pgNo, err := strconv.Atoi(strings.Replace(path, "page/", "", -1))
-        if err != nil {
-            pgNo = 1
-        }
-        offset := (pgNo - 1) * POSTS_PER_PAGE
-        if offset > 0 {
-            basicData["entries"] = data.posts(POSTS_PER_PAGE, offset)
-        }
-        basicData["PageTitle"] = "Velkam"
-        basicData["ListOfPages"] = listOfPages(numTotalPosts, pgNo-1)
-        render(ctx, "main", basicData)
-        return
-    }
-    if strings.HasPrefix(path, "tag/") {
-        tag := path[4:]
-        heading := "Posts tagged '" + tag + "'"
-        basicData["PageTitle"] = heading
-        basicData["HeadingText"] = heading + ":"
-        basicData["all_entries"] = data.titlesByTag(tag)
-        render(ctx, "archive", basicData)
-        return
-    }
-    switch path {
-    case "":
-        basicData["PageTitle"] = "Velkam"
-        render(ctx, "main", basicData)
-        return
-    case "admin":
-        if !adminLogin {
-            ctx.Abort(http.StatusForbidden, "Verboten")
-            return
-        }
-        basicData["PageTitle"] = "Admin Console"
-        render(ctx, "admin", basicData)
-        return
-    case "archive":
-        basicData["PageTitle"] = "Archive"
-        basicData["HeadingText"] = "All posts:"
-        basicData["all_entries"] = data.titles(-1)
-        render(ctx, "archive", basicData)
-        return
-    case "all_comments":
-        if !adminLogin {
-            ctx.Abort(http.StatusForbidden, "Verboten")
-            return
-        }
-        basicData["PageTitle"] = "All Comments"
-        basicData["all_comments"] = data.allComments()
-        render(ctx, "all_comments", basicData)
-        return
-    case "login":
-        referer := xtractReferer(ctx)
-        if referer == "login" {
-            basicData["LoginFailed"] = true
-        } else {
-            basicData["RedirectTo"] = referer
-        }
-        basicData["PageTitle"] = "Login"
-        render(ctx, "login", basicData)
-        return
-    case "logout":
-        ctx.SetSecureCookie("adminlogin", "", 0)
-        ctx.Redirect(http.StatusFound, "/"+xtractReferer(ctx))
-        return
-    case "edit_post":
-        if !adminLogin {
-            ctx.Abort(http.StatusForbidden, "Verboten")
-            return
-        }
-        basicData["PageTitle"] = "Edit Post"
-        basicData["IsHidden"] = true // Assume hidden for a new post
-        url := ctx.Params["post"]
-        if url != "" {
-            if post := data.post(url); post != nil {
-                basicData["IsHidden"] = post.Hidden
-                basicData["post"] = post
-            }
-        } else {
-            basicData["post"] = Entry{}
-        }
-        render(ctx, "edit_post", basicData)
-        return
-    case "load_comments":
-        if !adminLogin {
-            ctx.Abort(http.StatusForbidden, "Verboten")
-            return
-        }
-        if post := getPostByUrl(ctx, data, ctx.Params["post"]); post != nil {
-            b, err := json.Marshal(post)
-            if err != nil {
-                logger.Println(err.Error())
-                return
-            }
-            ctx.WriteString(string(b))
-        }
-        return
-    case "feeds/rss.xml":
-        produceFeedXml(ctx, data.posts(NUM_FEED_ITEMS, 0))
-        return
-    default:
-        if post := getPostByUrl(ctx, data, path); post != nil {
-            basicData["PageTitle"] = post.Title
-            basicData["entry"] = post
-            render(ctx, "post", basicData)
-        }
-        return
-    }
-    ctx.Abort(http.StatusInternalServerError, "Server Error")
+    offset := (pgNo - 1) * POSTS_PER_PAGE
+    render(w, "main", MkBasicData(ctx, pgNo, offset))
+    return nil
 }
 
-func login_handler(ctx *web.Context) {
-    uname := ctx.Params["uname"]
+func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    tmplData := MkBasicData(ctx, 0, 0)
+    tmplData["PageTitle"] = "Admin Console"
+    render(w, "admin", tmplData)
+    return nil
+}
+
+func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    flashes := ctx.Session.Flashes()
+    html := ""
+    // TODO: extract that to separate flashes template
+    format := `<p><strong style="color: red">
+%s
+</strong></p>`
+    if len(flashes) > 0 {
+        for _, f := range flashes {
+            html = html + fmt.Sprintf(format, f)
+        }
+    }
+    render(w, "login", map[string]interface{}{
+        "PageTitle": "Login",
+        "Flashes":   html,
+    })
+    return nil
+}
+
+func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    delete(ctx.Session.Values, "adminlogin")
+    http.Redirect(w, req, reverse("home_page"), http.StatusSeeOther)
+    return nil
+}
+
+func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    tag := req.URL.Query().Get(":tag")
+    heading := fmt.Sprintf("Posts tagged '%s'", tag)
+    tmplData := MkBasicData(ctx, 0, 0)
+    tmplData["PageTitle"] = heading
+    tmplData["HeadingText"] = heading + ":"
+    tmplData["all_entries"] = data.titlesByTag(tag)
+    render(w, "archive", tmplData)
+    return nil
+}
+
+func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    tmplData := MkBasicData(ctx, 0, 0)
+    tmplData["PageTitle"] = "Archive"
+    tmplData["HeadingText"] = "All posts:"
+    tmplData["all_entries"] = data.titles(-1)
+    render(w, "archive", tmplData)
+    return nil
+}
+
+func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    tmplData := MkBasicData(ctx, 0, 0)
+    tmplData["PageTitle"] = "All Comments"
+    tmplData["all_comments"] = data.allComments()
+    render(w, "all_comments", tmplData)
+    return nil
+}
+
+func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    tmplData := MkBasicData(ctx, 0, 0)
+    tmplData["PageTitle"] = "Edit Post"
+    tmplData["IsHidden"] = true // Assume hidden for a new post
+    url := strings.TrimRight(req.FormValue("post"), "&")
+    if url != "" {
+        if post := data.post(url); post != nil {
+            tmplData["IsHidden"] = post.Hidden
+            tmplData["post"] = post
+        }
+    } else {
+        tmplData["post"] = Entry{}
+    }
+    render(w, "edit_post", tmplData)
+    return nil
+}
+
+func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    url := req.FormValue("post")
+    if post := data.post(url); post != nil {
+        b, err := json.Marshal(post)
+        if err != nil {
+            logger.Println(err.Error())
+            return err
+        }
+        w.Write(b)
+    }
+    return nil
+}
+
+func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    produceFeedXml(w, data.posts(NUM_FEED_ITEMS, 0))
+    return nil
+}
+
+func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    // TODO: should not be logged in, add check
+    uname := req.FormValue("uname")
     a, err := data.author(uname)
     if err == sql.ErrNoRows {
-        ctx.Redirect(http.StatusFound, "/login")
-        return
+        ctx.Session.AddFlash("Login failed.")
+        return LoginForm(w, req, ctx)
     }
     if err != nil {
         logger.Println(err.Error())
-        ctx.Redirect(http.StatusFound, "/login")
-        return
+        return err
     }
-    passwd := ctx.Request.Form["passwd"][0]
+    passwd := req.FormValue("passwd")
     err = bcrypt.CompareHashAndPassword([]byte(a.Passwd), []byte(passwd))
     if err == nil {
-        ctx.SetSecureCookie("adminlogin", "yesplease", 3600*24)
-        redir := ctx.Params["redirect_to"]
+        ctx.Session.Values["adminlogin"] = "yes"
+        ctx.AdminLogin = true
+        redir := req.FormValue("redirect_to")
         if redir == "login" {
             redir = ""
         }
-        ctx.Redirect(http.StatusFound, "/"+redir)
+        http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
     } else {
-        ctx.Redirect(http.StatusFound, "/login")
+        ctx.Session.AddFlash("Login failed.")
+        return LoginForm(w, req, ctx)
     }
-    ctx.Params["passwd"] = "***"
+    return nil
 }
 
-func delete_comment_handler(ctx *web.Context) {
-    action := ctx.Params["action"]
-    redir := ctx.Params["redirect_to"]
-    id := ctx.Params["id"]
+func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    action := req.FormValue("action")
+    redir := req.FormValue("redirect_to")
+    id := req.FormValue("id")
     if action == "delete" && !data.deleteComment(id) {
-        return
+        // TODO: log nothing to del
+        return nil
     }
-    ctx.Redirect(http.StatusFound, "/"+redir)
+    http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
+    return nil
 }
 
-func delete_post_handler(ctx *web.Context) {
-    if !data.deletePost(ctx.Params["id"]) {
-        return
+func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
     }
-    ctx.Redirect(http.StatusFound, "/admin")
+    if !data.deletePost(req.FormValue("id")) {
+        // TODO: log nothing to del
+        return nil
+    }
+    http.Redirect(w, req, reverse("admin"), http.StatusSeeOther)
+    return nil
 }
 
-func moderate_comment_handler(ctx *web.Context) {
-    action := ctx.Params["action"]
-    text := ctx.Params["edit-comment-text"]
-    id := ctx.Params["id"]
+func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    action := req.FormValue("action")
+    text := req.FormValue("edit-comment-text")
+    id := req.FormValue("id")
     if action == "edit" && !data.updateComment(id, text) {
-        return
+        // TODO: log error editing
+        return nil
     }
-    redir := ctx.Params["redirect_to"]
-    ctx.Redirect(http.StatusFound, fmt.Sprintf("/%s#comment-%s", redir, id))
+    redir := req.FormValue("redirect_to")
+    http.Redirect(w, req, fmt.Sprintf("/%s#comment-%s", redir, id), http.StatusSeeOther)
+    return nil
 }
 
-func submit_post_handler(ctx *web.Context) {
-    tagsWithUrls := ctx.Params["tags"]
-    url := ctx.Params["url"]
+func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    tagsWithUrls := req.FormValue("tags")
+    url := req.FormValue("url")
     e := Entry{
         EntryLink: EntryLink{
-            Title:  ctx.Params["title"],
+            Title:  req.FormValue("title"),
             Url:    url,
-            Hidden: ctx.Params["hidden"] == "on",
+            Hidden: req.FormValue("hidden") == "on",
         },
-        Body: ctx.Params["text"],
+        Body: req.FormValue("text"),
     }
     postId, idErr := data.postId(url)
     if !data.begin() {
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        return
+        InternalError(w, req, "SubmitPost, !data.begin()")
+        return nil
     }
     if idErr != nil {
         if idErr == sql.ErrNoRows {
             authorId := int64(1) // XXX: it's only me now
             newPostId, err := data.insertPost(authorId, &e)
             if err != nil {
-                ctx.Abort(http.StatusInternalServerError, "Server Error")
                 data.rollback()
-                return
+                InternalError(w, req, "SubmitPost, !data.insertPost: "+err.Error())
+                return err
             }
             postId = newPostId
         } else {
             logger.Println("data.postId() failed: " + idErr.Error())
-            ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
-            return
+            InternalError(w, req, "SubmitPost, !data.postId: "+idErr.Error())
+            return idErr
         }
     } else {
         if !data.updatePost(postId, &e) {
-            ctx.Abort(http.StatusInternalServerError, "Server Error")
             data.rollback()
-            return
+            InternalError(w, req, "SubmitPost, !data.updatePost")
+            return nil
         }
     }
     data.updateTags(explodeTags(tagsWithUrls), postId)
     data.commit()
-    ctx.Redirect(http.StatusFound, "/"+url)
+    http.Redirect(w, req, "/"+url, http.StatusSeeOther)
+    return nil
 }
 
 func explodeTags(tagsWithUrls string) []*Tag {
@@ -366,21 +403,26 @@ func explodeTags(tagsWithUrls string) []*Tag {
     return tags
 }
 
-func upload_image_handler(ctx *web.Context) {
-    mr, _ := ctx.Request.MultipartReader()
+func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    adminLogin := ctx.Session.Values["adminlogin"] == "yes"
+    if !adminLogin {
+        http.Redirect(w, req, reverse("login"), http.StatusSeeOther)
+        return nil
+    }
+    mr, _ := req.MultipartReader()
     files := ""
     part, err := mr.NextPart()
     for err == nil {
         if name := part.FormName(); name != "" {
             if part.FileName() != "" {
                 files += fmt.Sprintf("[foo]: /%s", part.FileName())
-                handleUpload(ctx.Request, part)
+                handleUpload(req, part)
             }
         }
         part, err = mr.NextPart()
     }
-    ctx.WriteString(files)
-    return
+    w.Write([]byte(files))
+    return nil
 }
 
 func handleUpload(r *http.Request, p *multipart.Part) {
@@ -407,23 +449,23 @@ func handleUpload(r *http.Request, p *multipart.Part) {
     return
 }
 
-func wrongCaptchaReply(ctx *web.Context, status string) {
+func wrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string) {
     var response = map[string]interface{}{
         "status":  status,
-        "name":    ctx.Params["name"],
-        "email":   ctx.Params["email"],
-        "website": ctx.Params["website"],
-        "body":    ctx.Params["text"],
+        "name":    req.FormValue("name"),
+        "email":   req.FormValue("email"),
+        "website": req.FormValue("website"),
+        "body":    req.FormValue("text"),
     }
     b, err := json.Marshal(response)
     if err != nil {
         logger.Println(err.Error())
         return
     }
-    ctx.WriteString(string(b))
+    w.Write(b)
 }
 
-func rightCaptchaReply(ctx *web.Context, redir string) {
+func rightCaptchaReply(w http.ResponseWriter, redir string) {
     var response = map[string]interface{}{
         "status": "accepted",
         "redir":  redir,
@@ -433,7 +475,7 @@ func rightCaptchaReply(ctx *web.Context, redir string) {
         logger.Println(err.Error())
         return
     }
-    ctx.WriteString(string(b))
+    w.Write(b)
 }
 
 func detectLanguage(text string) string {
@@ -479,25 +521,25 @@ func detectLanguageWithTimeout(text string) string {
     }
 }
 
-func publishCommentWithInsert(ctx *web.Context, postId int64, refUrl string) string {
+func publishCommentWithInsert(w http.ResponseWriter, req *http.Request, postId int64, refUrl string) string {
     if !data.begin() {
         return ""
     }
-    ip := ctx.Request.RemoteAddr
-    name := ctx.Params["name"]
-    email := ctx.Params["email"]
-    website := ctx.Params["website"]
+    ip := req.RemoteAddr
+    name := req.FormValue("name")
+    email := req.FormValue("email")
+    website := req.FormValue("website")
     commenterId, err := data.insertCommenter(name, email, website, ip)
     if err != nil {
         logger.Println("data.insertCommenter() failed: " + err.Error())
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
         return ""
     }
-    body := ctx.Params["text"]
+    body := req.FormValue("text")
     commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
         return ""
     }
@@ -505,14 +547,14 @@ func publishCommentWithInsert(ctx *web.Context, postId int64, refUrl string) str
     return fmt.Sprintf("#comment-%d", commentId)
 }
 
-func publishComment(ctx *web.Context, postId, commenterId int64, refUrl string) string {
+func publishComment(w http.ResponseWriter, req *http.Request, postId, commenterId int64, refUrl string) string {
     if !data.begin() {
         return ""
     }
-    body := ctx.Params["text"]
+    body := req.FormValue("text")
     commentId, err := data.insertComment(commenterId, postId, body)
     if err != nil {
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
+        InternalError(w, req, "Server Error: "+err.Error())
         data.rollback()
         return ""
     }
@@ -520,55 +562,55 @@ func publishComment(ctx *web.Context, postId, commenterId int64, refUrl string) 
     return fmt.Sprintf("#comment-%d", commentId)
 }
 
-func comment_handler(ctx *web.Context) {
-    refUrl := xtractReferer(ctx)
+func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    refUrl := xtractReferer(req)
     postId, err := data.postId(refUrl)
     if err != nil {
         logger.Println("data.postId() failed: " + err.Error())
-        ctx.Abort(http.StatusInternalServerError, "Server Error")
-        return
+        InternalError(w, req, "Server Error: "+err.Error())
+        return err
     }
-    ip := ctx.Request.RemoteAddr
-    name := ctx.Params["name"]
-    email := ctx.Params["email"]
-    website := ctx.Params["website"]
+    ip := req.RemoteAddr
+    name := req.FormValue("name")
+    email := req.FormValue("email")
+    website := req.FormValue("website")
     commenterId, err := data.commenter(name, email, website, ip)
     redir := ""
     if err == nil {
         // This is a returning commenter, pass his comment through:
-        redir = "/" + refUrl + publishComment(ctx, postId, commenterId, refUrl)
+        redir = "/" + refUrl + publishComment(w, req, postId, commenterId, refUrl)
     } else if err == sql.ErrNoRows {
-        body := ctx.Params["text"]
+        body := req.FormValue("text")
+        // TODO: don't call detectLanguageWithTimeout() when running tests!
         lang := detectLanguageWithTimeout(body)
         log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
         logger.Println(log)
         if lang == "\"lt\"" {
-            redir = "/" + refUrl + publishCommentWithInsert(ctx, postId, refUrl)
+            redir = "/" + refUrl + publishCommentWithInsert(w, req, postId, refUrl)
         } else {
-            captcha := ctx.Params["captcha"]
+            captcha := req.FormValue("captcha")
             if captcha == "" {
-                wrongCaptchaReply(ctx, "showcaptcha")
-                return
+                wrongCaptchaReply(w, req, "showcaptcha")
+                return nil
             }
             if captcha != "dvylika" {
-                wrongCaptchaReply(ctx, "rejected")
-                return
+                wrongCaptchaReply(w, req, "rejected")
+                return nil
             } else {
-                redir = "/" + refUrl + publishCommentWithInsert(ctx, postId, refUrl)
+                redir = "/" + refUrl + publishCommentWithInsert(w, req, postId, refUrl)
             }
         }
     } else {
         logger.Println("err: " + err.Error())
-        wrongCaptchaReply(ctx, "rejected")
-        return
+        wrongCaptchaReply(w, req, "rejected")
+        return nil
     }
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
-        go SendEmail(ctx.Params["name"], ctx.Params["email"],
-            ctx.Params["website"], ctx.Params["text"], url, refUrl)
+        go SendEmail(name, email, website, req.FormValue("text"), url, refUrl)
     }
-    rightCaptchaReply(ctx, redir)
-    return
+    rightCaptchaReply(w, redir)
+    return nil
 }
 
 func SendEmail(author, mail, www, comment, url, postTitle string) {
@@ -591,37 +633,44 @@ func SendEmail(author, mail, www, comment, url, postTitle string) {
     }
 }
 
-func serve_favicon(ctx *web.Context) {
-    http.ServeFile(ctx, ctx.Request, conf.Get("favicon"))
-}
-
-func checkAdmin(handler func(ctx *web.Context)) func(ctx *web.Context) {
-    return func(ctx *web.Context) {
-        value, found := ctx.GetSecureCookie("adminlogin")
-        adminLogin := found && value == "yesplease"
-        if !adminLogin {
-            ctx.Abort(http.StatusForbidden, "Verboten")
-            return
-        }
-        handler(ctx)
-    }
+func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    http.ServeFile(w, req, conf.Get("favicon"))
+    return nil
 }
 
 func runServer(_data Data) {
+    Router = pat.New()
     data = _data
-    web.Get("/comment_submit", comment_handler)
-    web.Post("/login_submit", login_handler)
-    web.Get("/delete_comment", checkAdmin(delete_comment_handler))
-    web.Get("/delete_post", checkAdmin(delete_post_handler))
-    web.Post("/moderate_comment", checkAdmin(moderate_comment_handler))
-    web.Post("/submit_post", checkAdmin(submit_post_handler))
-    web.Post("/upload_images", checkAdmin(upload_image_handler))
-    web.Get("/favicon.ico", serve_favicon)
-    web.Get("/(.*)", handler)
-    web.SetLogger(logger)
-    web.Config.StaticDir = conf.Get("staticdir")
-    web.Config.CookieSecret = conf.Get("cookie_secret")
-    web.Run(conf.Get("port"))
+    r := Router
+    basedir, _ := filepath.Split(fullPathToBinary())
+    dir := filepath.Join(basedir, "static")
+    r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
+    r.Add("GET", "/login", Handler(LoginForm)).Name("login")
+    r.Add("POST", "/login", Handler(Login))
+    r.Add("GET", "/logout", Handler(Logout)).Name("logout")
+    r.Add("GET", "/admin", Handler(Admin)).Name("admin")
+    r.Add("GET", "/page/{pageNo:.*}", Handler(PageNum))
+    r.Add("GET", "/tag/{tag:[0-9a-zA-Z]+}", Handler(PostsWithTag))
+    r.Add("GET", "/archive", Handler(Archive)).Name("archive")
+    r.Add("GET", "/all_comments", Handler(AllComments)).Name("all_comments")
+    r.Add("GET", "/edit_post", Handler(EditPost)).Name("edit_post")
+    r.Add("GET", "/load_comments", Handler(LoadComments)).Name("load_comments")
+    r.Add("GET", "/feeds/rss.xml", Handler(RssFeed)).Name("rss_feed")
+    r.Add("GET", "/favicon.ico", Handler(ServeFavicon)).Name("favicon")
+    r.Add("GET", "/comment_submit", Handler(CommentHandler)).Name("comment")
+    r.Add("GET", "/delete_comment", Handler(DeleteComment)).Name("delete_comment")
+    r.Add("GET", "/delete_post", Handler(DeletePost)).Name("delete_post")
+
+    r.Add("POST", "/moderate_comment", Handler(ModerateComment)).Name("moderate_comment")
+    r.Add("POST", "/submit_post", Handler(SubmitPost)).Name("submit_post")
+    r.Add("POST", "/upload_images", Handler(UploadImage)).Name("upload_image")
+
+    r.Add("GET", "/", Handler(Home)).Name("home_page")
+
+    logger.Print("The server is listening...")
+    if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), r); err != nil {
+        logger.Print("rtfblog server: ", err)
+    }
 }
 
 func fullPathToBinary() string {
@@ -677,10 +726,12 @@ func obtainConfiguration(basedir string) SrvConfig {
 }
 
 func main() {
+    //runtime.GOMAXPROCS(runtime.NumCPU())
     basedir, _ := filepath.Split(fullPathToBinary())
     os.Chdir(basedir)
     conf = obtainConfiguration(basedir)
     logger = MkLogger(conf.Get("log"))
+    store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
     db, err := sql.Open("postgres", conf.Get("database"))
     if err != nil {
         logger.Println("sql: " + err.Error())
