@@ -311,6 +311,7 @@
                 <p>
                 My Nazi spam-filter presumes everybody is a bot.<br />
                 Please solve this captcha to prove you're not:</p>
+                <input id="captcha-id" name="captcha-id" type="hidden" value="" />
                 <p class="captcha-prompt">
                     8 + 4 =
                     <input
@@ -458,6 +459,7 @@
                             document.getElementById('captcha-input').value = '';
                         } else if (response["status"] === "showcaptcha") {
                             document.getElementById('captcha-alert-box').style.visibility = 'visible';
+                            document.getElementById('captcha-id').value = response["captcha-id"];
                         } else {
                             window.location.href = response["redir"];
                             window.location.reload(true);
@@ -470,6 +472,7 @@
 
             try {
                 var params = inputToUri('name');
+                params += "&" + inputToUri('captcha-id');
                 params += "&" + inputToUri('captcha');
                 params += "&" + inputToUri('email');
                 params += "&" + inputToUri('website');

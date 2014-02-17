@@ -202,6 +202,7 @@ func (td *TestData) rollback() {
 }
 
 func (td *TestData) insertCommenter(name, email, website, ip string) (id int64, err error) {
+    td.pushCall(name)
     return
 }
 
@@ -771,6 +772,54 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
         t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
+}
+
+func TestDetectedLtLanguageCommentApprove(t *testing.T) {
+    defer test_data.reset()
+    temp := DetectLanguage
+    DetectLanguage = func(string) string {
+        return `"lt"`
+    }
+    url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt"
+    respJson := curl(url)
+    var resp map[string]interface{}
+    err := json.Unmarshal([]byte(respJson), &resp)
+    if err != nil {
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+    }
+    T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
+    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
+        {(*TestData).postId, ""},
+        {(*TestData).postId, ""},
+        {(*TestData).insertCommenter, "UnknownCommenter"}})
+    DetectLanguage = temp
+}
+
+func TestUndetectedLanguageCommentDismiss(t *testing.T) {
+    defer test_data.reset()
+    url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt&captcha-id=666"
+    respJson := curl(url)
+    var resp map[string]interface{}
+    err := json.Unmarshal([]byte(respJson), &resp)
+    if err != nil {
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+    }
+    T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
+    test_data.expect(t, (*TestData).postId, "")
+}
+
+func TestCorrectCaptchaReply(t *testing.T) {
+    defer test_data.reset()
+    url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt&captcha-id=666&captcha=dvylika"
+    respJson := curl(url)
+    var resp map[string]interface{}
+    err := json.Unmarshal([]byte(respJson), &resp)
+    if err != nil {
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+    }
+    T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
+    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
+        {(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 
 func TestRssFeed(t *testing.T) {

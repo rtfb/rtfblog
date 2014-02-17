@@ -403,11 +403,12 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 
 func wrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string) {
     var response = map[string]interface{}{
-        "status":  status,
-        "name":    req.FormValue("name"),
-        "email":   req.FormValue("email"),
-        "website": req.FormValue("website"),
-        "body":    req.FormValue("text"),
+        "status":     status,
+        "captcha-id": "666",
+        "name":       req.FormValue("name"),
+        "email":      req.FormValue("email"),
+        "website":    req.FormValue("website"),
+        "body":       req.FormValue("text"),
     }
     b, err := json.Marshal(response)
     if err != nil {
@@ -455,35 +456,36 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     name := req.FormValue("name")
     email := req.FormValue("email")
     website := req.FormValue("website")
+    body := req.FormValue("text")
     commenterId, err := data.commenter(name, email, website, ip)
     redir := ""
     if err == nil {
         // This is a returning commenter, pass his comment through:
-        commentUrl, err := PublishComment(postId, commenterId, req.FormValue("text"))
+        commentUrl, err := PublishComment(postId, commenterId, body)
         if err != nil {
             InternalError(w, req, "Server Error: "+err.Error())
             return err
         }
         redir = "/" + refUrl + commentUrl
     } else if err == sql.ErrNoRows {
-        body := req.FormValue("text")
-        lang := detectLanguageWithTimeout(body)
-        log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
-        logger.Println(log)
-        if lang == "\"lt\"" {
-            commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
-            if err != nil {
-                InternalError(w, req, "Server Error: "+err.Error())
-                return err
-            }
-            redir = "/" + refUrl + commentUrl
-        } else {
-            captcha := req.FormValue("captcha")
-            if captcha == "" {
+        captchaId := req.FormValue("captcha-id")
+        if captchaId == "" {
+            lang := detectLanguageWithTimeout(body)
+            log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
+            logger.Println(log)
+            if lang == "\"lt\"" {
+                commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
+                if err != nil {
+                    InternalError(w, req, "Server Error: "+err.Error())
+                    return err
+                }
+                redir = "/" + refUrl + commentUrl
+            } else {
                 wrongCaptchaReply(w, req, "showcaptcha")
                 return nil
             }
-            if captcha != "dvylika" {
+        } else {
+            if req.FormValue("captcha") != "dvylika" {
                 wrongCaptchaReply(w, req, "rejected")
                 return nil
             } else {
