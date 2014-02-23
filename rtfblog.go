@@ -249,6 +249,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         return err
     }
     passwd := req.FormValue("passwd")
+    req.Form["passwd"] = []string{"***"} // Avoid spilling password to log
     err = Decrypt([]byte(a.Passwd), []byte(passwd))
     if err == nil {
         ctx.Session.Values["adminlogin"] = "yes"

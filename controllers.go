@@ -1,8 +1,11 @@
 package main
 
 import (
+    "bytes"
     "fmt"
     "net/http"
+    "strings"
+    "time"
 
     "github.com/goods/httpbuf"
     "github.com/gorilla/sessions"
@@ -11,6 +14,8 @@ import (
 type Handler func(http.ResponseWriter, *http.Request, *Context) error
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+    tm := time.Now().UTC()
+    defer logRequest(req, tm)
     //create the context
     ctx, err := NewContext(req)
     if err != nil {
@@ -34,6 +39,27 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
         return
     }
     buf.Apply(w)
+}
+
+func logRequest(req *http.Request, sTime time.Time) {
+    var logEntry bytes.Buffer
+    requestPath := req.URL.Path
+    duration := time.Now().Sub(sTime)
+    var client string
+    // We suppose RemoteAddr is of the form Ip:Port as specified in the Request
+    // documentation at http://golang.org/pkg/net/http/#Request
+    pos := strings.LastIndex(req.RemoteAddr, ":")
+    if pos > 0 {
+        client = req.RemoteAddr[0:pos]
+    } else {
+        client = req.RemoteAddr
+    }
+    fmt.Fprintf(&logEntry, "%s - \033[32;1m %s %s\033[0m - %v", client,
+        req.Method, requestPath, duration)
+    if len(req.Form) > 0 {
+        fmt.Fprintf(&logEntry, " - \033[37;1mParams: %v\033[0m\n", req.Form)
+    }
+    logger.Print(logEntry.String())
 }
 
 //InternalError is what is called when theres an error processing something
