@@ -174,7 +174,11 @@ func (td *TestData) allComments() []*CommentWithPostTitle {
 }
 
 func (td *TestData) author(username string) (*Author, error) {
-    return test_author, nil
+    if username == test_author.UserName {
+        return test_author, nil
+    } else {
+        return nil, sql.ErrNoRows
+    }
 }
 
 func (td *TestData) deleteComment(id string) bool {
@@ -424,6 +428,8 @@ func TestLogin(t *testing.T) {
 
 func TestBadLogin(t *testing.T) {
     html := loginWithCred("wronguser", "wrongpasswd")
+    mustContain(t, html, "Login failed")
+    html = loginWithCred("testuser", "wrongpasswd")
     mustContain(t, html, "Login failed")
 }
 
