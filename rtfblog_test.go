@@ -853,6 +853,20 @@ func TestNewPostShowsEmptyForm(t *testing.T) {
     assertElem(t, bodyTextArea, "textarea")
 }
 
+func TestGetUnknownKeyFromConfigReturnsEmptyString(t *testing.T) {
+    val := conf.Get("unknown-key")
+    if val != "" {
+        t.Fatalf("val should be empty: %+v", val)
+    }
+}
+
+func TestLoadUnexistantConfig(t *testing.T) {
+    c := loadConfig("unexistant-file")
+    if len(c) != 0 {
+        t.Fatalf("Config should be empty: %+v", c)
+    }
+}
+
 func query(t *testing.T, url, query string) []*html.Node {
     nodes := query0(t, url, query)
     if len(nodes) == 0 {

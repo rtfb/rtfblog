@@ -43,7 +43,6 @@ func (c *SrvConfig) Get(key string) string {
 func loadConfig(path string) (config SrvConfig) {
     b, err := ioutil.ReadFile(path)
     if err != nil {
-        println("readconf: " + err.Error())
         return SrvConfig{}
     }
     err = json.Unmarshal(b, &config)
