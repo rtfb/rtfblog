@@ -9,6 +9,7 @@ GOFILES=\
 	models.go\
 	controllers.go\
 	nlp.go\
+	captcha.go\
 	dbtool/dbtool.go\
 	dbtool/b2e-import.go\
 

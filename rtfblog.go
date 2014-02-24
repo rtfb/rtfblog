@@ -123,6 +123,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         tmplData := MkBasicData(ctx, 0, 0)
         tmplData["PageTitle"] = post.Title
         tmplData["entry"] = post
+        tmplData["CaptchaHtml"] = CaptchaHtml()
         render(w, "post", tmplData)
     } else {
         return PerformStatus(w, req, http.StatusNotFound)
@@ -402,36 +403,6 @@ func handleUpload(r *http.Request, p *multipart.Part) {
     return
 }
 
-func wrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string) {
-    var response = map[string]interface{}{
-        "status":     status,
-        "captcha-id": "666",
-        "name":       req.FormValue("name"),
-        "email":      req.FormValue("email"),
-        "website":    req.FormValue("website"),
-        "body":       req.FormValue("text"),
-    }
-    b, err := json.Marshal(response)
-    if err != nil {
-        logger.Println(err.Error())
-        return
-    }
-    w.Write(b)
-}
-
-func rightCaptchaReply(w http.ResponseWriter, redir string) {
-    var response = map[string]interface{}{
-        "status": "accepted",
-        "redir":  redir,
-    }
-    b, err := json.Marshal(response)
-    if err != nil {
-        logger.Println(err.Error())
-        return
-    }
-    w.Write(b)
-}
-
 func detectLanguageWithTimeout(text string) string {
     c := make(chan string, 1)
     go func() {
@@ -482,12 +453,12 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                 }
                 redir = "/" + refUrl + commentUrl
             } else {
-                wrongCaptchaReply(w, req, "showcaptcha")
+                WrongCaptchaReply(w, req, "showcaptcha")
                 return nil
             }
         } else {
-            if req.FormValue("captcha") != "dvylika" {
-                wrongCaptchaReply(w, req, "rejected")
+            if !CheckCaptcha(req.FormValue("captcha")) {
+                WrongCaptchaReply(w, req, "rejected")
                 return nil
             } else {
                 commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
@@ -500,14 +471,14 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         }
     } else {
         logger.Println("err: " + err.Error())
-        wrongCaptchaReply(w, req, "rejected")
+        WrongCaptchaReply(w, req, "rejected")
         return nil
     }
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
         go SendEmail(name, email, website, req.FormValue("text"), url, refUrl)
     }
-    rightCaptchaReply(w, redir)
+    RightCaptchaReply(w, redir)
     return nil
 }
 
