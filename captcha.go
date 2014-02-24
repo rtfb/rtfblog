@@ -3,6 +3,8 @@ package main
 import (
     "encoding/json"
     "net/http"
+
+    "github.com/lye/mustache"
 )
 
 func CheckCaptcha(input string) bool {
@@ -10,22 +12,9 @@ func CheckCaptcha(input string) bool {
 }
 
 func CaptchaHtml() string {
-    html := `<p>
-My Nazi spam-filter presumes everybody is a bot.<br />
-Please solve this captcha to prove you're not:</p>
-<input id="captcha-id" name="captcha-id" type="hidden" value="" />
-<p class="captcha-prompt">
-    8 + 4 =
-    <input
-        id="captcha-input"
-        class="text"
-        name="captcha"
-        type="text"
-        style="display: inline"
-        placeholder="lietuviškai, žodžiu"
-        />
-</p>`
-    return html
+    return mustache.RenderFile("tmpl/captcha.mustache", map[string]interface{}{
+        "CaptchaTask": "8 + 4 =",
+    })
 }
 
 func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string) {
