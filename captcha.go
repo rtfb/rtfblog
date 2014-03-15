@@ -2,6 +2,7 @@ package main
 
 import (
     "encoding/json"
+    "fmt"
     "math/rand"
     "net/http"
 
@@ -15,20 +16,43 @@ type CaptchaTask struct {
 }
 
 var (
-    nextTask int = 0
-    CaptchaTasks = []CaptchaTask{{
-        Task:   "8 + 4 =",
-        Id:     "666",
-        Answer: "dvylika",
-    }}
+    nextTask     int = 0
+    CaptchaTasks []CaptchaTask
 )
+
+func init() {
+    answers := []string{
+        "vienuolika",
+        "dvylika",
+        "trylika",
+        "keturiolika",
+        "penkiolika",
+        "šešiolika",
+        "septyniolika",
+        "aštuoniolika",
+        "devyniolika",
+    }
+    CaptchaTasks = make([]CaptchaTask, 0, 0)
+    for i := 2; i < 11; i++ {
+        task := CaptchaTask{
+            Task:   fmt.Sprintf("9 + %d =", i),
+            Id:     fmt.Sprintf("%d", 666+i),
+            Answer: answers[i-2],
+        }
+        CaptchaTasks = append(CaptchaTasks, task)
+    }
+}
 
 func GetTask() *CaptchaTask {
     return &CaptchaTasks[nextTask]
 }
 
 func GetTaskById(id string) *CaptchaTask {
-    // TODO: impl
+    for _, t := range CaptchaTasks {
+        if t.Id == id {
+            return &t
+        }
+    }
     return &CaptchaTasks[0]
 }
 
