@@ -816,7 +816,10 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 
 func TestCorrectCaptchaReply(t *testing.T) {
     defer test_data.reset()
-    url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt&captcha-id=666&captcha=dvylika"
+    SetNextTask(0)
+    task := GetTask()
+    captchaUrl := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.Id, task.Answer)
+    url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaUrl
     respJson := curl(url)
     var resp map[string]interface{}
     err := json.Unmarshal([]byte(respJson), &resp)
