@@ -1,0 +1,20 @@
+{{define "title"}}Login{{end}}
+{{define "extrahead"}}{{end}}
+{{define "content"}}
+<div id="header">
+    <br />
+    <h1>Login</h1>
+</div>
+<hr />
+
+<div id="content">
+    {{.Flashes}}
+    <form action="login" method="post" id="login_form">
+        <div><input class="text" name="uname" placeholder="Username" type="text" autofocus="autofocus" /></div>
+        <div><input class="text" name="passwd" placeholder="Password" type="password" /></div>
+        <div><input type="submit" value="Login" /></div>
+        <!-- <input type="hidden" name="redirect_to" value="{{.RedirectTo}}"/> -->
+    </form>
+</div>
+{{end}}
+{{define "extrascripts"}}{{end}}

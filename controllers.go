@@ -3,8 +3,11 @@ package main
 import (
     "bytes"
     "fmt"
+    "html/template"
     "net/http"
+    "path/filepath"
     "strings"
+    "sync"
     "time"
 
     "github.com/gorilla/sessions"
@@ -12,6 +15,12 @@ import (
 )
 
 type Handler func(http.ResponseWriter, *http.Request, *Context) error
+
+var (
+    cachedTemplates = map[string]*template.Template{}
+    cachedMutex     sync.Mutex
+    funcs           = template.FuncMap{}
+)
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
     tm := time.Now().UTC()
@@ -102,4 +111,19 @@ func checkPerm(handler Handler) Handler {
         handler(w, req, ctx)
         return nil
     }
+}
+
+func Tmpl(name string) *template.Template {
+    cachedMutex.Lock()
+    defer cachedMutex.Unlock()
+    if t, ok := cachedTemplates[name]; ok {
+        return t
+    }
+    t := template.New("base.html").Funcs(funcs)
+    t = template.Must(t.ParseFiles(
+        "tmpl/base.html",
+        filepath.Join("tmpl", name),
+    ))
+    cachedTemplates[name] = t
+    return t
 }

@@ -167,11 +167,9 @@ func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
             html = html + fmt.Sprintf(format, f)
         }
     }
-    render(w, "login", map[string]interface{}{
-        "PageTitle": "Login",
-        "Flashes":   html,
+    return Tmpl("login.html").Execute(w, map[string]interface{}{
+        "Flashes": html,
     })
-    return nil
 }
 
 func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
