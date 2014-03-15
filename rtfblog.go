@@ -8,6 +8,7 @@ import (
     "io"
     "io/ioutil"
     "log"
+    "math/rand"
     "mime/multipart"
     "net/http"
     "os"
@@ -124,10 +125,11 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         return nil
     }
     if post := data.post(path); post != nil {
+        SetNextTask(-1)
         tmplData := MkBasicData(ctx, 0, 0)
         tmplData["PageTitle"] = post.Title
         tmplData["entry"] = post
-        tmplData["CaptchaHtml"] = CaptchaHtml()
+        tmplData["CaptchaHtml"] = CaptchaHtml(GetTask())
         render(w, "post", tmplData)
     } else {
         return PerformStatus(w, req, http.StatusNotFound)
@@ -435,6 +437,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     body := req.FormValue("text")
     commenterId, err := data.commenter(name, email, website, ip)
     redir := ""
+    captchaId := req.FormValue("captcha-id")
     if err == nil {
         // This is a returning commenter, pass his comment through:
         commentUrl, err := PublishComment(postId, commenterId, body)
@@ -444,7 +447,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         }
         redir = "/" + refUrl + commentUrl
     } else if err == sql.ErrNoRows {
-        captchaId := req.FormValue("captcha-id")
         if captchaId == "" {
             lang := detectLanguageWithTimeout(body)
             log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
@@ -457,12 +459,13 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                 }
                 redir = "/" + refUrl + commentUrl
             } else {
-                WrongCaptchaReply(w, req, "showcaptcha")
+                WrongCaptchaReply(w, req, "showcaptcha", GetTask())
                 return nil
             }
         } else {
-            if !CheckCaptcha(req.FormValue("captcha")) {
-                WrongCaptchaReply(w, req, "rejected")
+            captchaTask := GetTaskById(captchaId)
+            if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
+                WrongCaptchaReply(w, req, "rejected", captchaTask)
                 return nil
             } else {
                 commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
@@ -475,7 +478,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         }
     } else {
         logger.Println("err: " + err.Error())
-        WrongCaptchaReply(w, req, "rejected")
+        WrongCaptchaReply(w, req, "rejected", GetTask())
         return nil
     }
     url := conf.Get("url") + conf.Get("port") + redir
@@ -600,6 +603,7 @@ func obtainConfiguration(basedir string) SrvConfig {
 
 func main() {
     //runtime.GOMAXPROCS(runtime.NumCPU())
+    rand.Seed(time.Now().UnixNano())
     basedir, _ := filepath.Split(fullPathToBinary())
     os.Chdir(basedir)
     conf = obtainConfiguration(basedir)
