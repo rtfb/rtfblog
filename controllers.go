@@ -7,8 +7,8 @@ import (
     "strings"
     "time"
 
-    "github.com/goods/httpbuf"
     "github.com/gorilla/sessions"
+    "github.com/rtfb/httpbuf"
 )
 
 type Handler func(http.ResponseWriter, *http.Request, *Context) error
