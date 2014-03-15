@@ -1,0 +1,25 @@
+{{define "title"}}{{.PageTitle}}{{end}}
+{{define "extrahead"}}{{end}}
+{{define "content"}}
+
+    {{template "header" .}}
+
+    <hr />
+    <div class="twelve columns content" id="content">
+        <p>{{.HeadingText}}</p>
+        {{range .all_entries}}
+            {{template "post-title" dict "EntryLink" . "AdminLogin" $.AdminLogin}}
+            <br />
+        {{else}}
+            <h2>No entries. This is most likely an error.</h2>
+        {{end}}
+    </div>
+
+    {{template "sidebar" .}}
+
+    <hr />
+    <div id="footer">
+    </div>
+
+{{end}}
+{{define "extrascripts"}}{{end}}

@@ -1,0 +1,26 @@
+{{define "sidebar"}}
+<div class="four columns sidebar" id="sidebar">
+<nav>
+    <p>Recent entries:</p>
+    <div>
+        {{range .sidebar_entries}}
+            <a href="/{{.Url}}">{{.Title}}</a> <br />
+        {{end}}
+    </div>
+    <a href="/archive">...</a>
+    <div style="text-align: right">
+        <a href="/feeds/rss.xml">
+            <img src="/static/rss.png"
+                 alt="RSS Feed" />
+        </a>
+    </div>
+    <br />
+    <br />
+    <img src="/static/vim_created.png" alt="Vim logo" />
+    <img src="/static/gopher.png" alt="Go logo" />
+    <div class="info" style="text-align: center">
+        Powered by <a href="http://golang.org/">Go</a>
+    </div>
+</nav>
+</div>
+{{end}}

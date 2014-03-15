@@ -2,6 +2,7 @@ package main
 
 import (
     "bytes"
+    "errors"
     "fmt"
     "html/template"
     "net/http"
@@ -19,7 +20,9 @@ type Handler func(http.ResponseWriter, *http.Request, *Context) error
 var (
     cachedTemplates = map[string]*template.Template{}
     cachedMutex     sync.Mutex
-    funcs           = template.FuncMap{}
+    funcs           = template.FuncMap{
+        "dict": dict,
+    }
 )
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -113,6 +116,21 @@ func checkPerm(handler Handler) Handler {
     }
 }
 
+func dict(values ...interface{}) (map[string]interface{}, error) {
+    if len(values)%2 != 0 {
+        return nil, errors.New("invalid dict call")
+    }
+    dict := make(map[string]interface{}, len(values)/2)
+    for i := 0; i < len(values); i += 2 {
+        key, ok := values[i].(string)
+        if !ok {
+            return nil, errors.New("dict keys must be strings")
+        }
+        dict[key] = values[i+1]
+    }
+    return dict, nil
+}
+
 func Tmpl(name string) *template.Template {
     cachedMutex.Lock()
     defer cachedMutex.Unlock()
@@ -122,6 +140,9 @@ func Tmpl(name string) *template.Template {
     t := template.New("base.html").Funcs(funcs)
     t = template.Must(t.ParseFiles(
         "tmpl/base.html",
+        "tmpl/sidebar.html",
+        "tmpl/post-title.html",
+        "tmpl/header.html",
         filepath.Join("tmpl", name),
     ))
     cachedTemplates[name] = t

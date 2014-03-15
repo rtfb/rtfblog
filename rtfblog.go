@@ -185,8 +185,7 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
     tmplData["PageTitle"] = heading
     tmplData["HeadingText"] = heading + ":"
     tmplData["all_entries"] = data.titlesByTag(tag)
-    render(w, "archive", tmplData)
-    return nil
+    return Tmpl("archive.html").Execute(w, tmplData)
 }
 
 func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -194,8 +193,7 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     tmplData["PageTitle"] = "Archive"
     tmplData["HeadingText"] = "All posts:"
     tmplData["all_entries"] = data.titles(-1)
-    render(w, "archive", tmplData)
-    return nil
+    return Tmpl("archive.html").Execute(w, tmplData)
 }
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
