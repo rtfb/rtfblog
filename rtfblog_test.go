@@ -835,6 +835,11 @@ func TestRssFeed(t *testing.T) {
     mustContain(t, xml, "<link>hello3</link>")
 }
 
+func TestRobotsTxtGetsServed(t *testing.T) {
+    robots := curl("robots.txt")
+    mustContain(t, robots, "Disallow")
+}
+
 func TestPagination(t *testing.T) {
     nodes := query0(t, "page/2", ".post-title")
     T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")

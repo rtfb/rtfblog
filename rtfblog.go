@@ -118,7 +118,12 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         render(w, "main", MkBasicData(ctx, 0, 0))
         return nil
     }
-    if post := data.post(req.URL.Path[1:]); post != nil {
+    path := req.URL.Path[1:]
+    if path == "robots.txt" {
+        http.ServeFile(w, req, "./static/robots.txt")
+        return nil
+    }
+    if post := data.post(path); post != nil {
         tmplData := MkBasicData(ctx, 0, 0)
         tmplData["PageTitle"] = post.Title
         tmplData["entry"] = post
