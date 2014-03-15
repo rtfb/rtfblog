@@ -120,7 +120,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     }
     path := req.URL.Path[1:]
     if path == "robots.txt" {
-        http.ServeFile(w, req, "./static/robots.txt")
+        http.ServeFile(w, req, filepath.Join(conf.Get("staticdir"), "robots.txt"))
         return nil
     }
     if post := data.post(path); post != nil {
@@ -390,7 +390,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
         }
     }()
     lr := &io.LimitedReader{R: p, N: MAX_FILE_SIZE + 1}
-    filename := "static/" + p.FileName()
+    filename := filepath.Join(conf.Get("staticdir"), p.FileName())
     fo, err := os.Create(filename)
     if err != nil {
         logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
@@ -516,7 +516,7 @@ func runServer(_data Data) {
     data = _data
     r := Router
     basedir, _ := filepath.Split(fullPathToBinary())
-    dir := filepath.Join(basedir, "static")
+    dir := filepath.Join(basedir, conf.Get("staticdir"))
     r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
     r.Add("GET", "/login", Handler(LoginForm)).Name("login")
     r.Add("POST", "/login", Handler(Login))
