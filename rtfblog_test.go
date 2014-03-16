@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "errors"
     "fmt"
+    "html/template"
     "io/ioutil"
     "net/http"
     "net/url"
@@ -350,7 +351,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
         },
         Author:   auth,
         Date:     date,
-        Body:     fmt.Sprintf("Body%d", i),
+        Body:     template.HTML(fmt.Sprintf("Body%d", i)),
         RawBody:  fmt.Sprintf("RawBody%d", i),
         Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
         Comments: test_comm,

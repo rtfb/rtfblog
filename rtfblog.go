@@ -5,6 +5,7 @@ import (
     "database/sql"
     "encoding/json"
     "fmt"
+    "html/template"
     "io"
     "io/ioutil"
     "log"
@@ -68,7 +69,8 @@ func xtractReferer(req *http.Request) string {
     return referer[strings.LastIndex(referer, "/")+1:]
 }
 
-func listOfPages(numPosts, currPage int) (list string) {
+func listOfPages(numPosts, currPage int) template.HTML {
+    list := ""
     numPages := numPosts / POSTS_PER_PAGE
     if numPosts%POSTS_PER_PAGE != 0 {
         numPages += 1
@@ -80,7 +82,7 @@ func listOfPages(numPosts, currPage int) (list string) {
             list += fmt.Sprintf("<a href=\"/page/%d\">%d</a>\n", p+1, p+1)
         }
     }
-    return
+    return template.HTML(list)
 }
 
 func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
@@ -101,7 +103,7 @@ func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
         item := feeds.Item{
             Title:       p.Title,
             Link:        &feeds.Link{Href: p.Url},
-            Description: p.Body,
+            Description: string(p.Body),
             Author:      &feeds.Author{p.Author, authorEmail},
             Created:     now,
         }
@@ -116,8 +118,7 @@ func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
 
 func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     if req.URL.Path == "/" {
-        render(w, "main", MkBasicData(ctx, 0, 0))
-        return nil
+        return Tmpl("main.html").Execute(w, MkBasicData(ctx, 0, 0))
     }
     path := req.URL.Path[1:]
     if path == "robots.txt" {
@@ -144,8 +145,7 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         err = nil
     }
     offset := (pgNo - 1) * POSTS_PER_PAGE
-    render(w, "main", MkBasicData(ctx, pgNo, offset))
-    return nil
+    return Tmpl("main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -306,7 +306,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
             Url:    url,
             Hidden: req.FormValue("hidden") == "on",
         },
-        Body: req.FormValue("text"),
+        Body: template.HTML(req.FormValue("text")),
     }
     postId, idErr := data.postId(url)
     if !data.begin() {

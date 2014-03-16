@@ -300,7 +300,8 @@ func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
                                        returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    err = insertPostSql.QueryRow(author, e.Title, date, e.Url, e.Body, e.Hidden).Scan(&id)
+    err = insertPostSql.QueryRow(author, e.Title, date, e.Url,
+        string(e.Body), e.Hidden).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
         return
@@ -313,7 +314,7 @@ func (dd *DbData) updatePost(id int64, e *Entry) bool {
                                     set title=$1, url=$2, body=$3, hidden=$4
                                     where id=$5`)
     defer updateStmt.Close()
-    _, err := updateStmt.Exec(e.Title, e.Url, e.Body, e.Hidden, id)
+    _, err := updateStmt.Exec(e.Title, e.Url, string(e.Body), e.Hidden, id)
     if err != nil {
         logger.Println(err.Error())
         return false
@@ -422,7 +423,7 @@ func queryPosts(db *sql.DB, limit, offset int,
             logger.Println(err.Error())
             continue
         }
-        entry.Body = string(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
+        entry.Body = template.HTML(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
         entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
         entry.Tags = queryTags(db, id)
         entry.Comments = queryComments(db, id)

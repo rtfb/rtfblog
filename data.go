@@ -53,7 +53,7 @@ type Entry struct {
     EntryLink
     Author   string
     Date     string
-    Body     string
+    Body     template.HTML
     RawBody  string
     Tags     []*Tag
     Comments []*Comment
@@ -71,13 +71,13 @@ func (e Entry) NumComments() int {
     return len(e.Comments)
 }
 
-func (e Entry) TagsStr() string {
+func (e Entry) TagsStr() template.HTML {
     parts := make([]string, 0)
     for _, t := range e.Tags {
         part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagUrl, t.TagName)
         parts = append(parts, part)
     }
-    return strings.Join(parts, ", ")
+    return template.HTML(strings.Join(parts, ", "))
 }
 
 func (e Entry) TagsWithUrls() string {
