@@ -331,11 +331,11 @@ func (dd *DbData) updateTags(tags []*Tag, postId int64) {
 }
 
 func (dd *DbData) author(username string) (*Author, error) {
-    row := dd.db.QueryRow(`select salt, passwd, full_name, email, www
+    row := dd.db.QueryRow(`select passwd, full_name, email, www
                            from author where disp_name=$1`, username)
     var a Author
     a.UserName = username
-    err := row.Scan(&a.Salt, &a.Passwd, &a.FullName, &a.Email, &a.Www)
+    err := row.Scan(&a.Passwd, &a.FullName, &a.Email, &a.Www)
     return &a, err
 }
 

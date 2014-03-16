@@ -19,7 +19,6 @@ type Tag struct {
 
 type Author struct {
     UserName string
-    Salt     string
     Passwd   string
     FullName string
     Email    string
