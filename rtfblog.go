@@ -212,8 +212,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     } else {
         tmplData["post"] = Entry{}
     }
-    render(w, "edit_post", tmplData)
-    return nil
+    return Tmpl("edit_post.html").Execute(w, tmplData)
 }
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {

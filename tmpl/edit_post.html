@@ -1,0 +1,183 @@
+{{define "title"}}Edit Post{{end}}
+{{define "extrahead"}}
+    <link rel="stylesheet" href="/static/css/pagedown.css">
+    <script type="text/javascript" src="/static/js/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="/static/js/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+    <style>
+    #upload-progress-section p {
+        display: block;
+        width: 240px;
+        padding: 2px 5px;
+        margin: 2px 0;
+        border: 1px inset #446;
+        border-radius: 5px;
+        background: #eee url("/static/progress.png") 100% 0 repeat-y;
+    }
+    #upload-progress-section p.success {
+        background: #0c0 none 0 0 no-repeat;
+    }
+    #upload-progress-section p.failed {
+        background: #c00 none 0 0 no-repeat;
+    }
+    </style>
+{{end}}
+{{define "content"}}
+
+    {{template "header" .}}
+
+    <hr />
+    <form
+        id="edit-post-form"
+        action="submit_post"
+        method="post"
+        >
+    <div class="twelve columns content" id="content">
+        {{with .post}}
+        <label for="post_title">Title:</label>
+        <input
+            id="post_title"
+            type="text"
+            class="text"
+            name="title"
+            value="{{.Title}}"
+            />
+        <br />
+        <label for="post_url">Url:</label>
+        <input
+            id="post_url"
+            type="text"
+            class="text"
+            name="url"
+            value="{{.Url}}"
+            />
+        <br />
+        <label for="post_tags">Tags:</label>
+        <input
+            id="post_tags"
+            type="text"
+            class="text"
+            name="tags"
+            value="{{.TagsWithUrls}}"
+            />
+        <br />
+        <input
+            id="post-hidden"
+            type="checkbox"
+            class="text"
+            name="hidden"
+            {{if $.IsHidden}}
+            checked
+            {{end}}
+            />
+        Hidden
+        <br />
+
+        <div id="upload-progress-section"></div>
+        <input type="button" value="Upload File" onclick="$('#fileid').click();" />
+
+        <label class="twelve columns" for="wmd-input">Post text:</label>
+        <div class="wmd-panel container">
+            <div class="row">
+                <div id="wmd-preview" class="wmd-preview twelve columns">
+                </div>
+            </div>
+            <div class="row">
+                <div id="wmd-button-bar">
+                </div>
+            </div>
+            <textarea
+                id="wmd-input"
+                class="wmd-input twelve columns"
+                name="text"
+                >{{.RawBody}}</textarea>
+        </div>
+        <input
+            id="submit-post-edit"
+            type="submit"
+            value="Submit"
+            />
+        <input
+            type="button"
+            onclick="deleteWithConfirm('{{.Url}}')"
+            value="Delete!"
+            />
+        <input id="fileid" type="file" name="file" style="visibility:hidden" />
+        {{end}}
+    </div>
+    </form>
+
+    {{template "sidebar" .}}
+
+    <hr />
+    <div id="footer">
+    </div>
+
+{{end}}
+{{define "extrascripts"}}
+        <script type="text/javascript">
+        (function () {
+             var converter = new Markdown.getSanitizingConverter();
+             var editor = new Markdown.Editor(converter);
+             editor.run();
+             })();
+
+        (function() {
+            var postTextarea = document.getElementById('wmd-input');
+            var uploadNo = 0;
+            var uploadSection = $('div#upload-progress-section');
+
+            $('input#fileid').change(function() {
+                var filename = $(this).val().split('\\').pop();
+                if (!filename)
+                    return;
+                var formData = new FormData($('form')[0]);
+                uploadSection.append(mkUploadHtml(filename, uploadNo));
+                $.ajax({
+                    url: 'upload_images',
+                    type: 'POST',
+                    xhr: function() {
+                        myXhr = $.ajaxSettings.xhr();
+                        if (myXhr.upload) {
+                            var progrFunc = function(e) {
+                                if (e.lengthComputable) {
+                                    var p = $('#progress_' + uploadNo)[0];
+                                    var pc = parseInt(100 - (e.loaded / e.total * 100));
+                                    p.style.backgroundPosition = pc + "% 0";
+                                }
+                            }
+                            myXhr.upload.addEventListener('progress', progrFunc, false);
+                        }
+                        return myXhr;
+                    },
+                    beforeSend: function() {
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        postTextarea.innerHTML += "\n" + data;
+                    },
+                    error: function() {
+                        $('#progress_' + uploadNo).html(xhr.responseText);
+                    },
+                    data: formData,
+                    //Options to tell JQuery not to process data or worry about content-type
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+                uploadNo += 1;
+            });
+        })();
+
+        function mkUploadHtml(filename, uploadNo) {
+            return '<p id="progress_' + (uploadNo + 1) + '">' + filename + '</p>';
+        }
+
+        function deleteWithConfirm(postUrl) {
+            if (confirm('You are about to delete this post!\nThis cannot be undone!')) {
+                var url = "/delete_post?id=" + postUrl;
+                window.open(url, '_self', false);
+            }
+        }
+        </script>
+{{end}}

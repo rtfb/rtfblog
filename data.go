@@ -59,19 +59,19 @@ type Entry struct {
     Comments []*Comment
 }
 
-func (e *Entry) HasTags() bool {
+func (e Entry) HasTags() bool {
     return len(e.Tags) > 0
 }
 
-func (e *Entry) HasComments() bool {
+func (e Entry) HasComments() bool {
     return len(e.Comments) > 0
 }
 
-func (e *Entry) NumComments() int {
+func (e Entry) NumComments() int {
     return len(e.Comments)
 }
 
-func (e *Entry) TagsStr() string {
+func (e Entry) TagsStr() string {
     parts := make([]string, 0)
     for _, t := range e.Tags {
         part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagUrl, t.TagName)
@@ -80,7 +80,7 @@ func (e *Entry) TagsStr() string {
     return strings.Join(parts, ", ")
 }
 
-func (e *Entry) TagsWithUrls() string {
+func (e Entry) TagsWithUrls() string {
     parts := make([]string, 0)
     for _, t := range e.Tags {
         part := fmt.Sprintf("%s", t.TagName)
