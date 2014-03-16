@@ -4,6 +4,7 @@ import (
     "crypto/md5"
     "database/sql"
     "fmt"
+    "html/template"
     "strings"
     "time"
 
@@ -219,7 +220,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
         hash.Write([]byte(strings.ToLower(comment.Email)))
         comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
         comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-        comment.Body = string(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
+        comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
         comments = append(comments, comment)
     }
     return comments
@@ -490,7 +491,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
         hash.Write([]byte(strings.ToLower(comment.Email)))
         comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
         comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-        comment.Body = string(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
+        comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
         comments = append(comments, comment)
     }
     return comments

@@ -198,10 +198,8 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     tmplData := MkBasicData(ctx, 0, 0)
-    tmplData["PageTitle"] = "All Comments"
     tmplData["all_comments"] = data.allComments()
-    render(w, "all_comments", tmplData)
-    return nil
+    return Tmpl("all_comments.html").Execute(w, tmplData)
 }
 
 func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {

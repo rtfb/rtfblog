@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "html/template"
     "strings"
 )
 
@@ -31,7 +32,7 @@ type Comment struct {
     EmailHash string
     Website   string
     Ip        string
-    Body      string
+    Body      template.HTML
     RawBody   string
     Time      string
     CommentId string

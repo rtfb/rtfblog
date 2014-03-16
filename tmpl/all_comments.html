@@ -1,0 +1,69 @@
+{{define "title"}}All comments{{end}}
+{{define "extrahead"}}
+    <style>
+        .two-paragraphs-excerpt > p:nth-child(n+3) {
+            display:none;
+        }
+    </style>
+{{end}}
+{{define "content"}}
+
+    {{template "header" .}}
+
+    <hr />
+    <div class="twelve columns content" id="content">
+        <p>All comments:</p>
+        {{range .all_comments}}
+        <div id="comment">
+            <div id="commenter">
+                <strong>
+                    {{.Name}}
+                </strong>
+                &lt;<a href="mailto:{{.Email}}">{{.Email}}</a>&gt; <br />
+                <strong>
+                    {{if .Website}}
+                    <a href="{{.Website}}">{{.Website}}</a> <br />
+                    {{end}}
+                </strong>
+                <a
+                    href="{{.Url}}#comment-{{.CommentId}}"
+                    name="comment-{{.CommentId}}"
+                    >{{.Time}}</a> <br />
+            </div>
+            <div class="two-paragraphs-excerpt user-supplied-text">
+                {{.Body}}
+            </div>
+            <input
+                id="delete-comment-button"
+                type="button"
+                class="inline"
+                onclick="deleteWithConfirm({{.CommentId}}, 'all_comments')"
+                value="Delete"
+                />
+            Posted in:
+            <a id="post" href="{{.Url}}">{{.Title}}</a>
+        </div>
+        <hr />
+        {{else}}
+            <h2>No comments. This is most likely an error.</h2>
+        {{end}}
+    </div>
+
+    {{template "sidebar" .}}
+
+    <hr />
+    <div id="footer">
+    </div>
+
+{{end}}
+{{define "extrascripts"}}
+        <script type="text/javascript">
+        function deleteWithConfirm(id, redirectTo) {
+            if (confirm('You are about to delete this comment!\nThis cannot be undone!')) {
+                var url = "/delete_comment?id=" + id
+                          + "&action=delete&redirect_to=" + redirectTo;
+                window.open(url, '_self', false);
+            }
+        }
+        </script>
+{{end}}
