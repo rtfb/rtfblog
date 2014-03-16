@@ -149,10 +149,7 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    tmplData := MkBasicData(ctx, 0, 0)
-    tmplData["PageTitle"] = "Admin Console"
-    render(w, "admin", tmplData)
-    return nil
+    return Tmpl("admin.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
 func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
