@@ -299,7 +299,7 @@ func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
                                        returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    err = insertPostSql.QueryRow(e.Author, e.Title, date, e.Url, e.Body, e.Hidden).Scan(&id)
+    err = insertPostSql.QueryRow(author, e.Title, date, e.Url, e.Body, e.Hidden).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
         return
