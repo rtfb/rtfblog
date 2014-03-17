@@ -83,8 +83,8 @@ func InternalError(w http.ResponseWriter, req *http.Request, err string) error {
 //PerformStatus runs the passed in status on the request and calls the appropriate block
 func PerformStatus(w http.ResponseWriter, req *http.Request, status int) error {
     if status == 404 || status == 403 {
-        render(w, fmt.Sprintf("%d", status), nil)
-        return nil
+        html := fmt.Sprintf("%d.html", status)
+        return Tmpl(html).Execute(w, map[string]interface{}{})
     }
     w.Write([]byte(fmt.Sprintf("Error %d", status)))
     return nil

@@ -22,7 +22,6 @@ import (
     "github.com/gorilla/pat"
     "github.com/gorilla/sessions"
     _ "github.com/lib/pq"
-    "github.com/lye/mustache"
     email "github.com/ungerik/go-mail"
 )
 
@@ -53,11 +52,6 @@ func loadConfig(path string) (config SrvConfig) {
         return SrvConfig{}
     }
     return
-}
-
-func render(w http.ResponseWriter, tmpl string, data map[string]interface{}) {
-    html := mustache.RenderFile(fmt.Sprintf("tmpl/%s.html.mustache", tmpl), data)
-    w.Write([]byte(html))
 }
 
 func xtractReferer(req *http.Request) string {
