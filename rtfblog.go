@@ -131,7 +131,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         tmplData["PageTitle"] = post.Title
         tmplData["entry"] = post
         tmplData["CaptchaHtml"] = CaptchaHtml(GetTask())
-        render(w, "post", tmplData)
+        return Tmpl("post.html").Execute(w, tmplData)
     } else {
         return PerformStatus(w, req, http.StatusNotFound)
     }

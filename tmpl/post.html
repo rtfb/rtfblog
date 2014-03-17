@@ -1,281 +1,271 @@
-<!doctype html>
-<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
-<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
-<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
-<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>{{{PageTitle}}}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="/static/css/base.css">
-        <link rel="stylesheet" href="/static/css/skeleton.css">
-        <link rel="stylesheet" href="/static/css/pagedown.css">
-        <link rel="stylesheet" href="/static/css/speech-bubble.css">
-        <script type="text/javascript" src="/static/js/Markdown.Converter.js"></script>
-        <script type="text/javascript" src="/static/js/Markdown.Sanitizer.js"></script>
-        <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
-        <style type="text/css">
-            .comment-body-container * img {
-                max-height: 500px;
-                max-width: 500px;
-            }
-            .comment-container {
-                position: relative;
-            }
-            .bubble-container {
-                position: relative;
-                left: -30px;
-                float: right;
-            }
-            .commenter-avatar {
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .avatar-container {
-                margin: 1em 0 3em;
-            }
-            .commenter {
-                position: relative;
-                vertical-align: bottom;
-                line-height: 1.1em;
-                margin-bottom: 0.5em;
-            }
-            a.dimmed {
-                color: gray;
-            }
-            input[type="button"].inline {
-                margin-bottom: 0px;
-                padding: 4px 10px;
-                vertical-align: text-bottom;
-            }
-            #post-body * code {
-                font-family: Consolas,monospace
-            }
-            #post-body * img {
-                max-width: 100%;
-            }
-            .user-supplied-text * a {
-                color: #11a;
-            }
-            .shadow {
-                -moz-box-shadow: inset 0 0 10px #000000;
-                -webkit-box-shadow: inset 0 0 10px #000000;
-                box-shadow: inset 0 0 10px #000000;
-                border-radius: 3px;
-                -moz-border-radius: 3px;
-                -webkit-border-radius: 3px;
-                display: inline-block
-            }
-            .shadow img {
-                z-index: -1;
-                border-radius: 3px;
-                -moz-border-radius: 3px;
-                -webkit-border-radius: 3px;
-                position: relative
-            }
-            .speech-bubble code {
-                font: 12px Monaco, "Lucida Console", "Courier New", "Courier", monospace;
-                display: block;
-                overflow: auto;
-            }
-            .speech-bubble h1,
-            .speech-bubble h2,
-            .speech-bubble h3 {
-                font-size: 21px;
-                line-height: 30px;
-                margin-bottom: 4px;
-            }
-            .wmd-preview h1,
-            .wmd-preview h2,
-            .wmd-preview h3 {
-                font-size: 21px;
-                line-height: 30px;
-                margin-bottom: 4px;
-            }
-            /*
-            http://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
-            */
-            .speech-bubble p {
-                /* Non standard for webkit */
-                word-break: break-word;
+{{define "title"}}{{.PageTitle}}{{end}}
+{{define "extrahead"}}
+    <link rel="stylesheet" href="/static/css/pagedown.css">
+    <link rel="stylesheet" href="/static/css/speech-bubble.css">
+    <script type="text/javascript" src="/static/js/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="/static/js/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
+    <style type="text/css">
+        .comment-body-container * img {
+            max-height: 500px;
+            max-width: 500px;
+        }
+        .comment-container {
+            position: relative;
+        }
+        .bubble-container {
+            position: relative;
+            left: -30px;
+            float: right;
+        }
+        .commenter-avatar {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .avatar-container {
+            margin: 1em 0 3em;
+        }
+        .commenter {
+            position: relative;
+            vertical-align: bottom;
+            line-height: 1.1em;
+            margin-bottom: 0.5em;
+        }
+        a.dimmed {
+            color: gray;
+        }
+        input[type="button"].inline {
+            margin-bottom: 0px;
+            padding: 4px 10px;
+            vertical-align: text-bottom;
+        }
+        #post-body * code {
+            font-family: Consolas,monospace
+        }
+        #post-body * img {
+            max-width: 100%;
+        }
+        .user-supplied-text * a {
+            color: #11a;
+        }
+        .shadow {
+            -moz-box-shadow: inset 0 0 10px #000000;
+            -webkit-box-shadow: inset 0 0 10px #000000;
+            box-shadow: inset 0 0 10px #000000;
+            border-radius: 3px;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            display: inline-block
+        }
+        .shadow img {
+            z-index: -1;
+            border-radius: 3px;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            position: relative
+        }
+        .speech-bubble code {
+            font: 12px Monaco, "Lucida Console", "Courier New", "Courier", monospace;
+            display: block;
+            overflow: auto;
+        }
+        .speech-bubble h1,
+        .speech-bubble h2,
+        .speech-bubble h3 {
+            font-size: 21px;
+            line-height: 30px;
+            margin-bottom: 4px;
+        }
+        .wmd-preview h1,
+        .wmd-preview h2,
+        .wmd-preview h3 {
+            font-size: 21px;
+            line-height: 30px;
+            margin-bottom: 4px;
+        }
+        /*
+        http://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
+        */
+        .speech-bubble p {
+            /* Non standard for webkit */
+            word-break: break-word;
 
-                -webkit-hyphens: auto;
-                -moz-hyphens: auto;
-                hyphens: auto;
-            }
-            .captcha-alert-box {
-                background-color: #faafb4;
-                -webkit-border-radius: 5px;
-                -moz-border-radius: 5px;
-                border-radius: 5px;
-                padding: 0 4px;
-                text-align: center;
-                visibility: hidden;
-            }
-            .captcha-alert-box input {
-                margin: 8px 0;
-            }
-            .captcha-alert-box p {
-                margin: 0;
-                padding-top: 4px;
-            }
-            .captcha-prompt {
-                margin: 0;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            {{> header}}
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+        }
+        .captcha-alert-box {
+            background-color: #faafb4;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            padding: 0 4px;
+            text-align: center;
+            visibility: hidden;
+        }
+        .captcha-alert-box input {
+            margin: 8px 0;
+        }
+        .captcha-alert-box p {
+            margin: 0;
+            padding-top: 4px;
+        }
+        .captcha-prompt {
+            margin: 0;
+        }
+    </style>
+{{end}}
+{{define "content"}}
 
-            <hr />
-            <div class="twelve columns content" id="content">
-{{#entry}}
-<h3 class="strong twelve columns container">
-{{> post-title}}
-</h3>
-{{> author}}
-<hr />
-<div id="post-body" class="user-supplied-text nine columns container">{{{Body}}}</div>
-<div class="three columns container">&nbsp;</div>
-    <div class="twelve columns container">
-    {{#HasTags}}
-    <div class="nine columns alpha" id="tags">
-    <strong>Tags:</strong>
-    {{/HasTags}}
-    {{{TagsStr}}}
-    {{#HasTags}}
-    <br />
-    <br />
-    </div>
-    {{/HasTags}}
-    {{^HasTags}}
-    <div class="nine columns alpha">
-        &nbsp;
-    </div>
-    {{/HasTags}}
-    <div class="three columns omega">
-        &nbsp;
-    </div>
-    </div>
+    {{template "header" .}}
 
-    <div class="twelve columns container" id="comments">
-        {{#HasComments}}
+    {{$AdminLogin := .AdminLogin}}
+    <hr />
+    <div class="twelve columns content" id="content">
+        {{with .entry}}
+        <h3 class="strong twelve columns container">
+        {{template "post-title" dict "EntryLink" . "AdminLogin" $.AdminLogin}}
+        </h3>
+        {{template "author" .}}
+        <hr />
+        <div id="post-body" class="user-supplied-text nine columns container">{{.Body}}</div>
+        <div class="three columns container">&nbsp;</div>
+        <div class="twelve columns container">
+        {{if .HasTags}}
+        <div class="nine columns alpha" id="tags">
+        <strong>Tags:</strong>
+        {{end}}
+        {{.TagsStr}}
+        {{if .HasTags}}
+        <br />
+        <br />
+        </div>
+        {{else}}
         <div class="nine columns alpha">
-            <strong>{{NumComments}} Comments:</strong>
+        &nbsp;
+        </div>
+        {{end}}
+        <div class="three columns omega">
+        &nbsp;
+        </div>
+        </div>
+
+        <div class="twelve columns container" id="comments">
+        {{if .HasComments}}
+        <div class="nine columns alpha">
+            <strong>{{.NumComments}} Comments:</strong>
         </div>
         <hr />
         <div class="twelve columns">
-            {{#Comments}}
+            {{$post := .}}
+            {{range .Comments}}
             <div class="comment-container">
                 <div class="avatar-container two columns alpha">
                     <div class="shadow">
                         <img
                             class="commenter-avatar"
                             alt="avatar"
-                            src="http://www.gravatar.com/avatar/{{EmailHash}}?d=mm" />
+                            src="http://www.gravatar.com/avatar/{{.EmailHash}}?d=mm" />
                     </div>
                 </div>
                 <div class="bubble-container ten columns omega">
-                    <div id="comment-text-{{CommentId}}"
+                    <div id="comment-text-{{.CommentId}}"
                         class="comment-body-container speech-bubble left"
-                        {{#AdminLogin}}
-                        onclick="toggleEdit('{{CommentId}}')"
-                        {{/AdminLogin}}
+                        {{if $AdminLogin}}
+                        onclick="toggleEdit('{{.CommentId}}')"
+                        {{end}}
                         >
                         <div class="commenter">
                             <p>
                             <strong>
-                                {{#Website}}
-                                <a href="{{Website}}">{{Name}}</a>
-                                {{/Website}}
-                                {{^Website}}
-                                {{Name}}
-                                {{/Website}}
+                                {{if .Website}}
+                                <a href="{{.Website}}">{{.Name}}</a>
+                                {{else}}
+                                {{.Name}}
+                                {{end}}
                             </strong>
-                            {{#AdminLogin}}
-                            &lt;<a href="mailto:{{Email}}">{{Email}}</a>&gt;
-                            {{/AdminLogin}}
+                            {{if $AdminLogin}}
+                            &lt;<a href="mailto:{{.Email}}">{{.Email}}</a>&gt;
+                            {{end}}
                             <br />
-                            <span id="comment-{{CommentId}}">
-                                <a class="dimmed" href="#comment-{{CommentId}}">{{Time}}</a><br />
+                            <span id="comment-{{.CommentId}}">
+                                <a class="dimmed" href="#comment-{{.CommentId}}">{{.Time}}</a><br />
                             </span>
                             </p>
                         </div>
                         <div class="user-supplied-text">
-                            {{{Body}}}
+                            {{.Body}}
                         </div>
                     </div>
                 </div>
-                {{#AdminLogin}}
+                {{if $AdminLogin}}
                 <form
                     id="edit-comment-form"
-                    action="moderate_comment?action=edit&amp;redirect_to={{Url}}"
+                    action="moderate_comment?action=edit&amp;redirect_to={{$post.Url}}"
                     method="post"
                     >
                     <div class="twelve columns">
                         <textarea
-                            id="edit-comment-{{CommentId}}"
+                            id="edit-comment-{{.CommentId}}"
                             style="display: none; width: 100%;"
                             name="edit-comment-text"
-                            >{{{RawBody}}}</textarea>
+                            >{{.RawBody}}</textarea>
                     </div>
                     <div class="eight columns alpha">
                         <input
                             type="hidden"
                             name="id"
-                            value="{{CommentId}}"
+                            value="{{.CommentId}}"
                             />
                         <input
-                            id="submit-comment-{{CommentId}}"
+                            id="submit-comment-{{.CommentId}}"
                             type="button"
                             style="display: none;"
-                            onclick="submit({{CommentId}}, '{{Url}}')"
+                            onclick="submit({{.CommentId}}, '{{$post.Url}}')"
                             value="Submit"
                             />
                         <input
-                            id="cancel-edit-comment-{{CommentId}}"
+                            id="cancel-edit-comment-{{.CommentId}}"
                             type="button"
                             style="display: none;"
-                            onclick="cancel({{CommentId}})"
+                            onclick="cancel({{.CommentId}})"
                             value="Cancel"
                             />
                         &nbsp;
                     </div>
                     <div id="comment-admin" style="text-align: right" class="four columns omega">
                         <input
-                            id="delete-comment-button-{{CommentId}}"
+                            id="delete-comment-button-{{.CommentId}}"
                             type="button"
-                            onclick="deleteWithConfirm({{CommentId}}, '{{Url}}')"
+                            onclick="deleteWithConfirm({{.CommentId}}, '{{$post.Url}}')"
                             value="Delete!"
                             />
                         <input
-                            id="edit-comment-button-{{CommentId}}"
+                            id="edit-comment-button-{{.CommentId}}"
                             type="button"
-                            onclick="toggleEdit({{CommentId}})"
+                            onclick="toggleEdit({{.CommentId}})"
                             value="Edit"
                             />
                     </div>
                 </form>
-                {{/AdminLogin}}
+                {{end}}
             </div>
             <br class="clear" />
-            {{/Comments}}
+            {{end}}
         </div>
-        {{/HasComments}}
-        {{^HasComments}}
+        {{else}}
         <div class="nine columns alpha">
             &nbsp;
         </div>
         <div class="three columns omega">
             <p>No comments yet</p>
         </div>
-        {{/HasComments}}
-    </div>
+        {{end}}
+        </div>
 
-    <form id="comment">
-    <div class="twelve columns container">
+        <form id="comment">
+        <div class="twelve columns container">
         <div class="row clearfix">
             <div class="four columns">
                 <input
@@ -305,7 +295,7 @@
             </div>
             <div id="captcha-alert-box"
                 class="six columns captcha-alert-box">
-                {{{CaptchaHtml}}}
+                {{$.CaptchaHtml}}
             </div>
         </div>
 
@@ -325,7 +315,7 @@
                 placeholder="Have a say"
                 ></textarea>
         </div>
-    </div>
+        </div>
         <div class="twelve columns container">
             <input
                 type="button"
@@ -333,15 +323,17 @@
                 onclick="submitComment()"
                 />
         </div>
-    </form>
-{{/entry}}
-            </div>
+        </form>
+        {{end}}
+    </div>
 
-            {{> sidebar}}
+    {{template "sidebar" .}}
 
-            <hr />
-            <div id="footer"></div>
-        </div>
+    <hr />
+    <div id="footer"></div>
+
+{{end}}
+{{define "extrascripts"}}
         <script type="text/javascript">
         (function () {
              var converter = new Markdown.getSanitizingConverter();
@@ -349,7 +341,7 @@
              editor.run();
              })();
 
-        {{#AdminLogin}}
+        {{if .AdminLogin}}
         function showElement(id, visible) {
             elem = document.getElementById(id);
             elem.style.display = visible ? 'inline-block' : 'none';
@@ -393,7 +385,7 @@
                 window.open(url, '_self', false);
             }
         }
-        {{/AdminLogin}}
+        {{end}}
 
         function inputToUri(fieldName) {
             var rawValue = document.getElementsByName(fieldName)[0].value;
@@ -467,5 +459,4 @@
             }
         }
         </script>
-    </body>
-</html>
+{{end}}
