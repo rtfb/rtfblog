@@ -239,6 +239,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 }
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+    data.hiddenPosts(false)
     produceFeedXml(w, data.posts(NUM_FEED_ITEMS, 0))
     return nil
 }

@@ -710,6 +710,18 @@ func TestHiddenPosts(t *testing.T) {
     }
 }
 
+func TestHiddenPostDoesNotAppearInRss(t *testing.T) {
+    bak := test_posts
+    test_posts = make([]*Entry, 0)
+    test_posts = append(test_posts, mkTestEntry(1, false))
+    test_posts = append(test_posts, mkTestEntry(1000, true))
+    test_posts = append(test_posts, mkTestEntry(2, false))
+    login()
+    xml := curl("feeds/rss.xml")
+    mustNotContain(t, xml, "hello1000")
+    test_posts = bak
+}
+
 func TestHiddenPostAccess(t *testing.T) {
     login()
     html := curl("hello1001")
