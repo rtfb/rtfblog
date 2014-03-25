@@ -144,6 +144,7 @@ func Tmpl(name string) *template.Template {
         "tmpl/post-title.html",
         "tmpl/header.html",
         "tmpl/author.html",
+        "tmpl/captcha.html",
         filepath.Join("tmpl", name),
     ))
     cachedTemplates[name] = t

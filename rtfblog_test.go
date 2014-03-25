@@ -491,6 +491,12 @@ func checkAuthorSection(t T, node *html.Node) {
 
 func TestEveryEntryHasAuthor(t *testing.T) {
     for _, e := range test_posts {
+        mustContain(t, curl(e.Url), "captcha-id")
+    }
+}
+
+func TestEveryEntryHasCaptchaSection(t *testing.T) {
+    for _, e := range test_posts {
         node := query1(t, e.Url, ".author")
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
@@ -499,6 +505,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
         checkAuthorSection(T{t}, node)
     }
 }
+
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
     for _, p := range test_posts {

@@ -5,8 +5,6 @@ import (
     "fmt"
     "math/rand"
     "net/http"
-
-    "github.com/lye/mustache"
 )
 
 type CaptchaTask struct {
@@ -65,12 +63,6 @@ func SetNextTask(task int) {
 
 func CheckCaptcha(task *CaptchaTask, input string) bool {
     return input == task.Answer
-}
-
-func CaptchaHtml(task *CaptchaTask) string {
-    return mustache.RenderFile("tmpl/captcha.mustache", map[string]interface{}{
-        "CaptchaTask": task.Task,
-    })
 }
 
 func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask) {

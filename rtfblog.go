@@ -124,7 +124,11 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         tmplData := MkBasicData(ctx, 0, 0)
         tmplData["PageTitle"] = post.Title
         tmplData["entry"] = post
-        tmplData["CaptchaHtml"] = CaptchaHtml(GetTask())
+        task := *GetTask()
+        // Initial task id has to be empty, gets filled by AJAX upon first time
+        // it gets shown
+        task.Id = ""
+        tmplData["CaptchaHtml"] = task
         return Tmpl("post.html").Execute(w, tmplData)
     } else {
         return PerformStatus(w, req, http.StatusNotFound)

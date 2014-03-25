@@ -1,0 +1,17 @@
+{{define "captcha"}}
+<p>
+My Nazi spam-filter presumes everybody is a bot.<br />
+Please solve this captcha to prove you're not:</p>
+<input id="captcha-id" name="captcha-id" type="hidden" value="{{.Id}}" />
+<p class="captcha-prompt">
+    {{.Task}}
+    <input
+        id="captcha-input"
+        class="text"
+        name="captcha"
+        type="text"
+        style="display: inline"
+        placeholder="lietuviškai, žodžiu"
+        />
+</p>
+{{end}}
