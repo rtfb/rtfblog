@@ -8,6 +8,7 @@ import (
     "html/template"
     "io/ioutil"
     "net/http"
+    "net/http/cookiejar"
     "net/url"
     "reflect"
     "regexp"
@@ -22,10 +23,6 @@ import (
     "github.com/gorilla/sessions"
 )
 
-type Jar struct {
-    cookies []*http.Cookie
-}
-
 type T struct {
     *testing.T
 }
@@ -36,8 +33,10 @@ type CallSpec struct {
 }
 
 var (
-    jar         = new(Jar)
-    tclient     = &http.Client{nil, nil, jar}
+    jar, _  = cookiejar.New(nil)
+    tclient = &http.Client{
+        Jar: jar,
+    }
     test_comm   = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
     test_posts  = make([]*Entry, 0)
     test_author = new(Author)
@@ -233,14 +232,6 @@ func (td *TestData) updatePost(id int64, e *Entry) bool {
 
 func (td *TestData) updateTags(tags []*Tag, postId int64) {
     td.pushCall(fmt.Sprintf("%d: %+v", postId, *tags[0]))
-}
-
-func (jar *Jar) SetCookies(u *url.URL, cookies []*http.Cookie) {
-    jar.cookies = cookies
-}
-
-func (jar *Jar) Cookies(u *url.URL) []*http.Cookie {
-    return jar.cookies
 }
 
 func loginWithCred(username, passwd string) string {
@@ -505,7 +496,6 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
         checkAuthorSection(T{t}, node)
     }
 }
-
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
     for _, p := range test_posts {
