@@ -13,5 +13,9 @@ if [ -d package-last ]; then
 fi
 
 mv package package-last
-mv package-tmp/package ./package
-rmdir package-tmp
+mkdir -p ./package/static
+cp ./package-last/static/* ./package/static/
+mv package-tmp/package/static/* ./package/static/
+rmdir package-tmp/package/static/
+mv package-tmp/package/* ./package/
+rm -r package-tmp
