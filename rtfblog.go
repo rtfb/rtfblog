@@ -411,6 +411,13 @@ func detectLanguageWithTimeout(text string) string {
     }
 }
 
+func normalizeWebsite(raw string) string {
+    if strings.HasPrefix(strings.ToLower(raw), "http://") {
+        return raw
+    }
+    return "http://" + raw
+}
+
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     refUrl := xtractReferer(req)
     postId, err := data.postId(refUrl)
@@ -422,7 +429,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     ip := req.RemoteAddr
     name := req.FormValue("name")
     email := req.FormValue("email")
-    website := req.FormValue("website")
+    website := normalizeWebsite(req.FormValue("website"))
     body := req.FormValue("text")
     commenterId, err := data.commenter(name, email, website, ip)
     redir := ""

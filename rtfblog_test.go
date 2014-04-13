@@ -37,7 +37,7 @@ var (
     tclient = &http.Client{
         Jar: jar,
     }
-    test_comm   = []*Comment{{"N", "@", "@h", "w", "IP", "Body", "Raw", "time", "testid"}}
+    test_comm   = []*Comment{{"N", "@", "@h", "http://w", "IP", "Body", "Raw", "time", "testid"}}
     test_posts  = make([]*Entry, 0)
     test_author = new(Author)
     test_data   TestData
@@ -211,7 +211,8 @@ func (td *TestData) insertCommenter(name, email, website, ip string) (id int64, 
 }
 
 func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
-    if name == "N" && email == "@" && website == "w" {
+    c := test_comm[0]
+    if name == c.Name && email == c.Email && website == c.Website {
         return 1, nil
     }
     return -1, sql.ErrNoRows
