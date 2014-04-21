@@ -1,5 +1,7 @@
 # rtfblog
 
+[![Build Status](https://travis-ci.org/rtfb/rtfblog.svg?branch=master)](https://travis-ci.org/rtfb/rtfblog)
+
 ## What is this?
 
 Rtfblog is a blog software that powers [my blog](http://blog.rtfb.lt), written
