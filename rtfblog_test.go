@@ -844,7 +844,8 @@ func TestCorrectCaptchaReply(t *testing.T) {
 
 func TestRssFeed(t *testing.T) {
     xml := curl("feeds/rss.xml")
-    mustContain(t, xml, "<title>rtfb&#39;s blog</title>")
+    url := conf.Get("url") + conf.Get("port")
+    mustContain(t, xml, fmt.Sprintf("<link>%s</link>", url))
     mustContain(t, xml, "<title>Hi3</title>")
     mustContain(t, xml, "<link>hello3</link>")
 }
