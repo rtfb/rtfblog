@@ -8,6 +8,9 @@ go:
     - 1.2.1
     - tip
 
+before_install:
+    - go get code.google.com/p/go-html-transform/css/selector
+
 install: go get -d -v ./... && go build -v .
 
 script: go test -v .
