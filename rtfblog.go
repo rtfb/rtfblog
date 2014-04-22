@@ -266,7 +266,7 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
     redir := req.FormValue("redirect_to")
     id := req.FormValue("id")
     if action == "delete" && !data.deleteComment(id) {
-        // TODO: log nothing to del
+        logger.Printf("DeleteComment: failed to delete comment for id %q", id)
         return nil
     }
     http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
@@ -274,8 +274,9 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 }
 
 func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    if !data.deletePost(req.FormValue("id")) {
-        // TODO: log nothing to del
+    id := req.FormValue("id")
+    if !data.deletePost(id) {
+        logger.Printf("DeletePost: failed to delete post for id %q", id)
         return nil
     }
     http.Redirect(w, req, reverse("admin"), http.StatusSeeOther)
@@ -287,7 +288,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
     text := req.FormValue("edit-comment-text")
     id := req.FormValue("id")
     if action == "edit" && !data.updateComment(id, text) {
-        // TODO: log error editing
+        logger.Printf("ModerateComment: failed to edit comment for id %q", id)
         return nil
     }
     redir := req.FormValue("redirect_to")
