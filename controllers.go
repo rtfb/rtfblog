@@ -53,21 +53,35 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
     buf.Apply(w)
 }
 
+func stripPort(s string) string {
+    idx := strings.LastIndex(s, ":")
+    if idx == -1 {
+        return s
+    }
+    return s[:idx]
+}
+
+func getIpAddress(req *http.Request) string {
+    hdrForwardedFor := req.Header.Get("X-Forwarded-For")
+    if hdrForwardedFor == "" {
+        return stripPort(req.RemoteAddr)
+    }
+    // X-Forwarded-For is potentially a list of addresses separated with ","
+    parts := strings.Split(hdrForwardedFor, ",")
+    for i, p := range parts {
+        parts[i] = strings.TrimSpace(p)
+    }
+    // TODO: should return first non-local address
+    return parts[0]
+}
+
 func logRequest(req *http.Request, sTime time.Time) {
     var logEntry bytes.Buffer
     requestPath := req.URL.Path
     duration := time.Now().Sub(sTime)
-    var client string
-    // We suppose RemoteAddr is of the form Ip:Port as specified in the Request
-    // documentation at http://golang.org/pkg/net/http/#Request
-    pos := strings.LastIndex(req.RemoteAddr, ":")
-    if pos > 0 {
-        client = req.RemoteAddr[0:pos]
-    } else {
-        client = req.RemoteAddr
-    }
-    fmt.Fprintf(&logEntry, "%s - \033[32;1m %s %s\033[0m - %v", client,
-        req.Method, requestPath, duration)
+    ip := getIpAddress(req)
+    format := "%s - \033[32;1m %s %s\033[0m - %v"
+    fmt.Fprintf(&logEntry, format, ip, req.Method, requestPath, duration)
     if len(req.Form) > 0 {
         fmt.Fprintf(&logEntry, " - \033[37;1mParams: %v\033[0m\n", req.Form)
     }
