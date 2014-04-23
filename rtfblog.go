@@ -79,8 +79,11 @@ func listOfPages(numPosts, currPage int) template.HTML {
     return template.HTML(list)
 }
 
-func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
-    url := conf.Get("url") + conf.Get("port")
+func produceFeedXml(w http.ResponseWriter, req *http.Request, posts []*Entry) {
+    url := req.Header.Get("X-Forwarded-Host")
+    if url == "" {
+        url = req.Host
+    }
     blogTitle := conf.Get("blog_title")
     descr := conf.Get("blog_descr")
     author := conf.Get("author")
@@ -96,7 +99,7 @@ func produceFeedXml(w http.ResponseWriter, posts []*Entry) {
     for _, p := range posts {
         item := feeds.Item{
             Title:       p.Title,
-            Link:        &feeds.Link{Href: p.Url},
+            Link:        &feeds.Link{Href: url + "/" + p.Url},
             Description: string(p.Body),
             Author:      &feeds.Author{p.Author, authorEmail},
             Created:     now,
@@ -228,7 +231,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     data.hiddenPosts(false)
-    produceFeedXml(w, data.posts(NUM_FEED_ITEMS, 0))
+    produceFeedXml(w, req, data.posts(NUM_FEED_ITEMS, 0))
     return nil
 }
 
