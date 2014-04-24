@@ -184,6 +184,10 @@ func scanEntryLinks(rows *sql.Rows) (links []*EntryLink) {
         }
         links = append(links, entryLink)
     }
+    err := rows.Err()
+    if err != nil {
+        logger.Println(err.Error())
+    }
     return
 }
 
@@ -222,6 +226,10 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
         comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
         comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
         comments = append(comments, comment)
+    }
+    err = data.Err()
+    if err != nil {
+        logger.Printf("error scanning comment row: %s\n", err.Error())
     }
     return comments
 }
@@ -429,6 +437,10 @@ func queryPosts(db *sql.DB, limit, offset int,
         entry.Comments = queryComments(db, id)
         entries = append(entries, entry)
     }
+    err = rows.Err()
+    if err != nil {
+        logger.Printf("error scanning post row: %s\n", err.Error())
+    }
     return
 }
 
@@ -457,6 +469,10 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
             continue
         }
         tags = append(tags, tag)
+    }
+    err = rows.Err()
+    if err != nil {
+        logger.Printf("error scanning tag row: %s\n", err.Error())
     }
     return tags
 }
@@ -494,6 +510,10 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
         comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
         comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
         comments = append(comments, comment)
+    }
+    err = data.Err()
+    if err != nil {
+        logger.Printf("error scanning comment row: %s\n", err.Error())
     }
     return comments
 }
