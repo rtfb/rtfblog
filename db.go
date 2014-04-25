@@ -253,11 +253,8 @@ func (dd *DbData) commenter(name, email, website, ip string) (id int64, err erro
 }
 
 func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, err error) {
-    id = -1
-    err = sql.ErrNoRows
     if dd.tx == nil {
-        logger.Println("DbData.insertCommenter() can only be called within xaction!")
-        return
+        return -1, fmt.Errorf("DbData.insertCommenter() can only be called within xaction!")
     }
     insertCommenter, _ := dd.tx.Prepare(`insert into commenter
                                          (name, email, www, ip)
@@ -272,11 +269,8 @@ func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, er
 }
 
 func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
-    id = -1
-    err = sql.ErrNoRows
     if dd.tx == nil {
-        logger.Println("DbData.insertComment() can only be called within xaction!")
-        return
+        return -1, fmt.Errorf("DbData.insertComment() can only be called within xaction!")
     }
     stmt, err := dd.tx.Prepare(`insert into comment
                                 (commenter_id, post_id, timestamp, body)
@@ -296,11 +290,8 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
 }
 
 func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
-    id = -1
-    err = sql.ErrNoRows
     if dd.tx == nil {
-        logger.Println("DbData.insertPost() can only be called within xaction!")
-        return
+        return -1, fmt.Errorf("DbData.insertPost() can only be called within xaction!")
     }
     insertPostSql, _ := dd.tx.Prepare(`insert into post
                                        (author_id, title, date, url, body, hidden)
@@ -335,8 +326,10 @@ func (dd *DbData) updateTags(tags []*Tag, postId int64) {
     defer delStmt.Close()
     delStmt.Exec(postId)
     for _, t := range tags {
-        tagId, _ := insertOrGetTagId(dd.tx, t)
-        updateTagMap(dd.tx, postId, tagId)
+        tagId, err := insertOrGetTagId(dd.tx, t)
+        if err == nil {
+            updateTagMap(dd.tx, postId, tagId)
+        }
     }
 }
 
@@ -546,9 +539,9 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
         return tagId, err
     default:
         logger.Printf("err: %s", err.Error())
-        return -1, sql.ErrNoRows
+        return -1, err
     }
-    return -1, sql.ErrNoRows
+    return -1, fmt.Errorf("Unexpected error in insertOrGetTagId(), should never get here.")
 }
 
 func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
