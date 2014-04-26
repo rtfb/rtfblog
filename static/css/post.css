@@ -1,0 +1,102 @@
+.comment-body-container * img {
+    max-height: 500px;
+    max-width: 500px;
+}
+.comment-container {
+    position: relative;
+}
+.bubble-container {
+    position: relative;
+    left: -30px;
+    float: right;
+}
+.commenter-avatar {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.avatar-container {
+    margin: 1em 0 3em;
+}
+.commenter {
+    position: relative;
+    vertical-align: bottom;
+    line-height: 1.1em;
+    margin-bottom: 0.5em;
+}
+a.dimmed {
+    color: gray;
+}
+input[type="button"].inline {
+    margin-bottom: 0px;
+    padding: 4px 10px;
+    vertical-align: text-bottom;
+}
+.user-supplied-text * a {
+    color: #11a;
+}
+.shadow {
+    -moz-box-shadow: inset 0 0 10px #000000;
+    -webkit-box-shadow: inset 0 0 10px #000000;
+    box-shadow: inset 0 0 10px #000000;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    display: inline-block
+}
+.shadow img {
+    z-index: -1;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    position: relative
+}
+.speech-bubble code {
+    font: 12px Monaco, "Lucida Console", "Courier New", "Courier", monospace;
+    display: block;
+    overflow: auto;
+}
+.speech-bubble h1,
+.speech-bubble h2,
+.speech-bubble h3 {
+    font-size: 21px;
+    line-height: 30px;
+    margin-bottom: 4px;
+}
+.wmd-preview h1,
+.wmd-preview h2,
+.wmd-preview h3 {
+    font-size: 21px;
+    line-height: 30px;
+    margin-bottom: 4px;
+}
+/*
+http://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
+*/
+.speech-bubble p {
+    /* Non standard for webkit */
+    word-break: break-word;
+
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+}
+.captcha-alert-box {
+    background-color: #faafb4;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 0 4px;
+    text-align: center;
+    visibility: hidden;
+}
+.captcha-alert-box input {
+    margin: 8px 0;
+}
+.captcha-alert-box p {
+    margin: 0;
+    padding-top: 4px;
+}
+.captcha-prompt {
+    margin: 0;
+}
