@@ -79,7 +79,7 @@ func listOfPages(numPosts, currPage int) template.HTML {
     return template.HTML(list)
 }
 
-func produceFeedXml(w http.ResponseWriter, req *http.Request, posts []*Entry) {
+func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
     url := req.Header.Get("X-Forwarded-Host")
     if url == "" {
         url = req.Host
@@ -231,7 +231,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     data.hiddenPosts(false)
-    produceFeedXml(w, req, data.posts(NUM_FEED_ITEMS, 0))
+    produceFeedXML(w, req, data.posts(NUM_FEED_ITEMS, 0))
     return nil
 }
 
@@ -310,21 +310,21 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         },
         Body: template.HTML(req.FormValue("text")),
     }
-    postId, idErr := data.postId(url)
+    postID, idErr := data.postId(url)
     if !data.begin() {
         InternalError(w, req, "SubmitPost, !data.begin()")
         return nil
     }
     if idErr != nil {
         if idErr == sql.ErrNoRows {
-            authorId := int64(1) // XXX: it's only me now
-            newPostId, err := data.insertPost(authorId, &e)
+            authorID := int64(1) // XXX: it's only me now
+            newPostID, err := data.insertPost(authorID, &e)
             if err != nil {
                 data.rollback()
                 InternalError(w, req, "SubmitPost, !data.insertPost: "+err.Error())
                 return err
             }
-            postId = newPostId
+            postID = newPostID
         } else {
             logger.Println("data.postId() failed: " + idErr.Error())
             data.rollback()
@@ -332,13 +332,13 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
             return idErr
         }
     } else {
-        if !data.updatePost(postId, &e) {
+        if !data.updatePost(postID, &e) {
             data.rollback()
             InternalError(w, req, "SubmitPost, !data.updatePost")
             return nil
         }
     }
-    data.updateTags(explodeTags(tagsWithUrls), postId)
+    data.updateTags(explodeTags(tagsWithUrls), postID)
     data.commit()
     http.Redirect(w, req, "/"+url, http.StatusSeeOther)
     return nil
@@ -423,8 +423,8 @@ func normalizeWebsite(raw string) string {
 }
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    refUrl := xtractReferer(req)
-    postId, err := data.postId(refUrl)
+    refURL := xtractReferer(req)
+    postId, err := data.postId(refURL)
     if err != nil {
         logger.Println("data.postId() failed: " + err.Error())
         InternalError(w, req, "Server Error: "+err.Error())
@@ -445,7 +445,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
             InternalError(w, req, "Server Error: "+err.Error())
             return err
         }
-        redir = "/" + refUrl + commentUrl
+        redir = "/" + refURL + commentUrl
     } else if err == sql.ErrNoRows {
         if captchaId == "" {
             lang := detectLanguageWithTimeout(body)
@@ -457,7 +457,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                     InternalError(w, req, "Server Error: "+err.Error())
                     return err
                 }
-                redir = "/" + refUrl + commentUrl
+                redir = "/" + refURL + commentUrl
             } else {
                 WrongCaptchaReply(w, req, "showcaptcha", GetTask())
                 return nil
@@ -473,7 +473,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                     InternalError(w, req, "Server Error: "+err.Error())
                     return err
                 }
-                redir = "/" + refUrl + commentUrl
+                redir = "/" + refURL + commentUrl
             }
         }
     } else {
@@ -483,7 +483,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     }
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
-        go SendEmail(name, email, website, req.FormValue("text"), url, refUrl)
+        go SendEmail(name, email, website, req.FormValue("text"), url, refURL)
     }
     RightCaptchaReply(w, redir)
     return nil

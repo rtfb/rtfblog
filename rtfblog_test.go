@@ -218,7 +218,7 @@ func (td *TestData) commenter(name, email, website, ip string) (id int64, err er
     return -1, sql.ErrNoRows
 }
 
-func (td *TestData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
+func (td *TestData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
     return
 }
 
@@ -231,12 +231,12 @@ func (td *TestData) updatePost(id int64, e *Entry) bool {
     return true
 }
 
-func (td *TestData) updateTags(tags []*Tag, postId int64) {
-    td.pushCall(fmt.Sprintf("%d: %+v", postId, *tags[0]))
+func (td *TestData) updateTags(tags []*Tag, postID int64) {
+    td.pushCall(fmt.Sprintf("%d: %+v", postID, *tags[0]))
 }
 
 func loginWithCred(username, passwd string) string {
-    resp, err := tclient.PostForm(localhostUrl("login"), url.Values{
+    resp, err := tclient.PostForm(localhostURL("login"), url.Values{
         "uname":  {username},
         "passwd": {passwd},
     })
@@ -302,7 +302,7 @@ func curlPost(url string) string {
     return curlParam(url, tclientPostForm)
 }
 
-func localhostUrl(u string) string {
+func localhostURL(u string) string {
     if u == "" {
         return "http://localhost:8080/"
     } else if u[0] == '/' {
@@ -312,12 +312,12 @@ func localhostUrl(u string) string {
     }
 }
 
-func tclientGet(rqUrl string) (*http.Response, error) {
-    return tclient.Get(localhostUrl(rqUrl))
+func tclientGet(rqURL string) (*http.Response, error) {
+    return tclient.Get(localhostURL(rqURL))
 }
 
-func tclientPostForm(rqUrl string) (*http.Response, error) {
-    return tclient.PostForm(localhostUrl(rqUrl), url.Values{})
+func tclientPostForm(rqURL string) (*http.Response, error) {
+    return tclient.PostForm(localhostURL(rqURL), url.Values{})
 }
 
 func mustContain(t *testing.T, page string, what string) {
@@ -631,7 +631,7 @@ func TestSubmitPost(t *testing.T) {
         "hidden": {"off"},
         "text":   {"contentzorz"},
     }
-    if r, err := tclient.PostForm(localhostUrl("submit_post"), values); err == nil {
+    if r, err := tclient.PostForm(localhostURL("submit_post"), values); err == nil {
         r.Body.Close()
     } else {
         println(err.Error())

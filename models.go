@@ -43,34 +43,34 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
     }
 }
 
-func PublishCommentWithInsert(postId int64, ip, name, email, website, body string) (string, error) {
+func PublishCommentWithInsert(postID int64, ip, name, email, website, body string) (string, error) {
     if !data.begin() {
         return "", nil
     }
-    commenterId, err := data.insertCommenter(name, email, website, ip)
+    commenterID, err := data.insertCommenter(name, email, website, ip)
     if err != nil {
         logger.Println("data.insertCommenter() failed: " + err.Error())
         data.rollback()
         return "", err
     }
-    commentId, err := data.insertComment(commenterId, postId, body)
+    commentID, err := data.insertComment(commenterID, postID, body)
     if err != nil {
         data.rollback()
         return "", err
     }
     data.commit()
-    return fmt.Sprintf("#comment-%d", commentId), nil
+    return fmt.Sprintf("#comment-%d", commentID), nil
 }
 
-func PublishComment(postId, commenterId int64, body string) (string, error) {
+func PublishComment(postID, commenterID int64, body string) (string, error) {
     if !data.begin() {
         return "", nil
     }
-    commentId, err := data.insertComment(commenterId, postId, body)
+    commentID, err := data.insertComment(commenterID, postID, body)
     if err != nil {
         data.rollback()
         return "", err
     }
     data.commit()
-    return fmt.Sprintf("#comment-%d", commentId), nil
+    return fmt.Sprintf("#comment-%d", commentID), nil
 }
