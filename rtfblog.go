@@ -424,7 +424,7 @@ func normalizeWebsite(raw string) string {
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     refURL := xtractReferer(req)
-    postId, err := data.postId(refURL)
+    postID, err := data.postId(refURL)
     if err != nil {
         logger.Println("data.postId() failed: " + err.Error())
         InternalError(w, req, "Server Error: "+err.Error())
@@ -435,45 +435,45 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     email := req.FormValue("email")
     website := normalizeWebsite(req.FormValue("website"))
     body := req.FormValue("text")
-    commenterId, err := data.commenter(name, email, website, ip)
+    commenterID, err := data.commenter(name, email, website, ip)
     redir := ""
-    captchaId := req.FormValue("captcha-id")
+    captchaID := req.FormValue("captcha-id")
     if err == nil {
         // This is a returning commenter, pass his comment through:
-        commentUrl, err := PublishComment(postId, commenterId, body)
+        commentURL, err := PublishComment(postID, commenterID, body)
         if err != nil {
             InternalError(w, req, "Server Error: "+err.Error())
             return err
         }
-        redir = "/" + refURL + commentUrl
+        redir = "/" + refURL + commentURL
     } else if err == sql.ErrNoRows {
-        if captchaId == "" {
+        if captchaID == "" {
             lang := detectLanguageWithTimeout(body)
             log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
             logger.Println(log)
             if lang == "\"lt\"" {
-                commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
+                commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
                 if err != nil {
                     InternalError(w, req, "Server Error: "+err.Error())
                     return err
                 }
-                redir = "/" + refURL + commentUrl
+                redir = "/" + refURL + commentURL
             } else {
                 WrongCaptchaReply(w, req, "showcaptcha", GetTask())
                 return nil
             }
         } else {
-            captchaTask := GetTaskById(captchaId)
+            captchaTask := GetTaskById(captchaID)
             if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
                 WrongCaptchaReply(w, req, "rejected", captchaTask)
                 return nil
             } else {
-                commentUrl, err := PublishCommentWithInsert(postId, req.RemoteAddr, name, email, website, body)
+                commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
                 if err != nil {
                     InternalError(w, req, "Server Error: "+err.Error())
                     return err
                 }
-                redir = "/" + refURL + commentUrl
+                redir = "/" + refURL + commentURL
             }
         }
     } else {

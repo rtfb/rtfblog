@@ -26,10 +26,10 @@ type Data interface {
     updateComment(id, text string) bool
     commenter(name, email, website, ip string) (id int64, err error)
     insertCommenter(name, email, website, ip string) (id int64, err error)
-    insertComment(commenterId, postId int64, body string) (id int64, err error)
+    insertComment(commenterID, postID int64, body string) (id int64, err error)
     insertPost(author int64, e *Entry) (id int64, err error)
     updatePost(id int64, e *Entry) bool
-    updateTags(tags []*Tag, postId int64)
+    updateTags(tags []*Tag, postID int64)
     begin() bool
     commit()
     rollback()
@@ -268,7 +268,7 @@ func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, er
     return
 }
 
-func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int64, err error) {
+func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
     if dd.tx == nil {
         return -1, fmt.Errorf("DbData.insertComment() can only be called within xaction!")
     }
@@ -281,7 +281,7 @@ func (dd *DbData) insertComment(commenterId, postId int64, body string) (id int6
         return
     }
     defer stmt.Close()
-    err = stmt.QueryRow(commenterId, postId, time.Now().Unix(), body).Scan(&id)
+    err = stmt.QueryRow(commenterID, postID, time.Now().Unix(), body).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert comment: " + err.Error())
         return
@@ -321,14 +321,14 @@ func (dd *DbData) updatePost(id int64, e *Entry) bool {
     return true
 }
 
-func (dd *DbData) updateTags(tags []*Tag, postId int64) {
+func (dd *DbData) updateTags(tags []*Tag, postID int64) {
     delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=$1")
     defer delStmt.Close()
-    delStmt.Exec(postId)
+    delStmt.Exec(postID)
     for _, t := range tags {
-        tagId, err := insertOrGetTagId(dd.tx, t)
+        tagID, err := insertOrGetTagID(dd.tx, t)
         if err == nil {
-            updateTagMap(dd.tx, postId, tagId)
+            updateTagMap(dd.tx, postID, tagID)
         }
     }
 }
@@ -383,9 +383,9 @@ func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []
 
 func queryPosts(db *sql.DB, limit, offset int,
     url string, includeHidden bool) (entries []*Entry, err error) {
-    postUrlWhereClause := ""
+    postURLWhereClause := ""
     if url != "" {
-        postUrlWhereClause = fmt.Sprintf("and p.url='%s'", url)
+        postURLWhereClause = fmt.Sprintf("and p.url='%s'", url)
     }
     postHiddenWhereClause := ""
     if !includeHidden {
@@ -406,7 +406,7 @@ func queryPosts(db *sql.DB, limit, offset int,
                  %s %s
                  order by p.date desc
                  %s %s`
-    query := fmt.Sprintf(queryFmt, postUrlWhereClause, postHiddenWhereClause,
+    query := fmt.Sprintf(queryFmt, postURLWhereClause, postHiddenWhereClause,
         limitClause, offsetClause)
     rows, err := db.Query(query)
     if err != nil {
@@ -437,7 +437,7 @@ func queryPosts(db *sql.DB, limit, offset int,
     return
 }
 
-func queryTags(db *sql.DB, postId int64) []*Tag {
+func queryTags(db *sql.DB, postID int64) []*Tag {
     stmt, err := db.Prepare(`select t.name, t.url
                              from tag as t, tagmap as tm
                              where t.id = tm.tag_id
@@ -447,7 +447,7 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
         return nil
     }
     defer stmt.Close()
-    rows, err := stmt.Query(postId)
+    rows, err := stmt.Query(postID)
     if err != nil {
         logger.Println(err.Error())
         return nil
@@ -470,7 +470,7 @@ func queryTags(db *sql.DB, postId int64) []*Tag {
     return tags
 }
 
-func queryComments(db *sql.DB, postId int64) []*Comment {
+func queryComments(db *sql.DB, postID int64) []*Comment {
     stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
                                     c.id, c.timestamp, c.body
                              from commenter as a, comment as c
@@ -482,7 +482,7 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
         return nil
     }
     defer stmt.Close()
-    data, err := stmt.Query(postId)
+    data, err := stmt.Query(postID)
     if err != nil {
         logger.Println(err.Error())
         return nil
@@ -511,14 +511,14 @@ func queryComments(db *sql.DB, postId int64) []*Comment {
     return comments
 }
 
-func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
+func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
     query, err := xaction.Prepare("select id from tag where url=$1")
     if err != nil {
         logger.Println("Failed to prepare select tag stmt: " + err.Error())
         return
     }
     defer query.Close()
-    err = query.QueryRow(tag.TagUrl).Scan(&tagId)
+    err = query.QueryRow(tag.TagUrl).Scan(&tagID)
     switch err {
     case nil:
         return
@@ -532,19 +532,19 @@ func insertOrGetTagId(xaction *sql.Tx, tag *Tag) (tagId int64, err error) {
             return -1, err
         }
         defer insertTagSql.Close()
-        err = insertTagSql.QueryRow(tag.TagName, tag.TagUrl).Scan(&tagId)
+        err = insertTagSql.QueryRow(tag.TagName, tag.TagUrl).Scan(&tagID)
         if err != nil {
             logger.Println("Failed to insert tag: " + err.Error())
         }
-        return tagId, err
+        return tagID, err
     default:
         logger.Printf("err: %s", err.Error())
         return -1, err
     }
-    return -1, fmt.Errorf("Unexpected error in insertOrGetTagId(), should never get here.")
+    return -1, fmt.Errorf("Unexpected error in insertOrGetTagID(), should never get here.")
 }
 
-func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
+func updateTagMap(xaction *sql.Tx, postID int64, tagID int64) {
     stmt, err := xaction.Prepare(`insert into tagmap
                                   (tag_id, post_id)
                                   values ($1, $2)`)
@@ -552,5 +552,5 @@ func updateTagMap(xaction *sql.Tx, postId int64, tagId int64) {
         logger.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
     }
     defer stmt.Close()
-    stmt.Exec(tagId, postId)
+    stmt.Exec(tagID, postID)
 }

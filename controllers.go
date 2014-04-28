@@ -61,7 +61,7 @@ func stripPort(s string) string {
     return s[:idx]
 }
 
-func getIpAddress(req *http.Request) string {
+func getIPAddress(req *http.Request) string {
     hdrForwardedFor := req.Header.Get("X-Forwarded-For")
     if hdrForwardedFor == "" {
         return stripPort(req.RemoteAddr)
@@ -79,7 +79,7 @@ func logRequest(req *http.Request, sTime time.Time) {
     var logEntry bytes.Buffer
     requestPath := req.URL.Path
     duration := time.Now().Sub(sTime)
-    ip := getIpAddress(req)
+    ip := getIPAddress(req)
     format := "%s - \033[32;1m %s %s\033[0m - %v"
     fmt.Fprintf(&logEntry, format, ip, req.Method, requestPath, duration)
     if len(req.Form) > 0 {

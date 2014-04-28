@@ -37,10 +37,10 @@ var (
     tclient = &http.Client{
         Jar: jar,
     }
-    test_comm   = []*Comment{{"N", "@", "@h", "http://w", "IP", "Body", "Raw", "time", "testid"}}
-    test_posts  = make([]*Entry, 0)
-    test_author = new(Author)
-    test_data   TestData
+    testComm   = []*Comment{{"N", "@", "@h", "http://w", "IP", "Body", "Raw", "time", "testid"}}
+    testPosts  = make([]*Entry, 0)
+    testAuthor = new(Author)
+    testData   TestData
 )
 
 type TestDataI interface {
@@ -83,7 +83,7 @@ func getCallSig(call CallSpec) string {
 func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
     sig := getCallSig(CallSpec{f, paramStr})
     if td.calls() != sig {
-        t.Fatalf("%s() exptected, but got %s", sig, test_data.calls())
+        t.Fatalf("%s() exptected, but got %s", sig, testData.calls())
     }
 }
 
@@ -94,7 +94,7 @@ func (td *TestData) expectSeries(t *testing.T, series []CallSpec) {
     }
     seriesWithPackageStr := strings.Join(seriesWithPackage, "\n")
     if td.calls() != seriesWithPackageStr {
-        t.Fatalf("%s exptected, but got %s", seriesWithPackageStr, test_data.calls())
+        t.Fatalf("%s exptected, but got %s", seriesWithPackageStr, testData.calls())
     }
 }
 
@@ -119,10 +119,10 @@ func (td *TestData) postId(url string) (id int64, err error) {
 
 func (td *TestData) testPosts() []*Entry {
     if td.includeHidden {
-        return test_posts
+        return testPosts
     } else {
         posts := make([]*Entry, 0)
-        for _, p := range test_posts {
+        for _, p := range testPosts {
             if p.Hidden {
                 continue
             }
@@ -163,19 +163,19 @@ func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
 func (td *TestData) allComments() []*CommentWithPostTitle {
     td.pushCall("")
     comments := make([]*CommentWithPostTitle, 0)
-    for _, c := range test_comm {
+    for _, c := range testComm {
         comment := new(CommentWithPostTitle)
         comment.Comment = *c
-        comment.Url = test_posts[0].Url
-        comment.Title = test_posts[0].Title
+        comment.Url = testPosts[0].Url
+        comment.Title = testPosts[0].Title
         comments = append(comments, comment)
     }
     return comments
 }
 
 func (td *TestData) author(username string) (*Author, error) {
-    if username == test_author.UserName {
-        return test_author, nil
+    if username == testAuthor.UserName {
+        return testAuthor, nil
     } else {
         return nil, sql.ErrNoRows
     }
@@ -211,7 +211,7 @@ func (td *TestData) insertCommenter(name, email, website, ip string) (id int64, 
 }
 
 func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
-    c := test_comm[0]
+    c := testComm[0]
     if name == c.Name && email == c.Email && website == c.Website {
         return 1, nil
     }
@@ -346,7 +346,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
         Body:     template.HTML(fmt.Sprintf("Body%d", i)),
         RawBody:  fmt.Sprintf("RawBody%d", i),
         Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
-        Comments: test_comm,
+        Comments: testComm,
     }
 }
 
@@ -356,10 +356,10 @@ func init() {
     store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
     forgeTestUser("testuser", "testpasswd")
     for i := 1; i <= 11; i++ {
-        test_posts = append(test_posts, mkTestEntry(i, false))
+        testPosts = append(testPosts, mkTestEntry(i, false))
     }
     for i := 1; i <= 2; i++ {
-        test_posts = append(test_posts, mkTestEntry(i+1000, true))
+        testPosts = append(testPosts, mkTestEntry(i+1000, true))
     }
     DetectLanguage = func(string) string {
         return "foo"
@@ -370,8 +370,8 @@ func init() {
         }
         return errors.New("Bad passwd")
     }
-    test_data = TestData{}
-    go runServer(&test_data)
+    testData = TestData{}
+    go runServer(&testData)
 }
 
 func TestMainPage(t *testing.T) {
@@ -406,16 +406,16 @@ func TestBasicStructure(t *testing.T) {
 }
 
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
-    tmpPosts := test_posts
-    test_posts = nil
+    tmpPosts := testPosts
+    testPosts = nil
     html := curl("")
     mustContain(t, html, "No entries")
-    test_posts = tmpPosts
+    testPosts = tmpPosts
 }
 
 func TestLogin(t *testing.T) {
     login()
-    html := curl(test_posts[0].Url)
+    html := curl(testPosts[0].Url)
     mustContain(t, html, "Logout")
 }
 
@@ -482,13 +482,13 @@ func checkAuthorSection(t T, node *html.Node) {
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
-    for _, e := range test_posts {
+    for _, e := range testPosts {
         mustContain(t, curl(e.Url), "captcha-id")
     }
 }
 
 func TestEveryEntryHasCaptchaSection(t *testing.T) {
-    for _, e := range test_posts {
+    for _, e := range testPosts {
         node := query1(t, e.Url, ".author")
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
@@ -499,7 +499,7 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 }
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
-    for _, p := range test_posts {
+    for _, p := range testPosts {
         nodes := query0(t, p.Url, "#comments")
         if len(nodes) != 1 {
             t.Fatal("There should be only one comments section!")
@@ -541,7 +541,7 @@ func emptyChildren(node *html.Node) bool {
 }
 
 func TestTagFormattingInPostPage(t *testing.T) {
-    for _, e := range test_posts {
+    for _, e := range testPosts {
         nodes := query0(t, e.Url, ".tags")
         if len(nodes) > 0 {
             for _, node := range nodes {
@@ -556,7 +556,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 }
 
 func TestPostPageHasCommentEditor(t *testing.T) {
-    for _, p := range test_posts {
+    for _, p := range testPosts {
         node := query1(t, p.Url, "#comment")
         assertElem(t, node, "form")
     }
@@ -573,11 +573,11 @@ func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
 }
 
 func TestArchiveContainsAllEntries(t *testing.T) {
-    if len(test_posts) <= NUM_RECENT_POSTS {
-        t.Fatalf("This test only makes sense if len(test_posts) > NUM_RECENT_POSTS")
+    if len(testPosts) <= NUM_RECENT_POSTS {
+        t.Fatalf("This test only makes sense if len(testPosts) > NUM_RECENT_POSTS")
     }
     nodes := query0(t, "archive", ".post-title")
-    T{t}.failIf(len(nodes) != len(test_posts), "Not all posts rendered in archive!")
+    T{t}.failIf(len(nodes) != len(testPosts), "Not all posts rendered in archive!")
 }
 
 func TestPostPager(t *testing.T) {
@@ -622,7 +622,7 @@ func TestLoadComments(t *testing.T) {
 }
 
 func TestSubmitPost(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     login()
     values := url.Values{
         "title":  {"T1tlE"},
@@ -636,7 +636,7 @@ func TestSubmitPost(t *testing.T) {
     } else {
         println(err.Error())
     }
-    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, "shiny-url"},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postId, "shiny-url"},
         {(*TestData).updatePost, "0"},
         {(*TestData).updateTags, "0: {TagUrl:tagzorz TagName:tagzorz}"}})
 }
@@ -663,7 +663,7 @@ func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     login()
-    node := query1(t, test_posts[0].Url, "#edit-comment-form")
+    node := query1(t, testPosts[0].Url, "#edit-comment-form")
     assertElem(t, node, "form")
 }
 
@@ -674,13 +674,13 @@ func TestAdminPageHasAllCommentsButton(t *testing.T) {
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     login()
     nodes := query(t, "/all_comments", "#comment")
-    if len(nodes) != len(test_comm) {
+    if len(nodes) != len(testComm) {
         t.Fatalf("Not all comments in /all_comments!")
     }
-    test_data.expect(t, (*TestData).allComments, "")
+    testData.expect(t, (*TestData).allComments, "")
 }
 
 func TestHiddenPosts(t *testing.T) {
@@ -710,15 +710,15 @@ func TestHiddenPosts(t *testing.T) {
 }
 
 func TestHiddenPostDoesNotAppearInRss(t *testing.T) {
-    bak := test_posts
-    test_posts = make([]*Entry, 0)
-    test_posts = append(test_posts, mkTestEntry(1, false))
-    test_posts = append(test_posts, mkTestEntry(1000, true))
-    test_posts = append(test_posts, mkTestEntry(2, false))
+    bak := testPosts
+    testPosts = make([]*Entry, 0)
+    testPosts = append(testPosts, mkTestEntry(1, false))
+    testPosts = append(testPosts, mkTestEntry(1000, true))
+    testPosts = append(testPosts, mkTestEntry(2, false))
     login()
     xml := curl("feeds/rss.xml")
     mustNotContain(t, xml, "hello1000")
-    test_posts = bak
+    testPosts = bak
 }
 
 func TestHiddenPostAccess(t *testing.T) {
@@ -749,63 +749,63 @@ func TestEditPost(t *testing.T) {
 }
 
 func TestTitleByTagGetsCalled(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     tag := "taaag"
     html := curl("/tag/" + tag)
-    test_data.expect(t, (*TestData).titlesByTag, tag)
+    testData.expect(t, (*TestData).titlesByTag, tag)
     mustContain(t, html, "Posts tagged ")
     mustContain(t, html, tag)
 }
 
 func TestDeletePostCallsDbFunc(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     curl("delete_post?id=hello1001")
-    test_data.expect(t, (*TestData).deletePost, "hello1001")
+    testData.expect(t, (*TestData).deletePost, "hello1001")
 }
 
 func TestDeleteCommentCallsDbFunc(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     curl("delete_comment?id=1&action=delete")
-    test_data.expect(t, (*TestData).deleteComment, "1")
+    testData.expect(t, (*TestData).deleteComment, "1")
 }
 
 func TestShowCaptcha(t *testing.T) {
     url := "comment_submit?name=joe&captcha=&email=snailmail&text=cmmnt%20txt"
-    respJson := curl(url)
+    respJSON := curl(url)
     var resp map[string]interface{}
-    err := json.Unmarshal([]byte(respJson), &resp)
+    err := json.Unmarshal([]byte(respJSON), &resp)
     if err != nil {
-        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
 func TestReturningCommenterSkipsCaptcha(t *testing.T) {
     url := "comment_submit?name=N&captcha=&email=@&website=w&text=cmmnt%20txt"
-    respJson := curl(url)
+    respJSON := curl(url)
     var resp map[string]interface{}
-    err := json.Unmarshal([]byte(respJson), &resp)
+    err := json.Unmarshal([]byte(respJSON), &resp)
     if err != nil {
-        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
 func TestDetectedLtLanguageCommentApprove(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     temp := DetectLanguage
     DetectLanguage = func(string) string {
         return `"lt"`
     }
     url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt"
-    respJson := curl(url)
+    respJSON := curl(url)
     var resp map[string]interface{}
-    err := json.Unmarshal([]byte(respJson), &resp)
+    err := json.Unmarshal([]byte(respJSON), &resp)
     if err != nil {
-        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
-    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
         {(*TestData).postId, ""},
         {(*TestData).postId, ""},
         {(*TestData).insertCommenter, "UnknownCommenter"}})
@@ -813,32 +813,32 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 }
 
 func TestUndetectedLanguageCommentDismiss(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt&captcha-id=666"
-    respJson := curl(url)
+    respJSON := curl(url)
     var resp map[string]interface{}
-    err := json.Unmarshal([]byte(respJson), &resp)
+    err := json.Unmarshal([]byte(respJSON), &resp)
     if err != nil {
-        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
-    test_data.expect(t, (*TestData).postId, "")
+    testData.expect(t, (*TestData).postId, "")
 }
 
 func TestCorrectCaptchaReply(t *testing.T) {
-    defer test_data.reset()
+    defer testData.reset()
     SetNextTask(0)
     task := GetTask()
-    captchaUrl := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.Id, task.Answer)
-    url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaUrl
-    respJson := curl(url)
+    captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.Id, task.Answer)
+    url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
+    respJSON := curl(url)
     var resp map[string]interface{}
-    err := json.Unmarshal([]byte(respJson), &resp)
+    err := json.Unmarshal([]byte(respJSON), &resp)
     if err != nil {
-        t.Fatalf("Failed to parse json %q\nwith error %q", respJson, err.Error())
+        t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
-    test_data.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
         {(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 
@@ -923,6 +923,6 @@ func forgeTestUser(uname, passwd string) {
     if err != nil {
         panic(fmt.Sprintf("Error in Encrypt(): %s\n", err))
     }
-    test_author.Passwd = passwdHash
-    test_author.UserName = uname
+    testAuthor.Passwd = passwdHash
+    testAuthor.UserName = uname
 }
