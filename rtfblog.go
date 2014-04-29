@@ -360,7 +360,10 @@ func explodeTags(tagsWithUrls string) []*Tag {
 }
 
 func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    mr, _ := req.MultipartReader()
+    mr, err := req.MultipartReader()
+    if err != nil {
+        logger.Println(err.Error())
+    }
     files := ""
     part, err := mr.NextPart()
     for err == nil {
