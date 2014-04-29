@@ -1,12 +1,7 @@
 #!/bin/sh
 
-make browserify
-cd dbtool
-go build
-cd ..
-go build
 killall rtfblog
-go test
+make all
 
 package=./package
 mkdir -p $package

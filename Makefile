@@ -4,8 +4,12 @@ GOFILES=\
 	*.go\
 	dbtool/*.go
 
-all: fmt browserify
+all: fmt browserify grunt
+
+grunt:
 	grunt
+
+run: all
 	./rtfblog
 
 browserify:
