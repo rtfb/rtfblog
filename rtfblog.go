@@ -133,10 +133,8 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         task.Id = ""
         tmplData["CaptchaHtml"] = task
         return Tmpl("post.html").Execute(w, tmplData)
-    } else {
-        return PerformStatus(w, req, http.StatusNotFound)
     }
-    return nil
+    return PerformStatus(w, req, http.StatusNotFound)
 }
 
 func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -467,14 +465,13 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
             if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
                 WrongCaptchaReply(w, req, "rejected", captchaTask)
                 return nil
-            } else {
-                commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
-                if err != nil {
-                    InternalError(w, req, "Server Error: "+err.Error())
-                    return err
-                }
-                redir = "/" + refURL + commentURL
             }
+            commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
+            if err != nil {
+                InternalError(w, req, "Server Error: "+err.Error())
+                return err
+            }
+            redir = "/" + refURL + commentURL
         }
     } else {
         logger.Println("err: " + err.Error())

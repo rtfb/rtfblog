@@ -120,16 +120,15 @@ func (td *TestData) postId(url string) (id int64, err error) {
 func (td *TestData) testPosts() []*Entry {
     if td.includeHidden {
         return testPosts
-    } else {
-        posts := make([]*Entry, 0)
-        for _, p := range testPosts {
-            if p.Hidden {
-                continue
-            }
-            posts = append(posts, p)
-        }
-        return posts
     }
+    posts := make([]*Entry, 0)
+    for _, p := range testPosts {
+        if p.Hidden {
+            continue
+        }
+        posts = append(posts, p)
+    }
+    return posts
 }
 
 func (td *TestData) posts(limit, offset int) []*Entry {
@@ -176,9 +175,8 @@ func (td *TestData) allComments() []*CommentWithPostTitle {
 func (td *TestData) author(username string) (*Author, error) {
     if username == testAuthor.UserName {
         return testAuthor, nil
-    } else {
-        return nil, sql.ErrNoRows
     }
+    return nil, sql.ErrNoRows
 }
 
 func (td *TestData) deleteComment(id string) bool {
@@ -285,9 +283,8 @@ func curlParam(url string, method func(string) (*http.Response, error)) string {
         r.Body.Close()
         if err == nil {
             return string(b)
-        } else {
-            println(err.Error())
         }
+        println(err.Error())
     } else {
         println(err.Error())
     }
