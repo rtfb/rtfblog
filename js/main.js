@@ -17,26 +17,28 @@ function validateForm() {
     return true;
 }
 
+function mkXHR() {
+    try {
+        return new ActiveXObject('Msxml2.XMLHTTP');
+    } catch (e) {
+        try {
+            return new ActiveXObject('Microsoft.XMLHTTP');
+        } catch (e2) {
+            try {
+                return new XMLHttpRequest();
+            } catch (e3) {
+                return false;
+            }
+        }
+    }
+};
+
 function submitComment() {
     if (!validateForm()) {
         return;
     }
 
-    var xhr;
-    try {
-        xhr = new ActiveXObject('Msxml2.XMLHTTP');
-    } catch (e) {
-        try {
-            xhr = new ActiveXObject('Microsoft.XMLHTTP');
-        } catch (e2) {
-            try {
-                xhr = new XMLHttpRequest();
-            } catch (e3) {
-                xhr = false;
-            }
-        }
-    }
-
+    var xhr = mkXHR();
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             if (xhr.status == 200) {
