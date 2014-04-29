@@ -72,4 +72,57 @@ function submitComment() {
     }
 }
 
+var uploadNo = 0;
+
+function forwardClickToFileid() {
+    var fileid = document.getElementById('fileid');
+    fileid.click();
+}
+
+function mkUploadHtml(filename, uploadNo) {
+    var p = document.createElement('p');
+    p.setAttribute('id', 'progress_' + (uploadNo + 1));
+    // TODO: .textContent doesn't work on IE, need to use .innerText
+    p.textContent = filename;
+    return p;
+}
+
+function uploadProgress() {
+    var filename = this.value.split('\\').pop();
+    if (!filename)
+        return;
+    var formData = new FormData(document.getElementById('edit-post-form'));
+    console.log(JSON.stringify(formData));
+    var uploadSection = document.getElementById('upload-progress-section');
+    uploadSection.appendChild(mkUploadHtml(filename, uploadNo));
+    var xhr = mkXHR();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+                var postTextarea = document.getElementById('wmd-input');
+                postTextarea.innerHTML += "\n" + xhr.responseText;
+            } else {
+                alert("Error uploading: " + xhr.status);
+            }
+        }
+    };
+    xhr.upload.onprogress = function(evt) {
+        console.log("progrFunc");
+        if (evt.lengthComputable) {
+            var p = document.getElementById('progress_' + uploadNo);
+            var pc = parseInt(100 - (evt.loaded / evt.total * 100));
+            p.style.backgroundPosition = pc + "% 0";
+        }
+    }
+    try {
+        xhr.open("POST", "upload_images", true);
+        xhr.send(formData);
+    } catch (err) {
+        alert("exc: " + err);
+    }
+    uploadNo += 1;
+}
+
+global.window.uploadProgress = uploadProgress;
+global.window.forwardClickToFileid = forwardClickToFileid;
 global.window.submitComment = submitComment;

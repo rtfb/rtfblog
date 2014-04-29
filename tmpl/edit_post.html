@@ -4,7 +4,7 @@
     <script type="text/javascript" src="/static/js/Markdown.Converter.js"></script>
     <script type="text/javascript" src="/static/js/Markdown.Sanitizer.js"></script>
     <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/bundle.js"></script>
     <style>
     #upload-progress-section p {
         display: block;
@@ -75,7 +75,11 @@
         <br />
 
         <div id="upload-progress-section"></div>
-        <input type="button" value="Upload File" onclick="$('#fileid').click();" />
+        <input
+            id="upload-file-button"
+            type="button"
+            value="Upload File"
+            />
 
         <label class="twelve columns" for="wmd-input">Post text:</label>
         <div class="wmd-panel container">
@@ -124,54 +128,11 @@
              })();
 
         (function() {
-            var postTextarea = document.getElementById('wmd-input');
-            var uploadNo = 0;
-            var uploadSection = $('div#upload-progress-section');
-
-            $('input#fileid').change(function() {
-                var filename = $(this).val().split('\\').pop();
-                if (!filename)
-                    return;
-                var formData = new FormData($('form')[0]);
-                uploadSection.append(mkUploadHtml(filename, uploadNo));
-                $.ajax({
-                    url: 'upload_images',
-                    type: 'POST',
-                    xhr: function() {
-                        myXhr = $.ajaxSettings.xhr();
-                        if (myXhr.upload) {
-                            var progrFunc = function(e) {
-                                if (e.lengthComputable) {
-                                    var p = $('#progress_' + uploadNo)[0];
-                                    var pc = parseInt(100 - (e.loaded / e.total * 100));
-                                    p.style.backgroundPosition = pc + "% 0";
-                                }
-                            }
-                            myXhr.upload.addEventListener('progress', progrFunc, false);
-                        }
-                        return myXhr;
-                    },
-                    beforeSend: function() {
-                    },
-                    success: function(data, textStatus, jqXHR) {
-                        postTextarea.innerHTML += "\n" + data;
-                    },
-                    error: function() {
-                        $('#progress_' + uploadNo).html(xhr.responseText);
-                    },
-                    data: formData,
-                    //Options to tell JQuery not to process data or worry about content-type
-                    cache: false,
-                    contentType: false,
-                    processData: false
-                });
-                uploadNo += 1;
-            });
-        })();
-
-        function mkUploadHtml(filename, uploadNo) {
-            return '<p id="progress_' + (uploadNo + 1) + '">' + filename + '</p>';
-        }
+             var fileid = document.getElementById('fileid');
+             fileid.onchange = uploadProgress;
+             var uploadFileButton = document.getElementById('upload-file-button');
+             uploadFileButton.onclick = forwardClickToFileid;
+             }());
 
         function deleteWithConfirm(postUrl) {
             if (confirm('You are about to delete this post!\nThis cannot be undone!')) {
