@@ -45,7 +45,7 @@ func GetTask() *CaptchaTask {
     return &CaptchaTasks[nextTask]
 }
 
-func GetTaskById(id string) *CaptchaTask {
+func GetTaskByID(id string) *CaptchaTask {
     for _, t := range CaptchaTasks {
         if t.Id == id {
             return &t

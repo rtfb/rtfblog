@@ -308,7 +308,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         },
         Body: template.HTML(req.FormValue("text")),
     }
-    postID, idErr := data.postId(url)
+    postID, idErr := data.postID(url)
     if !data.begin() {
         InternalError(w, req, "SubmitPost, !data.begin()")
         return nil
@@ -324,9 +324,9 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
             }
             postID = newPostID
         } else {
-            logger.Println("data.postId() failed: " + idErr.Error())
+            logger.Println("data.postID() failed: " + idErr.Error())
             data.rollback()
-            InternalError(w, req, "SubmitPost, !data.postId: "+idErr.Error())
+            InternalError(w, req, "SubmitPost, !data.postID: "+idErr.Error())
             return idErr
         }
     } else {
@@ -422,9 +422,9 @@ func normalizeWebsite(raw string) string {
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     refURL := xtractReferer(req)
-    postID, err := data.postId(refURL)
+    postID, err := data.postID(refURL)
     if err != nil {
-        logger.Println("data.postId() failed: " + err.Error())
+        logger.Println("data.postID() failed: " + err.Error())
         InternalError(w, req, "Server Error: "+err.Error())
         return err
     }
@@ -461,7 +461,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                 return nil
             }
         } else {
-            captchaTask := GetTaskById(captchaID)
+            captchaTask := GetTaskByID(captchaID)
             if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
                 WrongCaptchaReply(w, req, "rejected", captchaTask)
                 return nil

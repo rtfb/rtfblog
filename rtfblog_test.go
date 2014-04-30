@@ -111,7 +111,7 @@ func (td *TestData) post(url string) *Entry {
     return nil
 }
 
-func (td *TestData) postId(url string) (id int64, err error) {
+func (td *TestData) postID(url string) (id int64, err error) {
     td.pushCall(fmt.Sprintf("%s", url))
     id = 0
     return
@@ -633,7 +633,7 @@ func TestSubmitPost(t *testing.T) {
     } else {
         println(err.Error())
     }
-    testData.expectSeries(t, []CallSpec{{(*TestData).postId, "shiny-url"},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
         {(*TestData).updatePost, "0"},
         {(*TestData).updateTags, "0: {TagUrl:tagzorz TagName:tagzorz}"}})
 }
@@ -802,9 +802,9 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
         t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
-    testData.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
-        {(*TestData).postId, ""},
-        {(*TestData).postId, ""},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
+        {(*TestData).postID, ""},
+        {(*TestData).postID, ""},
         {(*TestData).insertCommenter, "UnknownCommenter"}})
     DetectLanguage = temp
 }
@@ -819,7 +819,7 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
         t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
-    testData.expect(t, (*TestData).postId, "")
+    testData.expect(t, (*TestData).postID, "")
 }
 
 func TestCorrectCaptchaReply(t *testing.T) {
@@ -835,7 +835,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
         t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
     }
     T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
-    testData.expectSeries(t, []CallSpec{{(*TestData).postId, ""},
+    testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
         {(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 

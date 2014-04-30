@@ -14,7 +14,7 @@ import (
 type Data interface {
     hiddenPosts(flag bool)
     post(url string) *Entry
-    postId(url string) (id int64, err error)
+    postID(url string) (id int64, err error)
     posts(limit, offset int) []*Entry
     titles(limit int) []*EntryLink
     titlesByTag(tag string) []*EntryLink
@@ -87,7 +87,7 @@ func (dd *DbData) post(url string) *Entry {
     return posts[0]
 }
 
-func (dd *DbData) postId(url string) (id int64, err error) {
+func (dd *DbData) postID(url string) (id int64, err error) {
     query, err := dd.db.Prepare("select id from post where url = $1")
     if err != nil {
         return
