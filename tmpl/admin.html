@@ -1,8 +1,7 @@
 {{define "title"}}Admin{{end}}
 {{define "extrahead"}}
     <link rel="stylesheet" href="/static/css/pagedown.css">
-    <script type="text/javascript" src="/static/js/Markdown.Converter.js"></script>
-    <script type="text/javascript" src="/static/js/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="/static/js/pagedown-bundle.js"></script>
     <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
 {{end}}
 {{define "content"}}
@@ -68,8 +67,7 @@
 {{define "extrascripts"}}
         <script type="text/javascript">
         (function () {
-             var converter = new Markdown.getSanitizingConverter();
-             var editor = new Markdown.Editor(converter);
+             var editor = new Markdown.Editor(getConverter());
              editor.run();
              })();
 

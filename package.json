@@ -6,6 +6,7 @@
     "grunt-contrib-qunit": ">=0.2.1",
     "grunt-contrib-watch": ">=0.3.1",
     "grunt-shell": "~0.6.1",
-    "qunitjs": "~1.14.0"
+    "qunitjs": "~1.14.0",
+    "pagedown": "~1.1.0"
   }
 }
