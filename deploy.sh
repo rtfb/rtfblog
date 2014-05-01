@@ -5,7 +5,7 @@ make all
 
 package=./package
 mkdir -p $package
-cp ../goose/upstream/cmd/goose/goose $package
+cp $GOPATH/bin/goose $package
 cp -r ./db $package
 cp ./rtfblog $package
 cp -r ./static $package
