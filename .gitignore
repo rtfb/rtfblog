@@ -13,3 +13,4 @@ priv_key
 .vagrant
 node_modules
 static/js/*.js
+static/wmd-buttons.png

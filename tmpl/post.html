@@ -4,7 +4,6 @@
     <link rel="stylesheet" href="/static/css/speech-bubble.css">
     <link rel="stylesheet" href="/static/css/post.css">
     <script type="text/javascript" src="/static/js/pagedown-bundle.js"></script>
-    <script type="text/javascript" src="/static/js/Markdown.Editor.js"></script>
     <script type="text/javascript" src="/static/js/bundle.js"></script>
 {{end}}
 {{define "content"}}
@@ -227,8 +226,7 @@
 {{define "extrascripts"}}
         <script type="text/javascript">
         (function () {
-             var editor = new Markdown.Editor(getConverter());
-             editor.run();
+             getPagedownEditor().run();
              })();
 
         {{if .AdminLogin}}

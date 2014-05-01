@@ -13,8 +13,10 @@ run: all
 	./rtfblog
 
 browserify:
+	mkdir -p static/js
 	browserify js/main.js -o static/js/bundle.js
-	browserify js/pgdown-ed.js -o static/js/pagedown-bundle.js
+	browserify -r pagedown-editor js/pgdown-ed.js -o static/js/pagedown-bundle.js
+	cp ./node_modules/pagedown-editor/wmd-buttons.png static/
 
 fmt:
 	${GOFMT} -w ${GOFILES}
