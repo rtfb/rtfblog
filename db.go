@@ -210,7 +210,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
         return nil
     }
     defer data.Close()
-    comments := make([]*CommentWithPostTitle, 0)
+    var comments []*CommentWithPostTitle
     for data.Next() {
         comment := new(CommentWithPostTitle)
         var unixDate int64
@@ -453,7 +453,7 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
         return nil
     }
     defer rows.Close()
-    tags := make([]*Tag, 0)
+    var tags []*Tag
     for rows.Next() {
         tag := new(Tag)
         err = rows.Scan(&tag.TagName, &tag.TagUrl)
@@ -488,7 +488,7 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
         return nil
     }
     defer data.Close()
-    comments := make([]*Comment, 0)
+    var comments []*Comment
     for data.Next() {
         comment := new(Comment)
         var unixDate int64

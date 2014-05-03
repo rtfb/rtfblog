@@ -343,7 +343,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func explodeTags(tagsWithUrls string) []*Tag {
-    tags := make([]*Tag, 0)
+    var tags []*Tag
     for _, t := range strings.Split(tagsWithUrls, ",") {
         t = strings.TrimSpace(t)
         if t == "" {

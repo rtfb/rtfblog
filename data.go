@@ -72,7 +72,7 @@ func (e Entry) NumComments() int {
 }
 
 func (e Entry) TagsStr() template.HTML {
-    parts := make([]string, 0)
+    var parts []string
     for _, t := range e.Tags {
         part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagUrl, t.TagName)
         parts = append(parts, part)
@@ -81,7 +81,7 @@ func (e Entry) TagsStr() template.HTML {
 }
 
 func (e Entry) TagsWithUrls() string {
-    parts := make([]string, 0)
+    var parts []string
     for _, t := range e.Tags {
         part := fmt.Sprintf("%s", t.TagName)
         if t.TagUrl != t.TagName {

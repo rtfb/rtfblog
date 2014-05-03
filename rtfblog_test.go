@@ -121,7 +121,7 @@ func (td *TestData) testPosts() []*Entry {
     if td.includeHidden {
         return testPosts
     }
-    posts := make([]*Entry, 0)
+    var posts []*Entry
     for _, p := range testPosts {
         if p.Hidden {
             continue
@@ -161,7 +161,7 @@ func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
 
 func (td *TestData) allComments() []*CommentWithPostTitle {
     td.pushCall("")
-    comments := make([]*CommentWithPostTitle, 0)
+    var comments []*CommentWithPostTitle
     for _, c := range testComm {
         comment := new(CommentWithPostTitle)
         comment.Comment = *c
