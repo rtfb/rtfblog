@@ -541,7 +541,6 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
         logger.Printf("err: %s", err.Error())
         return -1, err
     }
-    return -1, fmt.Errorf("Unexpected error in insertOrGetTagID(), should never get here.")
 }
 
 func updateTagMap(xaction *sql.Tx, postID int64, tagID int64) {
