@@ -14,7 +14,7 @@ type CaptchaTask struct {
 }
 
 var (
-    nextTask     int = 0
+    nextTask     int
     CaptchaTasks []CaptchaTask
 )
 

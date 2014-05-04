@@ -365,7 +365,7 @@ func init() {
         if string(passwd) == "testpasswd" {
             return nil
         }
-        return errors.New("Bad passwd")
+        return errors.New("bad passwd")
     }
     testData = TestData{}
     go runServer(&testData)

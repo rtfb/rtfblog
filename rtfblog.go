@@ -67,7 +67,7 @@ func listOfPages(numPosts, currPage int) template.HTML {
     list := ""
     numPages := numPosts / POSTS_PER_PAGE
     if numPosts%POSTS_PER_PAGE != 0 {
-        numPages += 1
+        numPages++
     }
     for p := 0; p < numPages; p++ {
         if p == currPage {
