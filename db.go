@@ -177,7 +177,7 @@ func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
 func scanEntryLinks(rows *sql.Rows) (links []*EntryLink) {
     for rows.Next() {
         entryLink := new(EntryLink)
-        err := rows.Scan(&entryLink.Title, &entryLink.Url, &entryLink.Hidden)
+        err := rows.Scan(&entryLink.Title, &entryLink.URL, &entryLink.Hidden)
         if err != nil {
             logger.Println(err.Error())
             continue
@@ -214,9 +214,9 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
     for data.Next() {
         comment := new(CommentWithPostTitle)
         var unixDate int64
-        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
-            &comment.CommentId, &unixDate, &comment.RawBody,
-            &comment.Title, &comment.Url)
+        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
+            &comment.CommentID, &unixDate, &comment.RawBody,
+            &comment.Title, &comment.URL)
         if err != nil {
             logger.Printf("error scanning comment row: %s\n", err.Error())
         }
@@ -299,7 +299,7 @@ func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
                                        returning id`)
     defer insertPostSql.Close()
     date := time.Now().Unix()
-    err = insertPostSql.QueryRow(author, e.Title, date, e.Url,
+    err = insertPostSql.QueryRow(author, e.Title, date, e.URL,
         string(e.Body), e.Hidden).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert post: " + err.Error())
@@ -313,7 +313,7 @@ func (dd *DbData) updatePost(id int64, e *Entry) bool {
                                     set title=$1, url=$2, body=$3, hidden=$4
                                     where id=$5`)
     defer updateStmt.Close()
-    _, err := updateStmt.Exec(e.Title, e.Url, string(e.Body), e.Hidden, id)
+    _, err := updateStmt.Exec(e.Title, e.URL, string(e.Body), e.Hidden, id)
     if err != nil {
         logger.Println(err.Error())
         return false
@@ -419,7 +419,7 @@ func queryPosts(db *sql.DB, limit, offset int,
         var id int64
         var unixDate int64
         err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
-            &entry.RawBody, &entry.Url, &entry.Hidden)
+            &entry.RawBody, &entry.URL, &entry.Hidden)
         if err != nil {
             logger.Println(err.Error())
             continue
@@ -456,7 +456,7 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
     var tags []*Tag
     for rows.Next() {
         tag := new(Tag)
-        err = rows.Scan(&tag.TagName, &tag.TagUrl)
+        err = rows.Scan(&tag.TagName, &tag.TagURL)
         if err != nil {
             logger.Println(err.Error())
             continue
@@ -492,8 +492,8 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
     for data.Next() {
         comment := new(Comment)
         var unixDate int64
-        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.Ip,
-            &comment.CommentId, &unixDate, &comment.RawBody)
+        err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
+            &comment.CommentID, &unixDate, &comment.RawBody)
         if err != nil {
             logger.Printf("error scanning comment row: %s\n", err.Error())
         }
@@ -518,7 +518,7 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
         return
     }
     defer query.Close()
-    err = query.QueryRow(tag.TagUrl).Scan(&tagID)
+    err = query.QueryRow(tag.TagURL).Scan(&tagID)
     switch err {
     case nil:
         return
@@ -532,7 +532,7 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
             return -1, err
         }
         defer insertTagSql.Close()
-        err = insertTagSql.QueryRow(tag.TagName, tag.TagUrl).Scan(&tagID)
+        err = insertTagSql.QueryRow(tag.TagName, tag.TagURL).Scan(&tagID)
         if err != nil {
             logger.Println("Failed to insert tag: " + err.Error())
         }

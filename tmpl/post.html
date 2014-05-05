@@ -60,10 +60,10 @@
                     </div>
                 </div>
                 <div class="bubble-container ten columns omega">
-                    <div id="comment-text-{{.CommentId}}"
+                    <div id="comment-text-{{.CommentID}}"
                         class="comment-body-container speech-bubble left"
                         {{if $AdminLogin}}
-                        onclick="toggleEdit('{{.CommentId}}')"
+                        onclick="toggleEdit('{{.CommentID}}')"
                         {{end}}
                         >
                         <div class="commenter">
@@ -79,8 +79,8 @@
                             &lt;<a href="mailto:{{.Email}}">{{.Email}}</a>&gt;
                             {{end}}
                             <br />
-                            <span id="comment-{{.CommentId}}">
-                                <a class="dimmed" href="#comment-{{.CommentId}}">{{.Time}}</a><br />
+                            <span id="comment-{{.CommentID}}">
+                                <a class="dimmed" href="#comment-{{.CommentID}}">{{.Time}}</a><br />
                             </span>
                             </p>
                         </div>
@@ -92,12 +92,12 @@
                 {{if $AdminLogin}}
                 <form
                     id="edit-comment-form"
-                    action="moderate_comment?action=edit&amp;redirect_to={{$post.Url}}"
+                    action="moderate_comment?action=edit&amp;redirect_to={{$post.URL}}"
                     method="post"
                     >
                     <div class="twelve columns">
                         <textarea
-                            id="edit-comment-{{.CommentId}}"
+                            id="edit-comment-{{.CommentID}}"
                             style="display: none; width: 100%;"
                             name="edit-comment-text"
                             >{{.RawBody}}</textarea>
@@ -106,35 +106,35 @@
                         <input
                             type="hidden"
                             name="id"
-                            value="{{.CommentId}}"
+                            value="{{.CommentID}}"
                             />
                         <input
-                            id="submit-comment-{{.CommentId}}"
+                            id="submit-comment-{{.CommentID}}"
                             type="button"
                             style="display: none;"
-                            onclick="submit({{.CommentId}}, '{{$post.Url}}')"
+                            onclick="submit({{.CommentID}}, '{{$post.URL}}')"
                             value="Submit"
                             />
                         <input
-                            id="cancel-edit-comment-{{.CommentId}}"
+                            id="cancel-edit-comment-{{.CommentID}}"
                             type="button"
                             style="display: none;"
-                            onclick="cancel({{.CommentId}})"
+                            onclick="cancel({{.CommentID}})"
                             value="Cancel"
                             />
                         &nbsp;
                     </div>
                     <div id="comment-admin" style="text-align: right" class="four columns omega">
                         <input
-                            id="delete-comment-button-{{.CommentId}}"
+                            id="delete-comment-button-{{.CommentID}}"
                             type="button"
-                            onclick="deleteWithConfirm({{.CommentId}}, '{{$post.Url}}')"
+                            onclick="deleteWithConfirm({{.CommentID}}, '{{$post.URL}}')"
                             value="Delete!"
                             />
                         <input
-                            id="edit-comment-button-{{.CommentId}}"
+                            id="edit-comment-button-{{.CommentID}}"
                             type="button"
-                            onclick="toggleEdit({{.CommentId}})"
+                            onclick="toggleEdit({{.CommentID}})"
                             value="Edit"
                             />
                     </div>

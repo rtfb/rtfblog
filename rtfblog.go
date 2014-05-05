@@ -65,8 +65,8 @@ func xtractReferer(req *http.Request) string {
 
 func listOfPages(numPosts, currPage int) template.HTML {
     list := ""
-    numPages := numPosts / POSTS_PER_PAGE
-    if numPosts%POSTS_PER_PAGE != 0 {
+    numPages := numPosts / PostsPerPage
+    if numPosts%PostsPerPage != 0 {
         numPages++
     }
     for p := 0; p < numPages; p++ {
@@ -99,7 +99,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
     for _, p := range posts {
         item := feeds.Item{
             Title:       p.Title,
-            Link:        &feeds.Link{Href: url + "/" + p.Url},
+            Link:        &feeds.Link{Href: url + "/" + p.URL},
             Description: string(p.Body),
             Author:      &feeds.Author{p.Author, authorEmail},
             Created:     now,
@@ -130,7 +130,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         task := *GetTask()
         // Initial task id has to be empty, gets filled by AJAX upon first time
         // it gets shown
-        task.Id = ""
+        task.ID = ""
         tmplData["CaptchaHtml"] = task
         return Tmpl("post.html").Execute(w, tmplData)
     }
@@ -143,7 +143,7 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         pgNo = 1
         err = nil
     }
-    offset := (pgNo - 1) * POSTS_PER_PAGE
+    offset := (pgNo - 1) * PostsPerPage
     return Tmpl("main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
 
@@ -229,7 +229,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     data.hiddenPosts(false)
-    produceFeedXML(w, req, data.posts(NUM_FEED_ITEMS, 0))
+    produceFeedXML(w, req, data.posts(NumFeedItems, 0))
     return nil
 }
 
@@ -303,7 +303,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     e := Entry{
         EntryLink: EntryLink{
             Title:  req.FormValue("title"),
-            Url:    url,
+            URL:    url,
             Hidden: req.FormValue("hidden") == "on",
         },
         Body: template.HTML(req.FormValue("text")),
@@ -385,7 +385,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
             logger.Println(rec)
         }
     }()
-    lr := &io.LimitedReader{R: p, N: MAX_FILE_SIZE + 1}
+    lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
     filename := filepath.Join(conf.Get("staticdir"), p.FileName())
     fo, err := os.Create(filename)
     if err != nil {

@@ -26,8 +26,8 @@
                     {{end}}
                 </strong>
                 <a
-                    href="{{.Url}}#comment-{{.CommentId}}"
-                    name="comment-{{.CommentId}}"
+                    href="{{.URL}}#comment-{{.CommentID}}"
+                    name="comment-{{.CommentID}}"
                     >{{.Time}}</a> <br />
             </div>
             <div class="two-paragraphs-excerpt user-supplied-text">
@@ -37,11 +37,11 @@
                 id="delete-comment-button"
                 type="button"
                 class="inline"
-                onclick="deleteWithConfirm({{.CommentId}}, 'all_comments')"
+                onclick="deleteWithConfirm({{.CommentID}}, 'all_comments')"
                 value="Delete"
                 />
             Posted in:
-            <a id="post" href="{{.Url}}">{{.Title}}</a>
+            <a id="post" href="{{.URL}}">{{.Title}}</a>
         </div>
         <hr />
         {{else}}

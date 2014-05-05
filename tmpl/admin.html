@@ -29,7 +29,7 @@
         <select id="post_dropdown" onchange="retrieveComments(this.value);">
             <option value="" style="display:none;" selected></option>
         {{range .entries}}
-            <option value="{{.Url}}">{{.Title}}</option>
+            <option value="{{.URL}}">{{.Title}}</option>
         {{end}}
         </select>
         <br />

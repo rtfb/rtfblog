@@ -104,7 +104,7 @@ func (td *TestData) hiddenPosts(flag bool) {
 
 func (td *TestData) post(url string) *Entry {
     for _, e := range td.testPosts() {
-        if e.Url == url {
+        if e.URL == url {
             return e
         }
     }
@@ -148,7 +148,7 @@ func (td *TestData) numPosts() int {
 
 func (td *TestData) titles(limit int) (links []*EntryLink) {
     for _, p := range td.testPosts() {
-        entryLink := &EntryLink{p.Title, p.Url, false}
+        entryLink := &EntryLink{p.Title, p.URL, false}
         links = append(links, entryLink)
     }
     return
@@ -165,7 +165,7 @@ func (td *TestData) allComments() []*CommentWithPostTitle {
     for _, c := range testComm {
         comment := new(CommentWithPostTitle)
         comment.Comment = *c
-        comment.Url = testPosts[0].Url
+        comment.URL = testPosts[0].URL
         comment.Title = testPosts[0].Title
         comments = append(comments, comment)
     }
@@ -335,7 +335,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
     return &Entry{
         EntryLink: EntryLink{
             Title:  fmt.Sprintf("Hi%d", i),
-            Url:    fmt.Sprintf("hello%d", i),
+            URL:    fmt.Sprintf("hello%d", i),
             Hidden: hidden,
         },
         Author:   auth,
@@ -412,7 +412,7 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 
 func TestLogin(t *testing.T) {
     login()
-    html := curl(testPosts[0].Url)
+    html := curl(testPosts[0].URL)
     mustContain(t, html, "Logout")
 }
 
@@ -480,13 +480,13 @@ func checkAuthorSection(t T, node *html.Node) {
 
 func TestEveryEntryHasAuthor(t *testing.T) {
     for _, e := range testPosts {
-        mustContain(t, curl(e.Url), "captcha-id")
+        mustContain(t, curl(e.URL), "captcha-id")
     }
 }
 
 func TestEveryEntryHasCaptchaSection(t *testing.T) {
     for _, e := range testPosts {
-        node := query1(t, e.Url, ".author")
+        node := query1(t, e.URL, ".author")
         assertElem(t, node, "div")
         if len(h5.Children(node)) == 0 {
             t.Fatalf("No author specified in author div!")
@@ -497,7 +497,7 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
     for _, p := range testPosts {
-        nodes := query0(t, p.Url, "#comments")
+        nodes := query0(t, p.URL, "#comments")
         if len(nodes) != 1 {
             t.Fatal("There should be only one comments section!")
         }
@@ -539,7 +539,7 @@ func emptyChildren(node *html.Node) bool {
 
 func TestTagFormattingInPostPage(t *testing.T) {
     for _, e := range testPosts {
-        nodes := query0(t, e.Url, ".tags")
+        nodes := query0(t, e.URL, ".tags")
         if len(nodes) > 0 {
             for _, node := range nodes {
                 assertElem(t, node, "div")
@@ -554,7 +554,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 
 func TestPostPageHasCommentEditor(t *testing.T) {
     for _, p := range testPosts {
-        node := query1(t, p.Url, "#comment")
+        node := query1(t, p.URL, "#comment")
         assertElem(t, node, "form")
     }
 }
@@ -566,11 +566,11 @@ func TestLoginPage(t *testing.T) {
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
     nodes := query0(t, "", ".post-title")
-    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
+    T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
 }
 
 func TestArchiveContainsAllEntries(t *testing.T) {
-    if len(testPosts) <= NUM_RECENT_POSTS {
+    if len(testPosts) <= NumRecentPosts {
         t.Fatalf("This test only makes sense if len(testPosts) > NUM_RECENT_POSTS")
     }
     nodes := query0(t, "archive", ".post-title")
@@ -635,16 +635,16 @@ func TestSubmitPost(t *testing.T) {
     }
     testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
         {(*TestData).updatePost, "0"},
-        {(*TestData).updateTags, "0: {TagUrl:tagzorz TagName:tagzorz}"}})
+        {(*TestData).updateTags, "0: {TagURL:tagzorz TagName:tagzorz}"}})
 }
 
 func TestExplodeTags(t *testing.T) {
     var tagSpecs = []struct {
         spec, expected string
     }{
-        {"tag", "{TagUrl:tag TagName:tag}"},
-        {"Tag>taag", "{TagUrl:taag TagName:Tag}"},
-        {",tagg", "{TagUrl:tagg TagName:tagg}"},
+        {"tag", "{TagURL:tag TagName:tag}"},
+        {"Tag>taag", "{TagURL:taag TagName:Tag}"},
+        {",tagg", "{TagURL:tagg TagName:tagg}"},
     }
     for _, ts := range tagSpecs {
         result := fmt.Sprintf("%+v", *explodeTags(ts.spec)[0])
@@ -655,12 +655,12 @@ func TestExplodeTags(t *testing.T) {
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
     login()
     nodes := query(t, "", ".edit-post-button")
-    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have Edit button!")
+    T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
     login()
-    node := query1(t, testPosts[0].Url, "#edit-comment-form")
+    node := query1(t, testPosts[0].URL, "#edit-comment-form")
     assertElem(t, node, "form")
 }
 
@@ -826,7 +826,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
     defer testData.reset()
     SetNextTask(0)
     task := GetTask()
-    captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.Id, task.Answer)
+    captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.ID, task.Answer)
     url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
     respJSON := curl(url)
     var resp map[string]interface{}
@@ -854,7 +854,7 @@ func TestRobotsTxtGetsServed(t *testing.T) {
 
 func TestPagination(t *testing.T) {
     nodes := query0(t, "page/2", ".post-title")
-    T{t}.failIf(len(nodes) != POSTS_PER_PAGE, "Not all posts have been rendered!")
+    T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
     if nodes[0].Attr[1].Val != "/hello6" {
         t.Fatalf("Wrong post!")
     }

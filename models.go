@@ -35,10 +35,10 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
         "PageTitle":       "Velkam",
         "BlogTitle":       conf.Get("blog_title"),
         "BlogSubtitle":    conf.Get("blog_descr"),
-        "NeedPagination":  numTotalPosts > POSTS_PER_PAGE,
+        "NeedPagination":  numTotalPosts > PostsPerPage,
         "ListOfPages":     listOfPages(numTotalPosts, pageNo),
-        "entries":         data.posts(POSTS_PER_PAGE, offset),
-        "sidebar_entries": data.titles(NUM_RECENT_POSTS),
+        "entries":         data.posts(PostsPerPage, offset),
+        "sidebar_entries": data.titles(NumRecentPosts),
         "AdminLogin":      ctx.AdminLogin,
     }
 }

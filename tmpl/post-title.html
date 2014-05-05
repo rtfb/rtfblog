@@ -1,11 +1,11 @@
 {{define "post-title"}}
-<a class="post-title" href="/{{.EntryLink.Url}}">{{.EntryLink.Title}}</a>
+<a class="post-title" href="/{{.EntryLink.URL}}">{{.EntryLink.Title}}</a>
 {{if .AdminLogin}}
 <input
     class="edit-post-button"
     type="button"
     class="inline"
-    onclick="location.href = '/edit_post?post={{.EntryLink.Url}}'"
+    onclick="location.href = '/edit_post?post={{.EntryLink.URL}}'"
     value="Edit"
     />
     {{if .EntryLink.Hidden}}

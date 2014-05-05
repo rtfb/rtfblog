@@ -9,7 +9,7 @@ import (
 
 type CaptchaTask struct {
     Task   string
-    Id     string
+    ID     string
     Answer string
 }
 
@@ -34,7 +34,7 @@ func init() {
     for i := 2; i < 11; i++ {
         task := CaptchaTask{
             Task:   fmt.Sprintf("9 + %d =", i),
-            Id:     fmt.Sprintf("%d", 666+i),
+            ID:     fmt.Sprintf("%d", 666+i),
             Answer: answers[i-2],
         }
         CaptchaTasks = append(CaptchaTasks, task)
@@ -47,7 +47,7 @@ func GetTask() *CaptchaTask {
 
 func GetTaskByID(id string) *CaptchaTask {
     for _, t := range CaptchaTasks {
-        if t.Id == id {
+        if t.ID == id {
             return &t
         }
     }
@@ -68,7 +68,7 @@ func CheckCaptcha(task *CaptchaTask, input string) bool {
 func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask) {
     var response = map[string]interface{}{
         "status":     status,
-        "captcha-id": task.Id,
+        "captcha-id": task.ID,
         "name":       req.FormValue("name"),
         "email":      req.FormValue("email"),
         "website":    req.FormValue("website"),

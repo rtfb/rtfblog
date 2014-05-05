@@ -7,14 +7,14 @@ import (
 )
 
 const (
-    MAX_FILE_SIZE    = 50 * 1024 * 1024 // bytes
-    POSTS_PER_PAGE   = 5
-    NUM_FEED_ITEMS   = 3
-    NUM_RECENT_POSTS = 10
+    MaxFileSize    = 50 * 1024 * 1024 // bytes
+    PostsPerPage   = 5
+    NumFeedItems   = 3
+    NumRecentPosts = 10
 )
 
 type Tag struct {
-    TagUrl  string
+    TagURL  string
     TagName string
 }
 
@@ -31,11 +31,11 @@ type Comment struct {
     Email     string
     EmailHash string
     Website   string
-    Ip        string
+    IP        string
     Body      template.HTML
     RawBody   string
     Time      string
-    CommentId string
+    CommentID string
 }
 
 type CommentWithPostTitle struct {
@@ -45,7 +45,7 @@ type CommentWithPostTitle struct {
 
 type EntryLink struct {
     Title  string
-    Url    string
+    URL    string
     Hidden bool
 }
 
@@ -74,7 +74,7 @@ func (e Entry) NumComments() int {
 func (e Entry) TagsStr() template.HTML {
     var parts []string
     for _, t := range e.Tags {
-        part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagUrl, t.TagName)
+        part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagURL, t.TagName)
         parts = append(parts, part)
     }
     return template.HTML(strings.Join(parts, ", "))
@@ -84,8 +84,8 @@ func (e Entry) TagsWithUrls() string {
     var parts []string
     for _, t := range e.Tags {
         part := fmt.Sprintf("%s", t.TagName)
-        if t.TagUrl != t.TagName {
-            part = fmt.Sprintf("%s>%s", t.TagName, t.TagUrl)
+        if t.TagURL != t.TagName {
+            part = fmt.Sprintf("%s>%s", t.TagName, t.TagURL)
         }
         parts = append(parts, part)
     }
