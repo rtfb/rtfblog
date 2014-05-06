@@ -93,7 +93,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
         Title:       blogTitle,
         Link:        &feeds.Link{Href: url},
         Description: descr,
-        Author:      &feeds.Author{author, authorEmail},
+        Author:      &feeds.Author{Name: author, Email: authorEmail},
         Created:     now,
     }
     for _, p := range posts {
@@ -101,7 +101,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
             Title:       p.Title,
             Link:        &feeds.Link{Href: url + "/" + p.URL},
             Description: string(p.Body),
-            Author:      &feeds.Author{p.Author, authorEmail},
+            Author:      &feeds.Author{Name: p.Author, Email: authorEmail},
             Created:     now,
         }
         feed.Items = append(feed.Items, &item)
