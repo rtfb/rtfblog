@@ -455,7 +455,7 @@ func TestEntriesHaveTagsInList(t *testing.T) {
 func cssSelect(t T, node *html.Node, query string) []*html.Node {
     chain, err := selector.Selector(query)
     if err != nil {
-        t.Fatalf("WTF? Err=%s", query, err.Error())
+        t.Fatalf("WTF? query=%q, Err=%s", query, err.Error())
     }
     return chain.Find(node)
 }

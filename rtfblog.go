@@ -576,7 +576,7 @@ func obtainConfiguration(basedir string) SrvConfig {
     home, err := GetHomeDir()
     if err != nil {
         fmt.Println("Error acquiring user home dir. That can't be good.")
-        fmt.Println("Err = %q", err.Error())
+        fmt.Printf("Err = %q", err.Error())
     }
     // Read the most generic config first, then more specific, each latter will
     // override the former values:
