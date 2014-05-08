@@ -4,7 +4,7 @@ GOFILES=\
 	*.go\
 	dbtool/*.go
 
-all: fmt browserify grunt
+all: vet fmt browserify grunt
 
 grunt:
 	grunt
@@ -17,6 +17,9 @@ browserify:
 	browserify js/main.js -o static/js/bundle.js
 	browserify -r pagedown-editor js/pgdown-ed.js -o static/js/pagedown-bundle.js
 	cp ./node_modules/pagedown-editor/wmd-buttons.png static/
+
+vet:
+	go vet
 
 fmt:
 	${GOFMT} -w ${GOFILES}
