@@ -10,7 +10,10 @@ go:
 
 before_install:
     - go get code.google.com/p/go-html-transform/css/selector
+    - go get code.google.com/p/go.tools/cmd/vet
 
 install: go get -d -v ./... && go build -v .
 
-script: go test -v .
+script:
+    - go vet -x .
+    - go test -v .
