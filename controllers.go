@@ -151,6 +151,9 @@ func Tmpl(name string) *template.Template {
     if t, ok := cachedTemplates[name]; ok {
         return t
     }
+    // L10n is lazy-initialized, so we need to add it here, because it would be
+    // nil if referenced from var section:
+    funcs["L10n"] = L10n
     t := template.New("base.html").Funcs(funcs)
     t = template.Must(t.ParseFiles(
         "tmpl/base.html",

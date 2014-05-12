@@ -67,8 +67,8 @@ func (e Entry) HasComments() bool {
     return len(e.Comments) > 0
 }
 
-func (e Entry) NumComments() int {
-    return len(e.Comments)
+func (e Entry) NumCommentsStr() string {
+    return L10n("{{.Count}} comments", len(e.Comments))
 }
 
 func (e Entry) TagsStr() template.HTML {

@@ -6,6 +6,7 @@ import (
 
     "github.com/gorilla/pat"
     "github.com/gorilla/sessions"
+    "github.com/nicksnyder/go-i18n/i18n"
 )
 
 type Context struct {
@@ -17,6 +18,7 @@ type Context struct {
 var (
     store  sessions.Store
     Router *pat.Router
+    L10n   i18n.TranslateFunc
 )
 
 func NewContext(req *http.Request) (*Context, error) {
@@ -28,11 +30,19 @@ func NewContext(req *http.Request) (*Context, error) {
     return ctx, err
 }
 
+func InitL10n() {
+    i18n.MustLoadTranslationFile("./en-US.all.json")
+    i18n.MustLoadTranslationFile("./lt-LT.all.json")
+    userLocale := "lt-LT"    // user preference, accept header, language cookie
+    defaultLocale := "en-US" // known valid locale
+    L10n = i18n.MustTfunc(userLocale, defaultLocale)
+}
+
 func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
     data.hiddenPosts(ctx.AdminLogin)
     numTotalPosts := data.numPosts()
     return map[string]interface{}{
-        "PageTitle":       "Velkam",
+        "PageTitle":       L10n("Welcome"),
         "BlogTitle":       conf.Get("blog_title"),
         "BlogSubtitle":    conf.Get("blog_descr"),
         "NeedPagination":  numTotalPosts > PostsPerPage,

@@ -1,0 +1,21 @@
+[
+{
+    "id": "Welcome",
+    "translation": "Welcome"
+},
+{
+    "id": "Powered by",
+    "translation": "Powered by"
+},
+{
+    "id": "Recent entries:",
+    "translation": "Recent entries:"
+},
+{
+    "id": "{{.Count}} comments",
+    "translation": {
+        "one": "{{.Count}} comment",
+        "other": "{{.Count}} comments"
+    }
+}
+]

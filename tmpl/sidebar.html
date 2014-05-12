@@ -1,7 +1,7 @@
 {{define "sidebar"}}
 <div class="four columns sidebar" id="sidebar">
 <nav>
-    <p>Recent entries:</p>
+    <p>{{L10n "Recent entries:"}}</p>
     <div>
         {{range .sidebar_entries}}
             <a href="/{{.URL}}">{{.Title}}</a> <br />
@@ -19,7 +19,7 @@
     <img src="/static/vim_created.png" alt="Vim logo" />
     <img src="/static/gopher.png" alt="Go logo" />
     <div class="info" style="text-align: center">
-        Powered by <a href="http://golang.org/">Go</a>
+        {{L10n "Powered by"}} <a href="http://golang.org/">Go</a>
     </div>
 </nav>
 </div>

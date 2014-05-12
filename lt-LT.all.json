@@ -1,0 +1,22 @@
+[
+{
+    "id": "Welcome",
+    "translation": "Velkam"
+},
+{
+    "id": "Powered by",
+    "translation": "Veikia ant"
+},
+{
+    "id": "Recent entries:",
+    "translation": "Paskutiniai įrašai:"
+},
+{
+    "id": "{{.Count}} comments",
+    "translation": {
+        "one": "{{.Count}} komentaras",
+        "few": "{{.Count}} komentarai",
+        "other": "{{.Count}} komentarų"
+    }
+}
+]
