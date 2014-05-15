@@ -10,9 +10,14 @@ go:
 before_install:
     - go get code.google.com/p/go-html-transform/css/selector
     - go get code.google.com/p/go.tools/cmd/vet
+    - go get -v code.google.com/p/go.tools/cmd/cover
+    - go get -v github.com/mattn/goveralls
 
 install: go get -d -v ./... && go build -v .
 
 script:
     - go vet -x .
-    - go test -v .
+    - go test -covermode=count -coverprofile=profile.cov -v .
+
+after_script:
+    - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci

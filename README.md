@@ -1,6 +1,7 @@
 # rtfblog
 
 [![Build Status](https://travis-ci.org/rtfb/rtfblog.svg?branch=master)](https://travis-ci.org/rtfb/rtfblog)
+[![Coverage Status](https://coveralls.io/repos/rtfb/rtfblog/badge.png)](https://coveralls.io/r/rtfb/rtfblog)
 
 ## What is this?
 
