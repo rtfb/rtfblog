@@ -319,7 +319,7 @@ func tclientPostForm(rqURL string) (*http.Response, error) {
 
 func mustContain(t *testing.T, page string, what string) {
     if !strings.Contains(page, what) {
-        t.Errorf("Test page did not contain %q", what)
+        t.Errorf("Test page did not contain %q\npage:\n%s", what, page)
     }
 }
 
