@@ -84,6 +84,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
     if url == "" {
         url = req.Host
     }
+    url = addProtocol(url)
     blogTitle := conf.Get("blog_title")
     descr := conf.Get("blog_descr")
     author := conf.Get("author")
@@ -416,7 +417,7 @@ func detectLanguageWithTimeout(text string) string {
     }
 }
 
-func normalizeWebsite(raw string) string {
+func addProtocol(raw string) string {
     if strings.HasPrefix(strings.ToLower(raw), "http://") {
         return raw
     }
@@ -434,7 +435,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     ip := req.RemoteAddr
     name := req.FormValue("name")
     email := req.FormValue("email")
-    website := normalizeWebsite(req.FormValue("website"))
+    website := addProtocol(req.FormValue("website"))
     body := req.FormValue("text")
     commenterID, err := data.commenter(name, email, website, ip)
     redir := ""
