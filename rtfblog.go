@@ -89,21 +89,25 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
     descr := conf.Get("blog_descr")
     author := conf.Get("author")
     authorEmail := conf.Get("email")
-    now := time.Now()
     feed := &feeds.Feed{
         Title:       blogTitle,
         Link:        &feeds.Link{Href: url},
         Description: descr,
         Author:      &feeds.Author{Name: author, Email: authorEmail},
-        Created:     now,
     }
     for _, p := range posts {
+        pubDate, err := time.Parse("2006-01-02", p.Date)
+        if err != nil {
+            logger.Printf("Error parsing date for RSS item %q\n", p.URL)
+            logger.Println(err.Error())
+            continue
+        }
         item := feeds.Item{
             Title:       p.Title,
             Link:        &feeds.Link{Href: url + "/" + p.URL},
             Description: string(p.Body),
             Author:      &feeds.Author{Name: p.Author, Email: authorEmail},
-            Created:     now,
+            Created:     pubDate,
         }
         feed.Items = append(feed.Items, &item)
     }
