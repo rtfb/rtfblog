@@ -31,8 +31,8 @@ func NewContext(req *http.Request) (*Context, error) {
 }
 
 func InitL10n() {
-    i18n.MustLoadTranslationFile("./en-US.all.json")
-    i18n.MustLoadTranslationFile("./lt-LT.all.json")
+    i18n.MustLoadTranslationFile("./l10n/en-US.all.json")
+    i18n.MustLoadTranslationFile("./l10n/lt-LT.all.json")
     userLocale := "lt-LT"    // user preference, accept header, language cookie
     defaultLocale := "en-US" // known valid locale
     L10n = i18n.MustTfunc(userLocale, defaultLocale)

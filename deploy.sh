@@ -12,6 +12,7 @@ cp -r ./static $package
 cp -r ./tmpl $package
 cp ./stuff/images/* $package/static/
 cp ./testdata/rtfblog-dump.sql $package/rtfblog-dump.sql
+cp -r l10n $package/
 tar czvf package.tar.gz ./package
 rm -rf $package
 
