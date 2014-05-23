@@ -349,7 +349,9 @@ func mkTestEntry(i int, hidden bool) *Entry {
 
 func init() {
     conf = obtainConfiguration("")
-    InitL10n()
+    conf["staticdir"] = "../static"
+    InitL10n("../l10n")
+    tmplDir = "../tmpl"
     logger = MkLogger("tests.log")
     store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
     forgeTestUser("testuser", "testpasswd")

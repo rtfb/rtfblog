@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "net/http"
+    "path/filepath"
 
     "github.com/gorilla/pat"
     "github.com/gorilla/sessions"
@@ -30,9 +31,9 @@ func NewContext(req *http.Request) (*Context, error) {
     return ctx, err
 }
 
-func InitL10n() {
-    i18n.MustLoadTranslationFile("./l10n/en-US.all.json")
-    i18n.MustLoadTranslationFile("./l10n/lt-LT.all.json")
+func InitL10n(l10nDir string) {
+    i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "en-US.all.json"))
+    i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "lt-LT.all.json"))
     userLocale := "lt-LT"    // user preference, accept header, language cookie
     defaultLocale := "en-US" // known valid locale
     L10n = i18n.MustTfunc(userLocale, defaultLocale)

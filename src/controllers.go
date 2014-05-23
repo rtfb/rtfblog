@@ -23,6 +23,7 @@ var (
     funcs           = template.FuncMap{
         "dict": dict,
     }
+    tmplDir = "tmpl"
 )
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -156,13 +157,13 @@ func Tmpl(name string) *template.Template {
     funcs["L10n"] = L10n
     t := template.New("base.html").Funcs(funcs)
     t = template.Must(t.ParseFiles(
-        "tmpl/base.html",
-        "tmpl/sidebar.html",
-        "tmpl/post-title.html",
-        "tmpl/header.html",
-        "tmpl/author.html",
-        "tmpl/captcha.html",
-        filepath.Join("tmpl", name),
+        filepath.Join(tmplDir, "base.html"),
+        filepath.Join(tmplDir, "sidebar.html"),
+        filepath.Join(tmplDir, "post-title.html"),
+        filepath.Join(tmplDir, "header.html"),
+        filepath.Join(tmplDir, "author.html"),
+        filepath.Join(tmplDir, "captcha.html"),
+        filepath.Join(tmplDir, name),
     ))
     cachedTemplates[name] = t
     return t
