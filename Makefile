@@ -1,7 +1,7 @@
 GOFMT=gofmt -s -tabs=false -tabwidth=4
 
 GOFILES=\
-	*.go\
+	src/*.go\
 	dbtool/*.go
 
 all: vet fmt browserify grunt
@@ -19,7 +19,7 @@ browserify:
 	cp ./node_modules/pagedown-editor/wmd-buttons.png static/
 
 vet:
-	go vet
+	go vet src/*.go
 
 fmt:
 	${GOFMT} -w ${GOFILES}

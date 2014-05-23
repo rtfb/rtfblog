@@ -6,19 +6,19 @@ module.exports = function(grunt) {
             all: ['tests/*.html']
         },
         watch: {
-            files: ['tests/*.js', 'tests/*.html', 'tmpl/*.html', 'js/*.js', '*.go'],
+            files: ['tests/*.js', 'tests/*.html', 'tmpl/*.html', 'js/*.js', 'src/*.go'],
             tasks: ['qunit', 'shell:buildGo', 'shell:testGo']
         },
         shell: {
             buildGo: {
-                command: 'go build',
+                command: 'go build -o rtfblog src/*.go',
                 options: {
                     stdout: true,
                     stderr: true
                 }
             },
             testGo: {
-                command: 'go test',
+                command: 'go test ./...',
                 options: {
                     stdout: true,
                     stderr: true
