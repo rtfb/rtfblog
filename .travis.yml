@@ -13,11 +13,11 @@ before_install:
     - go get -v code.google.com/p/go.tools/cmd/cover
     - go get -v github.com/mattn/goveralls
 
-install: go get -d -v ./... && go build -v .
+install: go get -d -v ./... && go build -v src/*.go
 
 script:
-    - go vet -x .
-    - go test -covermode=count -coverprofile=profile.cov -v .
+    - go vet -x src/*.go
+    - go test -covermode=count -coverprofile=profile.cov -v ./...
 
 after_script:
     - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
