@@ -6,7 +6,6 @@ vim-session
 testdata/rtfblog-dump.sql
 testdata/legacy-db.conf
 testdata/db.conf
-dbtool/dbtool
 stuff/
 git-arch-for-deploy.tar.gz
 priv_key
