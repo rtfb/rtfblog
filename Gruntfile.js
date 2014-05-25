@@ -31,6 +31,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-shell');
     // register one or more task lists (you should ALWAYS have a "default" task list)
-    grunt.registerTask('default', ['qunit', 'shell:testGo']);
-    //grunt.registerTask('taskName', ['taskToRun', 'anotherTask']);
+    grunt.registerTask('default', ['qunit', 'shell:buildGo', 'shell:testGo']);
 };
