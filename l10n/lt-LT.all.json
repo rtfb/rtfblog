@@ -1,30 +1,31 @@
 [
-{
-    "id": "Welcome",
-    "translation": "Velkam"
-},
-{
+  {
     "id": "HTTP Error %d",
     "translation": "HTTP klaida %d"
-},
-{
+  },
+  {
     "id": "Login failed.",
     "translation": "Nepavyko prisilogint."
-},
-{
+  },
+  {
     "id": "Powered by",
     "translation": "Veikia ant"
-},
-{
+  },
+  {
     "id": "Recent entries:",
     "translation": "Paskutiniai įrašai:"
-},
-{
+  },
+  {
+    "id": "Welcome",
+    "translation": "Velkam"
+  },
+  {
     "id": "{{.Count}} comments",
     "translation": {
-        "one": "{{.Count}} komentaras",
-        "few": "{{.Count}} komentarai",
-        "other": "{{.Count}} komentarų"
+      "few": "{{.Count}} komentarai",
+      "many": "",
+      "one": "{{.Count}} komentaras",
+      "other": "{{.Count}} komentarų"
     }
-}
+  }
 ]

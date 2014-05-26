@@ -1,29 +1,29 @@
 [
-{
-    "id": "Welcome",
-    "translation": "Welcome"
-},
-{
+  {
     "id": "HTTP Error %d",
     "translation": "HTTP Error %d"
-},
-{
+  },
+  {
     "id": "Login failed.",
     "translation": "Login failed."
-},
-{
+  },
+  {
     "id": "Powered by",
     "translation": "Powered by"
-},
-{
+  },
+  {
     "id": "Recent entries:",
     "translation": "Recent entries:"
-},
-{
+  },
+  {
+    "id": "Welcome",
+    "translation": "Welcome"
+  },
+  {
     "id": "{{.Count}} comments",
     "translation": {
-        "one": "{{.Count}} comment",
-        "other": "{{.Count}} comments"
+      "one": "{{.Count}} comment",
+      "other": "{{.Count}} comments"
     }
-}
+  }
 ]
