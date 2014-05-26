@@ -4,6 +4,14 @@
     "translation": "Welcome"
 },
 {
+    "id": "HTTP Error %d",
+    "translation": "HTTP Error %d"
+},
+{
+    "id": "Login failed.",
+    "translation": "Login failed."
+},
+{
     "id": "Powered by",
     "translation": "Powered by"
 },

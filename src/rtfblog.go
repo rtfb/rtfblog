@@ -243,7 +243,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     uname := req.FormValue("uname")
     a, err := data.author(uname)
     if err == sql.ErrNoRows {
-        ctx.Session.AddFlash("Login failed.")
+        ctx.Session.AddFlash(L10n("Login failed."))
         return LoginForm(w, req, ctx)
     }
     if err != nil {
@@ -261,7 +261,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
         }
         http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
     } else {
-        ctx.Session.AddFlash("Login failed.")
+        ctx.Session.AddFlash(L10n("Login failed."))
         return LoginForm(w, req, ctx)
     }
     return nil

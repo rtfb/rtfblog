@@ -4,6 +4,14 @@
     "translation": "Velkam"
 },
 {
+    "id": "HTTP Error %d",
+    "translation": "HTTP klaida %d"
+},
+{
+    "id": "Login failed.",
+    "translation": "Nepavyko prisilogint."
+},
+{
     "id": "Powered by",
     "translation": "Veikia ant"
 },

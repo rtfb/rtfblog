@@ -101,7 +101,7 @@ func PerformStatus(w http.ResponseWriter, req *http.Request, status int) error {
         html := fmt.Sprintf("%d.html", status)
         return Tmpl(html).Execute(w, map[string]interface{}{})
     }
-    w.Write([]byte(fmt.Sprintf("Error %d", status)))
+    w.Write([]byte(fmt.Sprintf(L10n("HTTP Error %d"), status)))
     return nil
 }
 
