@@ -612,7 +612,7 @@ func main() {
     basedir, _ := filepath.Split(fullPathToBinary())
     os.Chdir(basedir)
     conf = obtainConfiguration(basedir)
-    InitL10n("./l10n")
+    InitL10n("./l10n", "lt-LT")
     logger = MkLogger(conf.Get("log"))
     store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
     db, err := sql.Open("postgres", conf.Get("database"))

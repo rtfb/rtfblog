@@ -350,7 +350,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 func init() {
     conf = obtainConfiguration("")
     conf["staticdir"] = "../static"
-    InitL10n("../l10n")
+    InitL10n("../l10n", "en-US")
     tmplDir = "../tmpl"
     logger = MkLogger("tests.log")
     store = sessions.NewCookieStore([]byte("aaabbbcccddd"))

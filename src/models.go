@@ -31,10 +31,13 @@ func NewContext(req *http.Request) (*Context, error) {
     return ctx, err
 }
 
-func InitL10n(l10nDir string) {
+// Loads translation files and inits L10n func that retrieves the translations.
+// l10nDir is a name of a directory with translations.
+// userLocale specifies a locale preferred by the user (a preference or accept
+// header or language cookie).
+func InitL10n(l10nDir, userLocale string) {
     i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "en-US.all.json"))
     i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "lt-LT.all.json"))
-    userLocale := "lt-LT"    // user preference, accept header, language cookie
     defaultLocale := "en-US" // known valid locale
     L10n = i18n.MustTfunc(userLocale, defaultLocale)
 }
