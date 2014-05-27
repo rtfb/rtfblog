@@ -40,6 +40,8 @@ func InitL10n(l10nDir, userLocale string) {
     i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "lt-LT.all.json"))
     defaultLocale := "en-US" // known valid locale
     L10n = i18n.MustTfunc(userLocale, defaultLocale)
+    // Also assign L10n to a list of template funcs:
+    funcs["L10n"] = L10n
 }
 
 func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
