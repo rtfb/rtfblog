@@ -31,11 +31,11 @@ func init() {
         "devyniolika",
     }
     CaptchaTasks = make([]CaptchaTask, 0, 0)
-    for i := 2; i < 11; i++ {
+    for i, answer := range answers {
         task := CaptchaTask{
-            Task:   fmt.Sprintf("9 + %d =", i),
+            Task:   fmt.Sprintf("9 + %d =", i+2),
             ID:     fmt.Sprintf("%d", 666+i),
-            Answer: answers[i-2],
+            Answer: answer,
         }
         CaptchaTasks = append(CaptchaTasks, task)
     }
