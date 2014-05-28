@@ -46,6 +46,7 @@ function submitComment() {
                 if (response["status"] === "rejected") {
                     document.getElementById('captcha-input').value = '';
                 } else if (response["status"] === "showcaptcha") {
+                    document.getElementById('captcha-task-text').textContent = response["captcha-task"];
                     document.getElementById('captcha-alert-box').style.visibility = 'visible';
                     document.getElementById('captcha-id').value = response["captcha-id"];
                 } else {

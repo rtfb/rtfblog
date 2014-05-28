@@ -67,12 +67,13 @@ func CheckCaptcha(task *CaptchaTask, input string) bool {
 
 func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask) {
     var response = map[string]interface{}{
-        "status":     status,
-        "captcha-id": task.ID,
-        "name":       req.FormValue("name"),
-        "email":      req.FormValue("email"),
-        "website":    req.FormValue("website"),
-        "body":       req.FormValue("text"),
+        "status":       status,
+        "captcha-id":   task.ID,
+        "captcha-task": task.Task,
+        "name":         req.FormValue("name"),
+        "email":        req.FormValue("email"),
+        "website":      req.FormValue("website"),
+        "body":         req.FormValue("text"),
     }
     b, err := json.Marshal(response)
     if err != nil {
