@@ -25,5 +25,169 @@
       "one": "{{.Count}} comment",
       "other": "{{.Count}} comments"
     }
+  },
+  {
+    "id": "Verboten",
+    "translation": "Verboten"
+  },
+  {
+    "id": "You do not have access to this part.",
+    "translation": "You do not have access to this part."
+  },
+  {
+    "id": "Page Not Found",
+    "translation": "Page Not Found"
+  },
+  {
+    "id": "Why, you ask?",
+    "translation": "Why, you ask?"
+  },
+  {
+    "id": "It may be a broken link, you may mistyped the URL,",
+    "translation": "It may be a broken link, you may mistyped the URL,"
+  },
+  {
+    "id": "I might have moved the page or my site is experiencing",
+    "translation": "I might have moved the page or my site is experiencing"
+  },
+  {
+    "id": "technical problems. Or maybe it's not implemented yet.",
+    "translation": "technical problems. Or maybe it's not implemented yet."
+  },
+  {
+    "id": "New Post",
+    "translation": "New Post"
+  },
+  {
+    "id": "All Comments",
+    "translation": "All Comments"
+  },
+  {
+    "id": "Have a say",
+    "translation": "Have a say"
+  },
+  {
+    "id": "All comments:",
+    "translation": "All comments:"
+  },
+  {
+    "id": "Delete",
+    "translation": "Delete"
+  },
+  {
+    "id": "Posted in:",
+    "translation": "Posted in:"
+  },
+  {
+    "id": "No comments. This is most likely an error.",
+    "translation": "No comments. This is most likely an error."
+  },
+  {
+    "id": "You are about to delete this comment!\nThis cannot be undone!",
+    "translation": "You are about to delete this comment!\nThis cannot be undone!"
+  },
+  {
+    "id": "No entries. This is most likely an error.",
+    "translation": "No entries. This is most likely an error."
+  },
+  {
+    "id": "My Nazi spam-filter presumes everybody is a bot.",
+    "translation": "My Nazi spam-filter presumes everybody is a bot."
+  },
+  {
+    "id": "Please solve this captcha to prove you're not:",
+    "translation": "Please solve this captcha to prove you're not:"
+  },
+  {
+    "id": "Url:",
+    "translation": "Url:"
+  },
+  {
+    "id": "Tags:",
+    "translation": "Tags:"
+  },
+  {
+    "id": "Hidden",
+    "translation": "Hidden"
+  },
+  {
+    "id": "Upload File",
+    "translation": "Upload File"
+  },
+  {
+    "id": "Post text:",
+    "translation": "Post text:"
+  },
+  {
+    "id": "Submit",
+    "translation": "Submit"
+  },
+  {
+    "id": "Delete!",
+    "translation": "Delete!"
+  },
+  {
+    "id": "You are about to delete this post!\nThis cannot be undone!",
+    "translation": "You are about to delete this post!\nThis cannot be undone!"
+  },
+  {
+    "id": "Admin",
+    "translation": "Admin"
+  },
+  {
+    "id": "Logout",
+    "translation": "Logout"
+  },
+  {
+    "id": "Login",
+    "translation": "Login"
+  },
+  {
+    "id": "Username",
+    "translation": "Username"
+  },
+  {
+    "id": "Password",
+    "translation": "Password"
+  },
+  {
+    "id": "Pages:",
+    "translation": "Pages:"
+  },
+  {
+    "id": "Edit",
+    "translation": "Edit"
+  },
+  {
+    "id": "(Hidden)",
+    "translation": "(Hidden)"
+  },
+  {
+    "id": "Cancel",
+    "translation": "Cancel"
+  },
+  {
+    "id": "Name",
+    "translation": "Name"
+  },
+  {
+    "id": "Email (will stay private)",
+    "translation": "Email (will stay private)"
+  },
+  {
+    "id": "Web site",
+    "translation": "Web site"
+  },
+  {
+    "id": "RSS Feed",
+    "translation": "RSS Feed"
+  },
+  {
+    "id": "Vim logo",
+    "translation": "Vim logo"
+  },
+  {
+    "id": "Go logo",
+    "translation": "Go logo"
   }
 ]

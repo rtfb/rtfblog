@@ -17,7 +17,7 @@
         <div class="twelve columns container">
         {{if .HasTags}}
         <div class="tags nine columns alpha">
-        <strong>Tags:</strong>
+            <strong>{{L10n "Tags:"}}</strong>
         {{end}}
         {{.TagsStr}}
         {{if .HasTags}}
@@ -34,7 +34,7 @@
         </div>
         </div>
         {{else}}
-        <h2>No entries. This is most likely an error.</h2>
+        <h2>{{L10n "No entries. This is most likely an error."}}</h2>
         {{end}}
     </div>
 
@@ -45,7 +45,7 @@
         <div class="twelve columns content" id="pager">
             <div style="text-align: center">
                 {{if .NeedPagination}}
-                Pages:
+                {{L10n "Pages:"}}
                 {{.ListOfPages}}
                 {{end}}
                 <br />

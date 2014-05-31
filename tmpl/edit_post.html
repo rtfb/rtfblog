@@ -42,7 +42,7 @@
             value="{{.Title}}"
             />
         <br />
-        <label for="post_url">Url:</label>
+        <label for="post_url">{{L10n "Url:"}}</label>
         <input
             id="post_url"
             type="text"
@@ -51,7 +51,7 @@
             value="{{.URL}}"
             />
         <br />
-        <label for="post_tags">Tags:</label>
+        <label for="post_tags">{{L10n "Tags:"}}</label>
         <input
             id="post_tags"
             type="text"
@@ -69,17 +69,17 @@
             checked
             {{end}}
             />
-        Hidden
+        {{L10n "Hidden"}}
         <br />
 
         <div id="upload-progress-section"></div>
         <input
             id="upload-file-button"
             type="button"
-            value="Upload File"
+            value="{{L10n "Upload File"}}"
             />
 
-        <label class="twelve columns" for="wmd-input">Post text:</label>
+        <label class="twelve columns" for="wmd-input">{{L10n "Post text:"}}</label>
         <div class="wmd-panel container">
             <div class="row">
                 <div id="wmd-preview" class="wmd-preview twelve columns">
@@ -98,12 +98,12 @@
         <input
             id="submit-post-edit"
             type="submit"
-            value="Submit"
+            value="{{L10n "Submit"}}"
             />
         <input
             type="button"
             onclick="deleteWithConfirm('{{.URL}}')"
-            value="Delete!"
+            value="{{L10n "Delete!"}}"
             />
         <input id="fileid" type="file" name="file" style="visibility:hidden" />
         {{end}}
@@ -128,7 +128,8 @@
              }());
 
         function deleteWithConfirm(postUrl) {
-            if (confirm('You are about to delete this post!\nThis cannot be undone!')) {
+            var q = "{{L10n "You are about to delete this post!\nThis cannot be undone!"}}";
+            if (confirm(q)) {
                 var url = "/delete_post?id=" + postUrl;
                 window.open(url, '_self', false);
             }

@@ -14,11 +14,11 @@
 {{define "content"}}
         <div style="margin-top: 100px;">
             <h2 class="centered">404</h2>
-            <h2 class="centered">Page Not Found</h2>
-            <p class="centered"><strong>Why, you ask?</strong><br />
-            It may be a broken link, you may mistyped the URL,<br />
-            I might have moved the page or my site is experiencing<br />
-            technical problems. Or maybe it's not implemented yet.</p>
+            <h2 class="centered">{{L10n "Page Not Found"}}</h2>
+            <p class="centered"><strong>{{L10n "Why, you ask?"}}</strong><br />
+            {{L10n "It may be a broken link, you may mistyped the URL,"}}<br />
+            {{L10n "I might have moved the page or my site is experiencing"}}<br />
+            {{L10n "technical problems. Or maybe it's not implemented yet."}}</p>
         </div>
 {{end}}
 {{define "extrascripts"}}{{end}}

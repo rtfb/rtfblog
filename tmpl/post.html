@@ -24,7 +24,7 @@
         <div class="twelve columns container">
         {{if .HasTags}}
         <div class="nine columns alpha" id="tags">
-        <strong>Tags:</strong>
+            <strong>{{L10n "Tags:"}}</strong>
         {{end}}
         {{.TagsStr}}
         {{if .HasTags}}
@@ -113,14 +113,14 @@
                             type="button"
                             style="display: none;"
                             onclick="submit({{.CommentID}}, '{{$post.URL}}')"
-                            value="Submit"
+                            value="{{L10n "Submit"}}"
                             />
                         <input
                             id="cancel-edit-comment-{{.CommentID}}"
                             type="button"
                             style="display: none;"
                             onclick="cancel({{.CommentID}})"
-                            value="Cancel"
+                            value="{{L10n "Cancel"}}"
                             />
                         &nbsp;
                     </div>
@@ -129,13 +129,13 @@
                             id="delete-comment-button-{{.CommentID}}"
                             type="button"
                             onclick="deleteWithConfirm({{.CommentID}}, '{{$post.URL}}')"
-                            value="Delete!"
+                            value="{{L10n "Delete!"}}"
                             />
                         <input
                             id="edit-comment-button-{{.CommentID}}"
                             type="button"
                             onclick="toggleEdit({{.CommentID}})"
-                            value="Edit"
+                            value="{{L10n "Edit"}}"
                             />
                     </div>
                 </form>
@@ -162,7 +162,7 @@
                     id="name"
                     class="text"
                     name="name"
-                    placeholder="Name"
+                    placeholder="{{L10n "Name"}}"
                     type="text"
                     value=""
                     />
@@ -170,7 +170,7 @@
                     id="email"
                     class="text"
                     name="email"
-                    placeholder="Email (will stay private)"
+                    placeholder="{{L10n "Email (will stay private)"}}"
                     type="text"
                     value=""
                     />
@@ -178,7 +178,7 @@
                     id="website"
                     class="text"
                     name="website"
-                    placeholder="Web site"
+                    placeholder="{{L10n "Web site"}}"
                     type="text"
                     value=""
                     />
@@ -202,7 +202,7 @@
                 id="wmd-input"
                 class="wmd-input eleven columns"
                 name="text"
-                placeholder="Have a say"
+                placeholder="{{L10n "Have a say"}}"
                 ></textarea>
         </div>
         </div>
@@ -267,7 +267,8 @@
         }
 
         function deleteWithConfirm(id, redirectTo) {
-            if (confirm('You are about to delete this comment!\nThis cannot be undone!')) {
+            var q = "{{L10n "You are about to delete this comment!\nThis cannot be undone!"}}";
+            if (confirm(q)) {
                 var url = "/delete_comment?id=" + id
                           + "&action=delete&redirect_to=" + redirectTo;
                 window.open(url, '_self', false);

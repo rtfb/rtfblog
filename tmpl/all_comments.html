@@ -12,7 +12,7 @@
 
     <hr />
     <div class="twelve columns content" id="content">
-        <p>All comments:</p>
+        <p>{{L10n "All comments:"}}</p>
         {{range .all_comments}}
         <div id="comment">
             <div id="commenter">
@@ -38,14 +38,14 @@
                 type="button"
                 class="inline"
                 onclick="deleteWithConfirm({{.CommentID}}, 'all_comments')"
-                value="Delete"
+                value="{{L10n "Delete"}}"
                 />
-            Posted in:
+            {{L10n "Posted in:"}}
             <a id="post" href="{{.URL}}">{{.Title}}</a>
         </div>
         <hr />
         {{else}}
-            <h2>No comments. This is most likely an error.</h2>
+            <h2>{{L10n "No comments. This is most likely an error."}}</h2>
         {{end}}
     </div>
 
@@ -59,7 +59,8 @@
 {{define "extrascripts"}}
         <script type="text/javascript">
         function deleteWithConfirm(id, redirectTo) {
-            if (confirm('You are about to delete this comment!\nThis cannot be undone!')) {
+            var q = "{{L10n "You are about to delete this comment!\nThis cannot be undone!"}}";
+            if (confirm(q)) {
                 var url = "/delete_comment?id=" + id
                           + "&action=delete&redirect_to=" + redirectTo;
                 window.open(url, '_self', false);

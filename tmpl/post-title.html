@@ -6,10 +6,10 @@
     type="button"
     class="inline"
     onclick="location.href = '/edit_post?post={{.EntryLink.URL}}'"
-    value="Edit"
+    value="{{L10n "Edit"}}"
     />
     {{if .EntryLink.Hidden}}
-    <strong>(Hidden)</strong>
+    <strong>{{L10n "(Hidden)"}}</strong>
     {{end}}
 {{end}}
 {{end}}

@@ -14,8 +14,11 @@
 {{define "content"}}
         <div style="margin-top: 100px;">
             <h2 class="centered">403</h2>
-            <h2 class="centered">Verboten</h2>
-            <p class="centered"><strong>You do not have access to this part.</strong><br />
+            <h2 class="centered">{{L10n "Verboten"}}</h2>
+            <p class="centered">
+                <strong>
+                    {{L10n "You do not have access to this part."}}
+                </strong><br />
             Try <a href="/login">logging in</a> or navigate
             <a href="/">somewhere else</a>.</p>
         </div>

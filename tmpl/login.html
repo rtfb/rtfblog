@@ -3,16 +3,31 @@
 {{define "content"}}
 <div id="header">
     <br />
-    <h1>Login</h1>
+    <h1>{{L10n "Login"}}</h1>
 </div>
 <hr />
 
 <div id="content">
     {{.Flashes}}
     <form action="login" method="post" id="login_form">
-        <div><input class="text" name="uname" placeholder="Username" type="text" autofocus="autofocus" /></div>
-        <div><input class="text" name="passwd" placeholder="Password" type="password" /></div>
-        <div><input type="submit" value="Login" /></div>
+        <div>
+            <input
+                class="text"
+                name="uname"
+                placeholder="{{L10n "Username"}}"
+                type="text"
+                autofocus="autofocus"
+                />
+        </div>
+        <div>
+            <input
+                class="text"
+                name="passwd"
+                placeholder="{{L10n "Password"}}"
+                type="password"
+                />
+        </div>
+        <div><input type="submit" value="{{L10n "Login"}}" /></div>
         <!-- <input type="hidden" name="redirect_to" value="{{.RedirectTo}}"/> -->
     </form>
 </div>

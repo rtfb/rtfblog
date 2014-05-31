@@ -6,13 +6,13 @@
     </div>
     {{if .AdminLogin}}
     <div style="text-align: right" class="four columns omega" id="logout">
-        <a href="/admin">Admin</a>
+        <a href="/admin">{{L10n "Admin"}}</a>
         -
-        <a href="/logout">Logout</a>
+        <a href="/logout">{{L10n "Logout"}}</a>
     </div>
     {{else}}
     <div style="text-align: right" class="four columns omega" id="login">
-        <a href="/login">Login</a>
+        <a href="/login">{{L10n "Login"}}</a>
     </div>
     {{end}}
 </div>

@@ -1,7 +1,7 @@
 {{define "captcha"}}
 <p>
-My Nazi spam-filter presumes everybody is a bot.<br />
-Please solve this captcha to prove you're not:</p>
+{{L10n "My Nazi spam-filter presumes everybody is a bot."}}<br />
+{{L10n "Please solve this captcha to prove you're not:"}}</p>
 <input id="captcha-id" name="captcha-id" type="hidden" value="{{.ID}}" />
 <span id="captcha-task-text" class="captcha-prompt">
     {{.Task}}
