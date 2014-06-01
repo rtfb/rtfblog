@@ -2,6 +2,7 @@ package main
 
 import (
     "bufio"
+    "bytes"
     "database/sql"
     "encoding/json"
     "fmt"
@@ -16,6 +17,7 @@ import (
     "path/filepath"
     "strconv"
     "strings"
+    textTemplate "text/template"
     "time"
 
     "github.com/gorilla/feeds"
@@ -497,6 +499,16 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 }
 
 func SendEmail(commenter Commenter, rawBody, url, postTitle string) {
+    const messageTmpl = `
+{{with .Commenter}}
+New comment from {{.Name}} <{{.Email}}> ({{.Website}}):
+{{end}}
+
+{{.RawBody}}
+
+URL: {{.URL}}
+`
+    t := textTemplate.Must(textTemplate.New("emailMessage").Parse(messageTmpl))
     gmailSenderAcct := conf.Get("notif_sender_acct")
     gmailSenderPasswd := conf.Get("notif_sender_passwd")
     notifee := conf.Get("email")
@@ -505,10 +517,18 @@ func SendEmail(commenter Commenter, rawBody, url, postTitle string) {
         logger.Println("err initing gmail: ", err.Error())
         return
     }
-    format := "\n\nNew comment from %s <%s> (%s):\n\n%s\n\nURL: %s"
-    message := fmt.Sprintf(format, commenter.Name, commenter.Email, commenter.Website, rawBody, url)
+    var buff bytes.Buffer
+    t.Execute(&buff, struct {
+        Commenter
+        RawBody string
+        URL     string
+    }{
+        Commenter: commenter,
+        RawBody:   rawBody,
+        URL:       url,
+    })
     subj := fmt.Sprintf("New comment in '%s'", postTitle)
-    mess := email.NewBriefMessageFrom(subj, message, gmailSenderAcct, notifee)
+    mess := email.NewBriefMessageFrom(subj, buff.String(), gmailSenderAcct, notifee)
     err = mess.Send()
     if err != nil {
         logger.Println("err sending email: ", err.Error())
