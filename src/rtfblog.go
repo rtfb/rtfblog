@@ -81,12 +81,16 @@ func listOfPages(numPosts, currPage int) template.HTML {
     return template.HTML(list)
 }
 
-func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
+func getHost(req *http.Request) string {
     url := req.Header.Get("X-Forwarded-Host")
     if url == "" {
         url = req.Host
     }
-    url = addProtocol(url)
+    return url
+}
+
+func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
+    url := addProtocol(getHost(req))
     blogTitle := conf.Get("blog_title")
     descr := conf.Get("blog_descr")
     author := conf.Get("author")
