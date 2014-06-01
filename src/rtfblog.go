@@ -424,6 +424,9 @@ func detectLanguageWithTimeout(text string) string {
 }
 
 func addProtocol(raw string) string {
+    if raw == "" {
+        return ""
+    }
     if strings.HasPrefix(strings.ToLower(raw), "http://") {
         return raw
     }
