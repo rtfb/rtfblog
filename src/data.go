@@ -26,12 +26,16 @@ type Author struct {
     Www      string
 }
 
-type Comment struct {
+type Commenter struct {
     Name      string
     Email     string
     EmailHash string
     Website   string
     IP        string
+}
+
+type Comment struct {
+    Commenter
     Body      template.HTML
     RawBody   string
     Time      string

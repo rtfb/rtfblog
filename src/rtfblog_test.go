@@ -37,7 +37,7 @@ var (
     tclient = &http.Client{
         Jar: jar,
     }
-    testComm   = []*Comment{{"N", "@", "@h", "http://w", "IP", "Body", "Raw", "time", "testid"}}
+    testComm   = []*Comment{{Commenter{"N", "@", "@h", "http://w", "IP"}, "Body", "Raw", "time", "testid"}}
     testPosts  = make([]*Entry, 0)
     testAuthor = new(Author)
     testData   TestData

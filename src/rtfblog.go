@@ -436,12 +436,14 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         InternalError(w, req, "Server Error: "+err.Error())
         return err
     }
-    ip := req.RemoteAddr
-    name := req.FormValue("name")
-    email := req.FormValue("email")
-    website := addProtocol(req.FormValue("website"))
+    commenter := Commenter{
+        Name:    req.FormValue("name"),
+        Email:   req.FormValue("email"),
+        Website: addProtocol(req.FormValue("website")),
+        IP:      req.RemoteAddr,
+    }
     body := req.FormValue("text")
-    commenterID, err := data.commenter(name, email, website, ip)
+    commenterID, err := data.commenter(commenter.Name, commenter.Email, commenter.Website, commenter.IP)
     redir := ""
     captchaID := req.FormValue("captcha-id")
     if err == nil {
@@ -458,7 +460,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
             log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
             logger.Println(log)
             if lang == "\"lt\"" {
-                commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
+                commentURL, err := PublishCommentWithInsert(postID, commenter, body)
                 if err != nil {
                     InternalError(w, req, "Server Error: "+err.Error())
                     return err
@@ -474,7 +476,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
                 WrongCaptchaReply(w, req, "rejected", captchaTask)
                 return nil
             }
-            commentURL, err := PublishCommentWithInsert(postID, req.RemoteAddr, name, email, website, body)
+            commentURL, err := PublishCommentWithInsert(postID, commenter, body)
             if err != nil {
                 InternalError(w, req, "Server Error: "+err.Error())
                 return err
@@ -488,13 +490,13 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     }
     url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
-        go SendEmail(name, email, website, req.FormValue("text"), url, refURL)
+        go SendEmail(commenter, req.FormValue("text"), url, refURL)
     }
     RightCaptchaReply(w, redir)
     return nil
 }
 
-func SendEmail(author, mail, www, comment, url, postTitle string) {
+func SendEmail(commenter Commenter, rawBody, url, postTitle string) {
     gmailSenderAcct := conf.Get("notif_sender_acct")
     gmailSenderPasswd := conf.Get("notif_sender_passwd")
     notifee := conf.Get("email")
@@ -504,7 +506,7 @@ func SendEmail(author, mail, www, comment, url, postTitle string) {
         return
     }
     format := "\n\nNew comment from %s <%s> (%s):\n\n%s\n\nURL: %s"
-    message := fmt.Sprintf(format, author, mail, www, comment, url)
+    message := fmt.Sprintf(format, commenter.Name, commenter.Email, commenter.Website, rawBody, url)
     subj := fmt.Sprintf("New comment in '%s'", postTitle)
     mess := email.NewBriefMessageFrom(subj, message, gmailSenderAcct, notifee)
     err = mess.Send()

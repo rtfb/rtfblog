@@ -59,17 +59,17 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
     }
 }
 
-func PublishCommentWithInsert(postID int64, ip, name, email, website, body string) (string, error) {
+func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string) (string, error) {
     if !data.begin() {
         return "", nil
     }
-    commenterID, err := data.insertCommenter(name, email, website, ip)
+    commenterID, err := data.insertCommenter(commenter.Name, commenter.Email, commenter.Website, commenter.IP)
     if err != nil {
         logger.Println("data.insertCommenter() failed: " + err.Error())
         data.rollback()
         return "", err
     }
-    commentID, err := data.insertComment(commenterID, postID, body)
+    commentID, err := data.insertComment(commenterID, postID, rawBody)
     if err != nil {
         data.rollback()
         return "", err
