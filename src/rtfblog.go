@@ -445,7 +445,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         IP:      req.RemoteAddr,
     }
     body := req.FormValue("text")
-    commenterID, err := data.commenter(commenter.Name, commenter.Email, commenter.Website, commenter.IP)
+    commenterID, err := data.commenter(commenter)
     redir := ""
     captchaID := req.FormValue("captcha-id")
     if err == nil {

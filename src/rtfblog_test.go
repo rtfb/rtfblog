@@ -203,14 +203,14 @@ func (td *TestData) commit() {
 func (td *TestData) rollback() {
 }
 
-func (td *TestData) insertCommenter(name, email, website, ip string) (id int64, err error) {
-    td.pushCall(name)
+func (td *TestData) insertCommenter(c Commenter) (id int64, err error) {
+    td.pushCall(c.Name)
     return
 }
 
-func (td *TestData) commenter(name, email, website, ip string) (id int64, err error) {
-    c := testComm[0]
-    if name == c.Name && email == c.Email && website == c.Website {
+func (td *TestData) commenter(c Commenter) (id int64, err error) {
+    tc := testComm[0]
+    if c.Name == tc.Name && c.Email == tc.Email && c.Website == tc.Website {
         return 1, nil
     }
     return -1, sql.ErrNoRows

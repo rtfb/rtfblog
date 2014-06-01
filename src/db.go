@@ -24,8 +24,8 @@ type Data interface {
     deleteComment(id string) bool
     deletePost(url string) bool
     updateComment(id, text string) bool
-    commenter(name, email, website, ip string) (id int64, err error)
-    insertCommenter(name, email, website, ip string) (id int64, err error)
+    commenter(c Commenter) (id int64, err error)
+    insertCommenter(c Commenter) (id int64, err error)
     insertComment(commenterID, postID int64, body string) (id int64, err error)
     insertPost(author int64, e *Entry) (id int64, err error)
     updatePost(id int64, e *Entry) bool
@@ -234,7 +234,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
     return comments
 }
 
-func (dd *DbData) commenter(name, email, website, ip string) (id int64, err error) {
+func (dd *DbData) commenter(c Commenter) (id int64, err error) {
     id = -1
     query, err := dd.db.Prepare(`select c.id from commenter as c
                                  where c.name = $1
@@ -245,14 +245,14 @@ func (dd *DbData) commenter(name, email, website, ip string) (id int64, err erro
         return
     }
     defer query.Close()
-    err = query.QueryRow(name, email, website).Scan(&id)
+    err = query.QueryRow(c.Name, c.Email, c.Website).Scan(&id)
     if err != nil {
         logger.Println("err: " + err.Error())
     }
     return
 }
 
-func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, err error) {
+func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
     if dd.tx == nil {
         return -1, fmt.Errorf("DbData.insertCommenter() can only be called within xaction!")
     }
@@ -261,7 +261,7 @@ func (dd *DbData) insertCommenter(name, email, website, ip string) (id int64, er
                                          values ($1, $2, $3, $4)
                                          returning id`)
     defer insertCommenter.Close()
-    err = insertCommenter.QueryRow(name, email, website, ip).Scan(&id)
+    err = insertCommenter.QueryRow(c.Name, c.Email, c.Website, c.IP).Scan(&id)
     if err != nil {
         logger.Println("Failed to insert commenter: " + err.Error())
     }

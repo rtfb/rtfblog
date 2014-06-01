@@ -63,7 +63,7 @@ func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string)
     if !data.begin() {
         return "", nil
     }
-    commenterID, err := data.insertCommenter(commenter.Name, commenter.Email, commenter.Website, commenter.IP)
+    commenterID, err := data.insertCommenter(commenter)
     if err != nil {
         logger.Println("data.insertCommenter() failed: " + err.Error())
         data.rollback()
