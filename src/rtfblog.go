@@ -497,8 +497,8 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         WrongCaptchaReply(w, req, "rejected", GetTask())
         return nil
     }
-    url := conf.Get("url") + conf.Get("port") + redir
     if conf.Get("notif_send_email") == "true" {
+        url := getHost(req) + redir
         go SendEmail(commenter, req.FormValue("text"), url, refURL)
     }
     RightCaptchaReply(w, redir)
