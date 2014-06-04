@@ -6,6 +6,6 @@ mkdir -p $dest
 tar xzvf git-arch-for-deploy.tar.gz -C $dest
 cp server.conf $dest
 pushd $dest
-go test -coverprofile=coverage.out
+go test -coverprofile=coverage.out ./src/...
 go tool cover -html=coverage.out
 popd
