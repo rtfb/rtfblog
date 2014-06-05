@@ -3,10 +3,16 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'), // the package file to use
 
         qunit: { // internal task or name of a plugin (like "qunit")
-            all: ['tests/*.html']
+            all: ['js/tests/*.html']
         },
         watch: {
-            files: ['tests/*.js', 'tests/*.html', 'tmpl/*.html', 'js/*.js', 'src/*.go'],
+            files: [
+                'js/tests/*.js',
+                'js/tests/*.html',
+                'tmpl/*.html',
+                'js/*.js',
+                'src/*.go'
+            ],
             tasks: ['qunit', 'shell:buildGo', 'shell:testGo']
         },
         shell: {
