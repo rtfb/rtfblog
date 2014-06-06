@@ -10,5 +10,7 @@ stuff/
 git-arch-for-deploy.tar.gz
 priv_key
 node_modules
+bower_components
+static/css/Ribs.css
 static/js/*.js
 static/wmd-buttons.png

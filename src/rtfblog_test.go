@@ -385,7 +385,7 @@ func TestMainPage(t *testing.T) {
         {"", "content"},
         {"", "sidebar"},
         {"", "footer"},
-        {"", "skeleton"},
+        {"", "Ribs"},
         {"", "utf-8"},
         {"", "gopher.png"},
         {"", "vim_created.png"},
