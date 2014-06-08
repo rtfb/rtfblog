@@ -23,7 +23,15 @@ tried running it on Linux, but in theory it should run everywhere where Go runs.
 
 ## Building
 
-`go get`, `go build`.
+You will need these:
+
+* Go (http://golang.org/doc/install or use your package manager)
+* GNU make
+* Node (http://nodejs.org/download/ of use your package manager)
+* `$ sudo npm install -g grunt-cli`
+* `$ npm install`
+* `$ cd src && go get`
+* `$ cd .. && make`
 
 ## Installing
 
