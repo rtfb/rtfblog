@@ -197,8 +197,8 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 
 func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     tmplData := MkBasicData(ctx, 0, 0)
-    tmplData["PageTitle"] = "Archive"
-    tmplData["HeadingText"] = "All posts:"
+    tmplData["PageTitle"] = L10n("Archive")
+    tmplData["HeadingText"] = L10n("All posts:")
     tmplData["all_entries"] = data.titles(-1)
     return Tmpl("archive.html").Execute(w, tmplData)
 }
@@ -211,7 +211,7 @@ func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     tmplData := MkBasicData(ctx, 0, 0)
-    tmplData["PageTitle"] = "Edit Post"
+    tmplData["PageTitle"] = L10n("Edit Post")
     tmplData["IsHidden"] = true // Assume hidden for a new post
     url := strings.TrimRight(req.FormValue("post"), "&")
     if url != "" {

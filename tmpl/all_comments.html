@@ -1,4 +1,4 @@
-{{define "title"}}All comments{{end}}
+{{define "title"}}{{L10n "All comments"}}{{end}}
 {{define "extrahead"}}
     <style>
         .two-paragraphs-excerpt > p:nth-child(n+3) {
@@ -12,7 +12,7 @@
 
     <hr />
     <div class="twelve columns content" id="content">
-        <p>{{L10n "All comments:"}}</p>
+        <p>{{L10n "All comments"}}:</p>
         {{range .all_comments}}
         <div id="comment">
             <div id="commenter">
