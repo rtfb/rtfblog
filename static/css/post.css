@@ -24,6 +24,9 @@
     line-height: 1.1em;
     margin-bottom: 0.5em;
 }
+.commenter p {
+    line-height: 1.1em;
+}
 a.dimmed {
     color: gray;
 }
