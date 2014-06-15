@@ -2,6 +2,11 @@ ul {
     list-style: disc inside;
     padding: 0;
 }
+ol {
+    padding: 0;
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
 h1 { line-height: 50px; }
 h2 { line-height: 40px; }
 h3 { line-height: 34px; }
