@@ -449,7 +449,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
         Name:    req.FormValue("name"),
         Email:   req.FormValue("email"),
         Website: addProtocol(req.FormValue("website")),
-        IP:      req.RemoteAddr,
+        IP:      getIPAddress(req),
     }
     body := req.FormValue("text")
     commenterID, err := data.commenter(commenter)
