@@ -20,6 +20,7 @@ import (
     textTemplate "text/template"
     "time"
 
+    "github.com/docopt/docopt-go"
     "github.com/gorilla/feeds"
     "github.com/gorilla/pat"
     "github.com/gorilla/sessions"
@@ -635,8 +636,28 @@ func obtainConfiguration(basedir string) SrvConfig {
     return conf
 }
 
+func versionString() string {
+    return "rtfblog 0.1"
+}
+
 func main() {
     //runtime.GOMAXPROCS(runtime.NumCPU())
+    usage := `rtfblog. A standalone personal blog server.
+
+Usage:
+  rtfblog
+  rtfblog -h | --help
+  rtfblog --version
+
+Options:
+  With no arguments it simply runs the server (with either hardcoded config or
+  a config it finds in one of locations described in README).
+  -h --help     Show this screen.
+  --version     Show version.`
+    _, err := docopt.Parse(usage, nil, true, versionString(), false)
+    if err != nil {
+        panic("Can't docopt.Parse!")
+    }
     rand.Seed(time.Now().UnixNano())
     basedir, _ := filepath.Split(fullPathToBinary())
     os.Chdir(basedir)
