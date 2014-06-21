@@ -14,3 +14,4 @@ bower_components
 static/css/Ribs.css
 static/js/*.js
 static/wmd-buttons.png
+src/version.go

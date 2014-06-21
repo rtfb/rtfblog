@@ -637,7 +637,11 @@ func obtainConfiguration(basedir string) SrvConfig {
 }
 
 func versionString() string {
-    return "rtfblog 0.1"
+    ver, err := ioutil.ReadFile("VERSION")
+    if err != nil {
+        return generatedVersionString
+    }
+    return strings.TrimSpace(string(ver))
 }
 
 func main() {

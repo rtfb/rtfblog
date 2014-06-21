@@ -3,7 +3,7 @@ GOFMT=gofmt -s -tabs=false -tabwidth=4
 GOFILES=\
 	src/*.go\
 
-all: vet fmt browserify grunt
+all: version vet fmt browserify grunt
 
 grunt:
 	grunt
@@ -20,6 +20,9 @@ browserify:
 
 vet:
 	go vet ${GOFILES}
+
+version:
+	@./scripts/genversion.sh
 
 fmt:
 	${GOFMT} -w ${GOFILES}
