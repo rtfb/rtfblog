@@ -23,14 +23,18 @@ tried running it on Linux, but in theory it should run everywhere where Go runs.
 
 ## Building
 
-You will need these:
+Build instructions on Ubuntu 14.04 (older versions might differ a bit):
 
-* Go (http://golang.org/doc/install or use your package manager)
-* GNU make
-* Node (http://nodejs.org/download/ of use your package manager)
-* `$ sudo npm install -g grunt-cli`
+* `$ cat scripts/dev-packages.txt | xargs sudo apt-get install -y`
+* Node JS (you will need to use http://nodejs.org/download/, it doesn't work
+  with the one provided by the package manager)
+  * Note: make sure `node/bin/` dir is in `PATH`, build scripts assume that
+* `$ sudo npm install -g grunt-cli bower browserify`
 * `$ npm install`
+* `$ bower install ribs`
 * `$ cd src && go get`
+* `$ go get code.google.com/p/go-html-transform/css/selector`
+  * No idea why does this need to be a separate get
 * `$ cd .. && make`
 
 ## Installing
