@@ -13,7 +13,10 @@ before_install:
     - go get -v code.google.com/p/go.tools/cmd/cover
     - go get -v github.com/mattn/goveralls
 
-install: go get -d -v ./... && go build -v src/*.go
+install:
+    - go get -d -v ./...
+    - ./scripts/genversion.sh
+    - go build -v src/*.go
 
 script:
     - go vet -x src/*.go
