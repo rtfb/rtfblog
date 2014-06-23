@@ -16,7 +16,7 @@ cp -r l10n $package/
 tar czvf package.tar.gz ./package
 rm -rf $package
 
-scp -q ./unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
+scp -q scripts/unpack.sh rtfb@rtfb.lt:/home/rtfb/unpack.sh
 scp -q package.tar.gz rtfb@rtfb.lt:/home/rtfb/package.tar.gz
 rm ./package.tar.gz
 ssh rtfb@rtfb.lt /home/rtfb/unpack.sh
