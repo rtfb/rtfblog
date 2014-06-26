@@ -9,6 +9,7 @@ import (
     "io/ioutil"
     "net/http"
     "net/http/cookiejar"
+    "net/http/httptest"
     "net/url"
     "reflect"
     "regexp"
@@ -37,6 +38,7 @@ var (
     tclient = &http.Client{
         Jar: jar,
     }
+    tserver    *httptest.Server
     testComm   = []*Comment{{Commenter{"N", "@", "@h", "http://w", "IP"}, "Body", "Raw", "time", "testid"}}
     testPosts  = make([]*Entry, 0)
     testAuthor = new(Author)
@@ -301,11 +303,11 @@ func curlPost(url string) string {
 
 func localhostURL(u string) string {
     if u == "" {
-        return "http://localhost:8080/"
+        return tserver.URL
     } else if u[0] == '/' {
-        return "http://localhost:8080/" + u[1:]
+        return tserver.URL + u
     } else {
-        return "http://localhost:8080/" + u
+        return tserver.URL + "/" + u
     }
 }
 
@@ -373,7 +375,7 @@ func init() {
     testData = TestData{}
     initData(&testData)
     initRoutes()
-    go runServer()
+    tserver = httptest.NewServer(Router)
 }
 
 func TestMainPage(t *testing.T) {
@@ -846,7 +848,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
 
 func TestRssFeed(t *testing.T) {
     xml := curl("feeds/rss.xml")
-    url := "http://localhost:8080"
+    url := tserver.URL
     mustContain(t, xml, fmt.Sprintf("<link>%s</link>", url))
     mustContain(t, xml, "<title>Hi3</title>")
     mustContain(t, xml, fmt.Sprintf("<link>%s/%s</link>", url, "hello3"))
