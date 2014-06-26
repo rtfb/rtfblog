@@ -549,9 +549,12 @@ func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error 
     return nil
 }
 
-func runServer(_data Data) {
-    Router = pat.New()
+func initData(_data Data) {
     data = _data
+}
+
+func runServer() {
+    Router = pat.New()
     r := Router
     basedir, _ := filepath.Split(fullPathToBinary())
     dir := filepath.Join(basedir, conf.Get("staticdir"))
@@ -675,5 +678,6 @@ Options:
         return
     }
     defer db.Close()
-    runServer(&DbData{db, nil, false})
+    initData(&DbData{db, nil, false})
+    runServer()
 }

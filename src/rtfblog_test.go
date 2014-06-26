@@ -371,7 +371,8 @@ func init() {
         return errors.New("bad passwd")
     }
     testData = TestData{}
-    go runServer(&testData)
+    initData(&testData)
+    go runServer()
 }
 
 func TestMainPage(t *testing.T) {
