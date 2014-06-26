@@ -553,7 +553,7 @@ func initData(_data Data) {
     data = _data
 }
 
-func runServer() {
+func initRoutes() {
     Router = pat.New()
     r := Router
     basedir, _ := filepath.Split(fullPathToBinary())
@@ -580,9 +580,11 @@ func runServer() {
     r.Add("POST", "/upload_images", checkPerm(Handler(UploadImage))).Name("upload_image")
 
     r.Add("GET", "/", Handler(Home)).Name("home_page")
+}
 
+func runServer() {
     logger.Print("The server is listening...")
-    if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), r); err != nil {
+    if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), Router); err != nil {
         logger.Print("rtfblog server: ", err)
     }
 }
@@ -679,5 +681,6 @@ Options:
     }
     defer db.Close()
     initData(&DbData{db, nil, false})
+    initRoutes()
     runServer()
 }

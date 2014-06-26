@@ -372,6 +372,7 @@ func init() {
     }
     testData = TestData{}
     initData(&testData)
+    initRoutes()
     go runServer()
 }
 
