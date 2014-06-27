@@ -79,6 +79,11 @@ func getIPAddress(req *http.Request) string {
 func logRequest(req *http.Request, sTime time.Time) {
     var logEntry bytes.Buffer
     requestPath := req.URL.Path
+    // TODO: remove this hack. Make Handler configurable logging-wise, specify
+    // it when setting up the routes
+    if requestPath == "/favicon.ico" {
+        return
+    }
     duration := time.Now().Sub(sTime)
     ip := getIPAddress(req)
     format := "%s - \033[32;1m %s %s\033[0m - %v"
