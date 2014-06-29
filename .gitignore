@@ -12,6 +12,7 @@ priv_key
 node_modules
 bower_components
 static/css/Ribs.css
+static/css/pagedown.css
 static/js/*.js
 static/wmd-buttons.png
 src/version.go

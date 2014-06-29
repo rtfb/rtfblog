@@ -8,6 +8,6 @@
     "grunt-shell": "~0.6.1",
     "qunitjs": "~1.14.0",
     "pagedown": "~1.1.0",
-    "pagedown-editor": "~0.0.2"
+    "pagedown-editor": "~0.0.4"
   }
 }
