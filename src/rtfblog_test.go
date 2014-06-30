@@ -192,6 +192,7 @@ func (td *TestData) deletePost(url string) bool {
 }
 
 func (td *TestData) updateComment(id, text string) bool {
+    td.pushCall(fmt.Sprintf("%s - %s", id, text))
     return false
 }
 
@@ -616,6 +617,43 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
     for _, u := range postUrls {
         html := curlPost(u)
         mustContain(t, html, "Verboten")
+    }
+}
+
+func TestModerateCommentCallsDbFunc(t *testing.T) {
+    defer testData.reset()
+    login()
+    values := url.Values{
+        "action":            {"edit"},
+        "id":                {"foo"},
+        "edit-comment-text": {"bar"},
+    }
+    if r, err := tclient.PostForm(localhostURL("moderate_comment"), values); err == nil {
+        r.Body.Close()
+    } else {
+        println(err.Error())
+    }
+    testData.expect(t, (*TestData).updateComment, "foo - bar")
+}
+
+func TestModerateCommentIgnoresWrongAction(t *testing.T) {
+    defer testData.reset()
+    login()
+    values := url.Values{
+        "action":            {"wrong-action"},
+        "id":                {"testid"},
+        "redirect_to":       {"hello1"},
+        "edit-comment-text": {"bar"},
+    }
+    if r, err := tclient.PostForm(localhostURL("moderate_comment"), values); err == nil {
+        defer r.Body.Close()
+        body, err := ioutil.ReadAll(r.Body)
+        if err != nil {
+            t.Error(err)
+        }
+        mustContain(t, string(body), "@h")
+    } else {
+        println(err.Error())
     }
 }
 
