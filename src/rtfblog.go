@@ -57,7 +57,7 @@ func loadConfig(path string) (config SrvConfig) {
     return
 }
 
-func xtractReferer(req *http.Request) string {
+func extractReferer(req *http.Request) string {
     referers := req.Header["Referer"]
     if len(referers) == 0 {
         return ""
@@ -439,7 +439,7 @@ func addProtocol(raw string) string {
 }
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-    refURL := xtractReferer(req)
+    refURL := extractReferer(req)
     postID, err := data.postID(refURL)
     if err != nil {
         logger.Println("data.postID() failed: " + err.Error())
