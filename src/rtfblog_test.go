@@ -320,6 +320,21 @@ func tclientPostForm(rqURL string) (*http.Response, error) {
     return tclient.PostForm(localhostURL(rqURL), url.Values{})
 }
 
+func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {
+    defer testData.reset()
+    login()
+    if r, err := tclient.PostForm(localhostURL(path), *values); err == nil {
+        defer r.Body.Close()
+        body, err := ioutil.ReadAll(r.Body)
+        if err != nil {
+            t.Error(err)
+        }
+        testFunc(string(body))
+    } else {
+        t.Error(err)
+    }
+}
+
 func mustContain(t *testing.T, page string, what string) {
     if !strings.Contains(page, what) {
         t.Errorf("Test page did not contain %q\npage:\n%s", what, page)
@@ -621,40 +636,24 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 }
 
 func TestModerateCommentCallsDbFunc(t *testing.T) {
-    defer testData.reset()
-    login()
-    values := url.Values{
+    postForm(t, "moderate_comment", &url.Values{
         "action":            {"edit"},
         "id":                {"foo"},
         "edit-comment-text": {"bar"},
-    }
-    if r, err := tclient.PostForm(localhostURL("moderate_comment"), values); err == nil {
-        r.Body.Close()
-    } else {
-        println(err.Error())
-    }
-    testData.expect(t, (*TestData).updateComment, "foo - bar")
+    }, func(html string) {
+        testData.expect(t, (*TestData).updateComment, "foo - bar")
+    })
 }
 
 func TestModerateCommentIgnoresWrongAction(t *testing.T) {
-    defer testData.reset()
-    login()
-    values := url.Values{
+    postForm(t, "moderate_comment", &url.Values{
         "action":            {"wrong-action"},
         "id":                {"testid"},
         "redirect_to":       {"hello1"},
         "edit-comment-text": {"bar"},
-    }
-    if r, err := tclient.PostForm(localhostURL("moderate_comment"), values); err == nil {
-        defer r.Body.Close()
-        body, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            t.Error(err)
-        }
-        mustContain(t, string(body), "@h")
-    } else {
-        println(err.Error())
-    }
+    }, func(html string) {
+        mustContain(t, html, "@h")
+    })
 }
 
 func TestLoadComments(t *testing.T) {
@@ -664,23 +663,17 @@ func TestLoadComments(t *testing.T) {
 }
 
 func TestSubmitPost(t *testing.T) {
-    defer testData.reset()
-    login()
-    values := url.Values{
+    postForm(t, "submit_post", &url.Values{
         "title":  {"T1tlE"},
         "url":    {"shiny-url"},
         "tags":   {"tagzorz"},
         "hidden": {"off"},
         "text":   {"contentzorz"},
-    }
-    if r, err := tclient.PostForm(localhostURL("submit_post"), values); err == nil {
-        r.Body.Close()
-    } else {
-        println(err.Error())
-    }
-    testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
-        {(*TestData).updatePost, "0"},
-        {(*TestData).updateTags, "0: {TagURL:tagzorz TagName:tagzorz}"}})
+    }, func(html string) {
+        testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
+            {(*TestData).updatePost, "0"},
+            {(*TestData).updateTags, "0: {TagURL:tagzorz TagName:tagzorz}"}})
+    })
 }
 
 func TestExplodeTags(t *testing.T) {
