@@ -375,6 +375,7 @@ func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
     mr, err := req.MultipartReader()
     if err != nil {
         logger.Println(err.Error())
+        return err
     }
     files := ""
     part, err := mr.NextPart()

@@ -676,6 +676,14 @@ func TestSubmitPost(t *testing.T) {
     })
 }
 
+func TestUpoadImageHandlesWrongRequest(t *testing.T) {
+    postForm(t, "upload_images", &url.Values{
+        "foo": {"bar"},
+    }, func(html string) {
+        T{t}.assertEqual("", html)
+    })
+}
+
 func TestExplodeTags(t *testing.T) {
     var tagSpecs = []struct {
         spec, expected string
