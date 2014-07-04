@@ -1,16 +1,20 @@
 package main
 
 import (
+    "bytes"
     "database/sql"
     "encoding/json"
     "errors"
     "fmt"
     "html/template"
+    "io"
     "io/ioutil"
+    "mime/multipart"
     "net/http"
     "net/http/cookiejar"
     "net/http/httptest"
     "net/url"
+    "os"
     "reflect"
     "regexp"
     "runtime"
@@ -682,6 +686,68 @@ func TestUpoadImageHandlesWrongRequest(t *testing.T) {
     }, func(html string) {
         T{t}.assertEqual("", html)
     })
+}
+
+// Creates a new file upload http request with optional extra params
+func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fileName, contents string) (*http.Request, error) {
+    body := &bytes.Buffer{}
+    writer := multipart.NewWriter(body)
+    part, err := writer.CreateFormFile(paramName, fileName)
+    if err != nil {
+        return nil, err
+    }
+    _, err = io.Copy(part, strings.NewReader(contents))
+    for key, val := range params {
+        _ = writer.WriteField(key, val)
+    }
+    err = writer.Close()
+    if err != nil {
+        return nil, err
+    }
+    req, err := http.NewRequest("POST", localhostURL(uri), body)
+    if err != nil {
+        return nil, err
+    }
+    req.Header.Add("Content-Type", writer.FormDataContentType())
+    return req, nil
+}
+
+func TestUploadImage(t *testing.T) {
+    uploadedFile := "../static/testupload.md"
+    testContent := "Foobarbaz"
+    defer func() {
+        err := os.Remove(uploadedFile)
+        if err != nil {
+            t.Fatal(err)
+        }
+    }()
+    extraParams := map[string]string{
+        "title":       "My Document",
+        "author":      "The Author",
+        "description": "The finest document",
+    }
+    request, err := mkFakeFileUploadRequest("upload_images", extraParams, "file", "testupload.md", testContent)
+    if err != nil {
+        t.Fatal(err)
+    }
+    resp, err := tclient.Do(request)
+    if err != nil {
+        t.Fatal(err)
+    }
+    body := &bytes.Buffer{}
+    _, err = body.ReadFrom(resp.Body)
+    if err != nil {
+        t.Fatal(err)
+    }
+    resp.Body.Close()
+    T{t}.assertEqual("200", fmt.Sprintf("%d", resp.StatusCode))
+    T{t}.assertEqual("[foo]: /testupload.md", string(body.Bytes()))
+    fileBytes, err := ioutil.ReadFile(uploadedFile)
+    if err != nil {
+        t.Fatal(err)
+    }
+    prefix := string(fileBytes)[:len(testContent)]
+    T{t}.assertEqual(testContent, prefix)
 }
 
 func TestExplodeTags(t *testing.T) {
