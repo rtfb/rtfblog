@@ -1057,3 +1057,30 @@ func TestPathToFullPath(t *testing.T) {
     }
     T{t}.assertEqual(filepath.Join(cwd, "b/c"), PathToFullPath("./b/c"))
 }
+
+func mkTempFile(t *testing.T, name, content string) func() {
+    exists, err := FileExists(name)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if exists {
+        t.Errorf("Refusing to overwrite %q, already exists", name)
+    }
+    err = ioutil.WriteFile(name, []byte(content), 0644)
+    if err != nil {
+        t.Fatal(err)
+    }
+    return func() {
+        err := os.Remove(name)
+        if err != nil {
+            t.Fatal(err)
+        }
+    }
+}
+
+func TestVersionString(t *testing.T) {
+    expected := "foobar"
+    del := mkTempFile(t, "VERSION", expected)
+    defer del()
+    T{t}.assertEqual(expected, versionString())
+}
