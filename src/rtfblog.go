@@ -557,8 +557,7 @@ func initData(_data Data) {
 func initRoutes() {
     Router = pat.New()
     r := Router
-    basedir, _ := filepath.Split(fullPathToBinary())
-    dir := filepath.Join(basedir, conf.Get("staticdir"))
+    dir := filepath.Join(Basedir(), conf.Get("staticdir"))
     r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
     r.Add("GET", "/login", Handler(LoginForm)).Name("login")
     r.Add("POST", "/login", Handler(Login))
@@ -588,10 +587,6 @@ func runServer() {
     if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), Router); err != nil {
         logger.Print("rtfblog server: ", err)
     }
-}
-
-func fullPathToBinary() string {
-    return PathToFullPath(os.Args[0])
 }
 
 func obtainConfiguration(basedir string) SrvConfig {
@@ -662,7 +657,7 @@ Options:
         panic("Can't docopt.Parse!")
     }
     rand.Seed(time.Now().UnixNano())
-    basedir, _ := filepath.Split(fullPathToBinary())
+    basedir := Basedir()
     os.Chdir(basedir)
     conf = obtainConfiguration(basedir)
     InitL10n("./l10n", "lt-LT")
