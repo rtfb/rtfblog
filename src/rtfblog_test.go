@@ -1084,3 +1084,14 @@ func TestVersionString(t *testing.T) {
     defer del()
     T{t}.assertEqual(expected, versionString())
 }
+
+func TestObtainConfiguration(t *testing.T) {
+    del := mkTempFile(t, ".rtfblogrc", `{"foo": "bar"}`)
+    defer del()
+    config := obtainConfiguration(".")
+    foo, ok := config["foo"]
+    if !ok || foo == nil {
+        t.Fatal("No foo")
+    }
+    T{t}.assertEqual("bar", foo.(string))
+}
