@@ -15,6 +15,7 @@ import (
     "net/http/httptest"
     "net/url"
     "os"
+    "path/filepath"
     "reflect"
     "regexp"
     "runtime"
@@ -1046,4 +1047,13 @@ func TestExtractReferer(t *testing.T) {
     req.Header.Add("Referer", "foo/bar/baz")
     refURL = extractReferer(req)
     T{t}.failIf(refURL != "baz", "<baz> expected, but <%s> found!", refURL)
+}
+
+func TestPathToFullPath(t *testing.T) {
+    T{t}.assertEqual("/a/b/c", PathToFullPath("/a/b/c"))
+    cwd, err := os.Getwd()
+    if err != nil {
+        t.Fatal(err)
+    }
+    T{t}.assertEqual(filepath.Join(cwd, "b/c"), PathToFullPath("./b/c"))
 }

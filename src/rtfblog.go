@@ -591,14 +591,7 @@ func runServer() {
 }
 
 func fullPathToBinary() string {
-    if filepath.IsAbs(os.Args[0]) {
-        return os.Args[0]
-    }
-    cwd, err := os.Getwd()
-    if err != nil {
-        return filepath.Clean(os.Args[0])
-    }
-    return filepath.Join(cwd, os.Args[0])
+    return PathToFullPath(os.Args[0])
 }
 
 func obtainConfiguration(basedir string) SrvConfig {
