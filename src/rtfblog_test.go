@@ -1095,3 +1095,17 @@ func TestObtainConfiguration(t *testing.T) {
     }
     T{t}.assertEqual("bar", foo.(string))
 }
+
+func TestMkNotifEmail(t *testing.T) {
+    subj, body := mkCommentNotifEmail(Commenter{
+        Name:    "Commenter",
+        Email:   "comm@ent.er",
+        Website: "wwweb",
+    }, "text", "foo", "refURL")
+    T{t}.assertEqual("New comment in 'refURL'", subj)
+    mustContain(t, body, "Commenter")
+    mustContain(t, body, "comm@ent.er")
+    mustContain(t, body, "wwweb")
+    mustContain(t, body, "text")
+    mustContain(t, body, "New comment from")
+}

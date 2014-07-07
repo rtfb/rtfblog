@@ -501,13 +501,14 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
     }
     if conf.Get("notif_send_email") == "true" {
         url := getHost(req) + redir
-        go SendEmail(commenter, req.FormValue("text"), url, refURL)
+        subj, body := mkCommentNotifEmail(commenter, req.FormValue("text"), url, refURL)
+        go SendEmail(subj, body)
     }
     RightCaptchaReply(w, redir)
     return nil
 }
 
-func SendEmail(commenter Commenter, rawBody, url, postTitle string) {
+func mkCommentNotifEmail(commenter Commenter, rawBody, url, postTitle string) (subj, body string) {
     const messageTmpl = `
 {{with .Commenter}}
 New comment from {{.Name}} <{{.Email}}> ({{.Website}}):
@@ -518,14 +519,6 @@ New comment from {{.Name}} <{{.Email}}> ({{.Website}}):
 URL: {{.URL}}
 `
     t := textTemplate.Must(textTemplate.New("emailMessage").Parse(messageTmpl))
-    gmailSenderAcct := conf.Get("notif_sender_acct")
-    gmailSenderPasswd := conf.Get("notif_sender_passwd")
-    notifee := conf.Get("email")
-    err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
-    if err != nil {
-        logger.Println("err initing gmail: ", err.Error())
-        return
-    }
     var buff bytes.Buffer
     t.Execute(&buff, struct {
         Commenter
@@ -536,8 +529,20 @@ URL: {{.URL}}
         RawBody:   rawBody,
         URL:       url,
     })
-    subj := fmt.Sprintf("New comment in '%s'", postTitle)
-    mess := email.NewBriefMessageFrom(subj, buff.String(), gmailSenderAcct, notifee)
+    subj = fmt.Sprintf("New comment in '%s'", postTitle)
+    return subj, buff.String()
+}
+
+func SendEmail(subj, body string) {
+    gmailSenderAcct := conf.Get("notif_sender_acct")
+    gmailSenderPasswd := conf.Get("notif_sender_passwd")
+    notifee := conf.Get("email")
+    err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
+    if err != nil {
+        logger.Println("err initing gmail: ", err.Error())
+        return
+    }
+    mess := email.NewBriefMessageFrom(subj, body, gmailSenderAcct, notifee)
     err = mess.Send()
     if err != nil {
         logger.Println("err sending email: ", err.Error())
