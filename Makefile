@@ -1,4 +1,4 @@
-GOFMT=gofmt -s -tabs=false -tabwidth=4
+GOFMT=gofmt -s
 
 GOFILES=\
 	src/*.go\
