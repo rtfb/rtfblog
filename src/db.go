@@ -41,6 +41,10 @@ type DbData struct {
 	includeHidden bool
 }
 
+func mdToHTML(md string) template.HTML {
+	return template.HTML(blackfriday.MarkdownCommon([]byte(md)))
+}
+
 func (dd *DbData) hiddenPosts(flag bool) {
 	dd.includeHidden = flag
 }
@@ -224,7 +228,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
 		hash.Write([]byte(strings.ToLower(comment.Email)))
 		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
+		comment.Body = mdToHTML(comment.RawBody)
 		comments = append(comments, comment)
 	}
 	err = data.Err()
@@ -424,7 +428,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 			logger.Println(err.Error())
 			continue
 		}
-		entry.Body = template.HTML(blackfriday.MarkdownCommon([]byte(entry.RawBody)))
+		entry.Body = mdToHTML(entry.RawBody)
 		entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
 		entry.Tags = queryTags(db, id)
 		entry.Comments = queryComments(db, id)
@@ -501,7 +505,7 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 		hash.Write([]byte(strings.ToLower(comment.Email)))
 		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = template.HTML(blackfriday.MarkdownCommon([]byte(comment.RawBody)))
+		comment.Body = mdToHTML(comment.RawBody)
 		comments = append(comments, comment)
 	}
 	err = data.Err()
