@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 )
 
@@ -41,8 +42,33 @@ type DbData struct {
 	includeHidden bool
 }
 
-func mdToHTML(md string) template.HTML {
-	return template.HTML(blackfriday.MarkdownCommon([]byte(md)))
+func mdToHTML(md string) []byte {
+	htmlFlags := 0
+	htmlFlags |= blackfriday.HTML_USE_XHTML
+	htmlFlags |= blackfriday.HTML_USE_SMARTYPANTS
+	htmlFlags |= blackfriday.HTML_SMARTYPANTS_FRACTIONS
+	htmlFlags |= blackfriday.HTML_SMARTYPANTS_LATEX_DASHES
+	renderer := blackfriday.HtmlRenderer(htmlFlags, "", "")
+	extensions := 0
+	extensions |= blackfriday.EXTENSION_NO_INTRA_EMPHASIS
+	extensions |= blackfriday.EXTENSION_TABLES
+	extensions |= blackfriday.EXTENSION_FENCED_CODE
+	extensions |= blackfriday.EXTENSION_AUTOLINK
+	extensions |= blackfriday.EXTENSION_STRIKETHROUGH
+	extensions |= blackfriday.EXTENSION_SPACE_HEADERS
+	extensions |= blackfriday.EXTENSION_HEADER_IDS
+	return blackfriday.Markdown([]byte(md), renderer, extensions)
+}
+
+func sanitizeTrustedHTML(html []byte) template.HTML {
+	p := bluemonday.UGCPolicy()
+	p.RequireNoFollowOnLinks(false)
+	p.AllowAttrs("alt").OnElements("img")
+	return template.HTML(p.Sanitize(string(html)))
+}
+
+func sanitizeHTML(html []byte) template.HTML {
+	return template.HTML(bluemonday.UGCPolicy().Sanitize(string(html)))
 }
 
 func (dd *DbData) hiddenPosts(flag bool) {
@@ -228,7 +254,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
 		hash.Write([]byte(strings.ToLower(comment.Email)))
 		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = mdToHTML(comment.RawBody)
+		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
 	}
 	err = data.Err()
@@ -428,7 +454,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 			logger.Println(err.Error())
 			continue
 		}
-		entry.Body = mdToHTML(entry.RawBody)
+		entry.Body = sanitizeTrustedHTML(mdToHTML(entry.RawBody))
 		entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
 		entry.Tags = queryTags(db, id)
 		entry.Comments = queryComments(db, id)
@@ -505,7 +531,7 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 		hash.Write([]byte(strings.ToLower(comment.Email)))
 		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = mdToHTML(comment.RawBody)
+		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
 	}
 	err = data.Err()
