@@ -24,7 +24,7 @@ module.exports = function(grunt) {
                 }
             },
             testGo: {
-                command: 'go test ./...',
+                command: 'go test ./src/...',
                 options: {
                     stdout: true,
                     stderr: true
