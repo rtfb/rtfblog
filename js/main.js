@@ -3,13 +3,17 @@ function inputToUri(fieldName) {
     return fieldName + "=" + encodeURIComponent(rawValue);
 }
 
+function elt(id) {
+    return document.getElementById(id);
+}
+
 function validateForm() {
-    var name = document.getElementById('name').value;
+    var name = elt('name').value;
     if (name === "") {
         alert("Name field is mandatory.");
         return false;
     }
-    var email = document.getElementById('email').value;
+    var email = elt('email').value;
     if (email === "") {
         alert("Email field is mandatory.");
         return false;
@@ -44,11 +48,12 @@ function submitComment() {
             if (xhr.status == 200) {
                 var response = JSON.parse(xhr.responseText);
                 if (response["status"] === "rejected") {
-                    document.getElementById('captcha-input').value = '';
+                    elt('captcha-input').value = '';
                 } else if (response["status"] === "showcaptcha") {
-                    document.getElementById('captcha-task-text').textContent = response["captcha-task"];
-                    document.getElementById('captcha-alert-box').style.visibility = 'visible';
-                    document.getElementById('captcha-id').value = response["captcha-id"];
+                    var task = response["captcha-task"];
+                    elt('captcha-task-text').textContent = task;
+                    elt('captcha-alert-box').style.visibility = 'visible';
+                    elt('captcha-id').value = response["captcha-id"];
                 } else {
                     window.location.href = response["redir"];
                     window.location.reload(true);
@@ -76,7 +81,7 @@ function submitComment() {
 var uploadNo = 0;
 
 function forwardClickToFileid() {
-    var fileid = document.getElementById('fileid');
+    var fileid = elt('fileid');
     fileid.click();
 }
 
@@ -92,15 +97,15 @@ function uploadProgress() {
     var filename = this.value.split('\\').pop();
     if (!filename)
         return;
-    var formData = new FormData(document.getElementById('edit-post-form'));
+    var formData = new FormData(elt('edit-post-form'));
     console.log(JSON.stringify(formData));
-    var uploadSection = document.getElementById('upload-progress-section');
+    var uploadSection = elt('upload-progress-section');
     uploadSection.appendChild(mkUploadHtml(filename, uploadNo));
     var xhr = mkXHR();
     xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
             if (xhr.status == 200) {
-                var postTextarea = document.getElementById('wmd-input');
+                var postTextarea = elt('wmd-input');
                 postTextarea.innerHTML += "\n" + xhr.responseText;
             } else {
                 alert("Error uploading: " + xhr.status);
@@ -110,7 +115,7 @@ function uploadProgress() {
     xhr.upload.onprogress = function(evt) {
         console.log("progrFunc");
         if (evt.lengthComputable) {
-            var p = document.getElementById('progress_' + uploadNo);
+            var p = elt('progress_' + uploadNo);
             var pc = parseInt(100 - (evt.loaded / evt.total * 100));
             p.style.backgroundPosition = pc + "% 0";
         }
