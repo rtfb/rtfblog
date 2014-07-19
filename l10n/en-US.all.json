@@ -205,5 +205,17 @@
   {
     "id": "somewhere else",
     "translation": "somewhere else"
+  },
+  {
+    "id": "Archive",
+    "translation": "Archive"
+  },
+  {
+    "id": "All posts:",
+    "translation": "All posts:"
+  },
+  {
+    "id": "Edit Post",
+    "translation": "Edit Post"
   }
 ]
