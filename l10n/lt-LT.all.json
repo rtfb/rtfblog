@@ -27,5 +27,193 @@
       "one": "{{.Count}} komentaras",
       "other": "{{.Count}} komentarų"
     }
+  },
+  {
+    "id": "Verboten",
+    "translation": "Verboten"
+  },
+  {
+    "id": "You do not have access to this part.",
+    "translation": "Prie šitos dalies neturite priėjimo."
+  },
+  {
+    "id": "Page Not Found",
+    "translation": "Puslapis nerastas"
+  },
+  {
+    "id": "Why, you ask?",
+    "translation": "Klausiate kodėl?"
+  },
+  {
+    "id": "It may be a broken link, you may mistyped the URL,",
+    "translation": "Gal nuoroda nebegalioja, arba gal įrašėte neteisingą URL,"
+  },
+  {
+    "id": "I might have moved the page or my site is experiencing",
+    "translation": "arba aš galėjau pašalinti puslapį, arba iškilo"
+  },
+  {
+    "id": "technical problems. Or maybe it's not implemented yet.",
+    "translation": "techninių problemų. Arba funkcionalumas dar nerealizuotas."
+  },
+  {
+    "id": "New Post",
+    "translation": "Naujas įrašas"
+  },
+  {
+    "id": "All Comments",
+    "translation": "Visi komentarai"
+  },
+  {
+    "id": "Have a say",
+    "translation": "Pasisakykite"
+  },
+  {
+    "id": "Delete",
+    "translation": "Trinti"
+  },
+  {
+    "id": "Posted in:",
+    "translation": "Komentuota prie:"
+  },
+  {
+    "id": "No comments. This is most likely an error.",
+    "translation": "Nėra komentarų. Tai tikriausiai klaida."
+  },
+  {
+    "id": "You are about to delete this comment!\nThis cannot be undone!",
+    "translation": "Tuoj ištrinsite šitą komentarą!\nAtstatyti nebus galima!"
+  },
+  {
+    "id": "No entries. This is most likely an error.",
+    "translation": "Nėra įrašų. Tai tikriausiai klaida."
+  },
+  {
+    "id": "My Nazi spam-filter presumes everybody is a bot.",
+    "translation": "Mano nacis spam-filtras visus laiko botais."
+  },
+  {
+    "id": "Please solve this captcha to prove you're not:",
+    "translation": "Išspręskite šitą captcha jeigu jūs ne toks:"
+  },
+  {
+    "id": "Url:",
+    "translation": "Url:"
+  },
+  {
+    "id": "Tags:",
+    "translation": "Tagai:"
+  },
+  {
+    "id": "Hidden",
+    "translation": "Paslėptas"
+  },
+  {
+    "id": "Upload File",
+    "translation": "Įkelti failą"
+  },
+  {
+    "id": "Post text:",
+    "translation": "Įrašo tekstas:"
+  },
+  {
+    "id": "Submit",
+    "translation": "Įkelti"
+  },
+  {
+    "id": "Delete!",
+    "translation": "Trinti!"
+  },
+  {
+    "id": "You are about to delete this post!\nThis cannot be undone!",
+    "translation": "Tuoj ištrinsite šitą įrašą!\nAtstatyti nebus galima!"
+  },
+  {
+    "id": "Admin",
+    "translation": "Admin"
+  },
+  {
+    "id": "Logout",
+    "translation": "Išsiloginti"
+  },
+  {
+    "id": "Login",
+    "translation": "Įsiloginti"
+  },
+  {
+    "id": "Username",
+    "translation": "Vartotojo vartas"
+  },
+  {
+    "id": "Password",
+    "translation": "Slaptažodis"
+  },
+  {
+    "id": "Pages:",
+    "translation": "Puslapiai:"
+  },
+  {
+    "id": "Edit",
+    "translation": "Redaguoti"
+  },
+  {
+    "id": "(Hidden)",
+    "translation": "(Paslėptas)"
+  },
+  {
+    "id": "Cancel",
+    "translation": "Atšaukti"
+  },
+  {
+    "id": "Name",
+    "translation": "Vardas"
+  },
+  {
+    "id": "Email (will stay private)",
+    "translation": "El. paštas (nebus viešinamas)"
+  },
+  {
+    "id": "Web site",
+    "translation": "Puslapis"
+  },
+  {
+    "id": "RSS Feed",
+    "translation": "RSS srautas"
+  },
+  {
+    "id": "Vim logo",
+    "translation": "Vim logo"
+  },
+  {
+    "id": "Go logo",
+    "translation": "Go logo"
+  },
+  {
+    "id": "Try",
+    "translation": "Pabandykite"
+  },
+  {
+    "id": "logging in",
+    "translation": "įsiloginti"
+  },
+  {
+    "id": "or navigate",
+    "translation": "arba ieškoti"
+  },
+  {
+    "id": "somewhere else",
+    "translation": "kur nors kitur"
+  },
+  {
+    "id": "Archive",
+    "translation": "Archyvas"
+  },
+  {
+    "id": "All posts:",
+    "translation": "Visi įrašai:"
+  },
+  {
+    "id": "Edit Post",
+    "translation": "Redaguoti įrašą"
   }
 ]
