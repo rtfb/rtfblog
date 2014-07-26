@@ -643,6 +643,14 @@ func versionString() string {
 	return strings.TrimSpace(string(ver))
 }
 
+func getDBConnString() string {
+	config := conf.Get("database")
+	if config != "" && config[0] == '$' {
+		return os.ExpandEnv(config)
+	}
+	return config
+}
+
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
 	usage := `rtfblog. A standalone personal blog server.
@@ -668,7 +676,7 @@ Options:
 	InitL10n("./l10n", "lt-LT")
 	logger = MkLogger(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
-	db, err := sql.Open("postgres", conf.Get("database"))
+	db, err := sql.Open("postgres", getDBConnString())
 	if err != nil {
 		logger.Println("sql: " + err.Error())
 		return
