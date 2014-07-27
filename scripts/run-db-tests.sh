@@ -18,7 +18,9 @@ ${PGSQL_PATH}/postgres -F -k ${PGSQL_DATA} -D ${PGSQL_DATA} &> ${PGSQL_DATA}/out
 
 # Wait for PostgreSQL to start listening to connections
 wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
-#export DB_TEST_URL="postgresql:///?host=${PGSQL_DATA}&dbname=template1"
+export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
+
+$GOPATH/bin/goose -env=development up
 
 # Run the tests
 #nosetests

@@ -4,4 +4,4 @@ production:
 
 development:
     driver: postgres
-    open: user=tstusr dbname=tstdb password=tstpwd
+    open: $RTFBLOG_DB_TEST_URL
