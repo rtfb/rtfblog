@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 if [ -d package-tmp ]; then
-    rm -rf package-tmp
+    rm -r package-tmp
 fi
 
 mkdir -p package-tmp
 tar xzvf package.tar.gz -C package-tmp
-killall rtfblog
+kill $(pidof /home/rtfb/package/rtfblog)
 
 if [ -d package-last ]; then
     rm -rf package-last
