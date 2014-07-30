@@ -6,16 +6,19 @@ fi
 
 mkdir -p package-tmp
 tar xzvf package.tar.gz -C package-tmp
-kill $(pidof /home/rtfb/package/rtfblog)
 
-if [ -d package-last ]; then
-    rm -rf package-last
+if [ -d $1-last ]; then
+    rm -r $1-last
 fi
 
-mv package package-last
-mkdir -p ./package/static
-cp ./package-last/static/* ./package/static/
-mv package-tmp/package/static/* ./package/static/
-rmdir package-tmp/package/static/
-mv package-tmp/package/* ./package/
-rm -r package-tmp
+mv $1 $1-last
+
+mv package-tmp/package $1
+mkdir -p ./$1/static
+if [[ $1 == *-staging ]]; then
+    cp ./package/static/* ./$1/static/
+    ln -s /home/rtfb/rtfblogrc-staging ./$1/.rtfblogrc
+else
+    cp ./package-last/static/* ./$1/static/
+fi
+rmdir package-tmp
