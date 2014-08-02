@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"os/user"
@@ -21,6 +22,19 @@ func Encrypt(passwd string) (hash string, err error) {
 
 func decrypt(hash, passwd []byte) error {
 	return bcrypt.CompareHashAndPassword(hash, passwd)
+}
+
+func insertTestAuthor(db *sql.DB, uname, passwd, fullname, email, www string) error {
+	passwdHash, err := Encrypt(passwd)
+	if err != nil {
+		return err
+	}
+	stmt, _ := db.Prepare(`insert into author
+		(disp_name, passwd, full_name, email, www)
+		values ($1, $2, $3, $4, $5)`)
+	defer stmt.Close()
+	stmt.Exec(uname, passwdHash, fullname, email, www)
+	return nil
 }
 
 func MkLogger(fname string) *log.Logger {
