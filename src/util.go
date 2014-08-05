@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"code.google.com/p/go.crypto/bcrypt"
 )
@@ -78,4 +81,10 @@ func PathToFullPath(path string) string {
 func Basedir() string {
 	basedir, _ := filepath.Split(PathToFullPath(os.Args[0]))
 	return basedir
+}
+
+func Md5Hash(s string) string {
+	hash := md5.New()
+	hash.Write([]byte(strings.ToLower(s)))
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }

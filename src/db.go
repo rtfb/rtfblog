@@ -1,11 +1,9 @@
 package main
 
 import (
-	"crypto/md5"
 	"database/sql"
 	"fmt"
 	"html/template"
-	"strings"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -250,9 +248,7 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
 		if err != nil {
 			logger.Printf("error scanning comment row: %s\n", err.Error())
 		}
-		hash := md5.New()
-		hash.Write([]byte(strings.ToLower(comment.Email)))
-		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
+		comment.EmailHash = Md5Hash(comment.Email)
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
 		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
@@ -527,9 +523,7 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 		if err != nil {
 			logger.Printf("error scanning comment row: %s\n", err.Error())
 		}
-		hash := md5.New()
-		hash.Write([]byte(strings.ToLower(comment.Email)))
-		comment.EmailHash = fmt.Sprintf("%x", hash.Sum(nil))
+		comment.EmailHash = Md5Hash(comment.Email)
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
 		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
