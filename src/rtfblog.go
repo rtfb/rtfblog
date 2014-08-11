@@ -658,14 +658,16 @@ func main() {
 Usage:
   rtfblog
   rtfblog -h | --help
+  rtfblog -i
   rtfblog --version
 
 Options:
   With no arguments it simply runs the server (with either hardcoded config or
   a config it finds in one of locations described in README).
   -h --help     Show this screen.
+  -i            Insert test author.
   --version     Show version.`
-	_, err := docopt.Parse(usage, nil, true, versionString(), false)
+	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")
 	}
@@ -682,6 +684,13 @@ Options:
 		return
 	}
 	defer db.Close()
+	if args["-i"].(bool) {
+		err = insertTestAuthor(db, "testuser", "testpasswd", "Joe Blogger", "joe@blogg.er", "http://test.blog")
+		if err != nil {
+			panic("Can't insert test user")
+		}
+		return
+	}
 	initData(&DbData{db, nil, false})
 	initRoutes()
 	runServer()

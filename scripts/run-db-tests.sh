@@ -21,6 +21,7 @@ wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
 $GOPATH/bin/goose -env=development up
+./rtfblog -i
 
 # Run the tests
 #nosetests
