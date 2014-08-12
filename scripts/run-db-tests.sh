@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ `service postgresql status | grep online` ]]; then
+	echo "System-wide PGSQL server is running, refusing to start."
+	echo "Run 'sudo service postgresql stop' and try again".
+	exit
+fi
+
 wait_for_line () {
 	while read line
 	do
