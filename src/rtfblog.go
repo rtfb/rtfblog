@@ -560,10 +560,10 @@ func initData(_data Data) {
 	data = _data
 }
 
-func initRoutes() {
+func initRoutes(basedir string) {
 	Router = pat.New()
 	r := Router
-	dir := filepath.Join(Basedir(), conf.Get("staticdir"))
+	dir := filepath.Join(basedir, conf.Get("staticdir"))
 	r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
 	r.Add("GET", "/login", Handler(LoginForm)).Name("login")
 	r.Add("POST", "/login", Handler(Login))
@@ -693,6 +693,6 @@ Options:
 		return
 	}
 	initData(&DbData{db, nil, false})
-	initRoutes()
+	initRoutes(bindir)
 	runServer()
 }

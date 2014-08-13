@@ -395,7 +395,7 @@ func init() {
 	}
 	testData = TestData{}
 	initData(&testData)
-	initRoutes()
+	initRoutes("..")
 	tserver = httptest.NewServer(Router)
 }
 
