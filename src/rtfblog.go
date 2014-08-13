@@ -673,9 +673,9 @@ Options:
 		panic("Can't docopt.Parse!")
 	}
 	rand.Seed(time.Now().UnixNano())
-	basedir := Basedir()
-	os.Chdir(basedir)
-	conf = obtainConfiguration(basedir)
+	bindir := Bindir()
+	os.Chdir(bindir)
+	conf = obtainConfiguration(bindir)
 	InitL10n("./l10n", "lt-LT")
 	logger = MkLogger(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))

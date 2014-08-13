@@ -78,7 +78,7 @@ func PathToFullPath(path string) string {
 	return filepath.Join(cwd, path)
 }
 
-func Basedir() string {
+func Bindir() string {
 	basedir, _ := filepath.Split(PathToFullPath(os.Args[0]))
 	return basedir
 }
