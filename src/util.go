@@ -71,11 +71,11 @@ func PathToFullPath(path string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
-	cwd, err := os.Getwd()
+	abs, err := filepath.Abs(path)
 	if err != nil {
 		return filepath.Clean(path)
 	}
-	return filepath.Join(cwd, path)
+	return abs
 }
 
 func Bindir() string {
