@@ -39,3 +39,6 @@ version:
 
 fmt:
 	${GOFMT} -w ${GOFILES}
+
+clean:
+	rm -r ${BUILDDIR}
