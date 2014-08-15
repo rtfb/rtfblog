@@ -1,5 +1,4 @@
-rtfblog
-server.log
+build
 tests.log
 server.conf
 vim-session
@@ -7,12 +6,7 @@ testdata/rtfblog-dump.sql
 testdata/legacy-db.conf
 testdata/db.conf
 stuff/
-git-arch-for-deploy.tar.gz
 priv_key
 node_modules
 bower_components
-static/css/Ribs.css
-static/css/pagedown.css
-static/js/*.js
-static/wmd-buttons.png
 src/version.go

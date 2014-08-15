@@ -17,7 +17,7 @@ module.exports = function(grunt) {
         },
         shell: {
             buildGo: {
-                command: 'go build -o rtfblog src/*.go',
+                command: 'go build -o build/rtfblog src/*.go',
                 options: {
                     stdout: true,
                     stderr: true
