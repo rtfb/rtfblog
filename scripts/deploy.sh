@@ -12,15 +12,13 @@ if [ "$1" == "prod" ]; then
 fi
 
 package=./package
-mkdir -p $package
+cp -r build $package
+rm $package/server.conf
+rm $package/server.log
 cp $GOPATH/bin/goose $package
 cp -r ./db $package
-cp ./rtfblog $package
-cp -r ./static $package
-cp -r ./tmpl $package
 cp ./stuff/images/* $package/static/
 cp ./testdata/rtfblog-dump.sql $package/rtfblog-dump.sql
-cp -r l10n $package/
 tar czvf package.tar.gz ./package
 rm -rf $package
 
