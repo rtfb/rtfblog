@@ -1,9 +1,10 @@
 #!/bin/bash
 
-git archive HEAD -o git-arch-for-deploy.tar.gz
+git archive HEAD -o build/git-arch-for-cover.tar.gz
 dest=$GOPATH/src/rtfblog
 mkdir -p $dest
-tar xzvf git-arch-for-deploy.tar.gz -C $dest
+tar xzvf build/git-arch-for-cover.tar.gz -C $dest
+rm build/git-arch-for-cover.tar.gz
 make version
 cp src/version.go $dest/src
 pushd $dest
