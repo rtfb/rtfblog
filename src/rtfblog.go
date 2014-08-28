@@ -155,7 +155,8 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		pgNo = 1
 		err = nil
 	}
-	offset := (pgNo - 1) * PostsPerPage
+	pgNo -= 1
+	offset := pgNo * PostsPerPage
 	return Tmpl("main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
 

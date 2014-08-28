@@ -974,6 +974,8 @@ func TestPagination(t *testing.T) {
 	if nodes[4].Attr[1].Val != "/hello10" {
 		t.Fatalf("Wrong post!")
 	}
+	html := curl("page/2")
+	mustContain(t, html, "<a href=\"/page/1\">1</a>\n2\n<a href=\"/page/3\">3</a>\n")
 }
 
 func TestNewPostShowsEmptyForm(t *testing.T) {
