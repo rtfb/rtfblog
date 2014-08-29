@@ -9,7 +9,6 @@ go:
     - tip
 
 before_install:
-    - go get code.google.com/p/go-html-transform/css/selector
     - go get code.google.com/p/go.tools/cmd/vet
     - go get -v code.google.com/p/go.tools/cmd/cover
     - go get -v github.com/mattn/goveralls
@@ -18,7 +17,7 @@ before_install:
     - bower install ribs
 
 install:
-    - go get -d -v ./...
+    - go get -d -t -v ./...
     - ./scripts/genversion.sh
     - go build -v src/*.go
 
