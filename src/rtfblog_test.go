@@ -1111,3 +1111,24 @@ func TestMkNotifEmail(t *testing.T) {
 	mustContain(t, body, "text")
 	mustContain(t, body, "New comment from")
 }
+
+func TestMarkdown(t *testing.T) {
+	md := "foo _bar_ **baz**"
+	html := mdToHTML(md)
+	expected := "<p>foo <em>bar</em> <strong>baz</strong></p>\n"
+	if string(html) != expected {
+		t.Fatalf("failed to process markdown. Expected:\n%q\nbut got:\n%q\n", expected, html)
+	}
+	html = []byte(`<p>foo</p><script>evil</script><a href="xyzzy"></a>`)
+	expected = `<p>foo</p><a href="xyzzy" rel="nofollow"></a>`
+	sanitized := sanitizeHTML(html)
+	if string(sanitized) != expected {
+		t.Fatalf("failed to sanitize HTML. Expected:\n%q\nbut got:\n%q\n", expected, sanitized)
+	}
+	html = []byte(`<p>foo</p><script>evil</script><img alt="xyzzy"></img>`)
+	expected = `<p>foo</p><img alt="xyzzy"></img>`
+	sanitized = sanitizeTrustedHTML(html)
+	if string(sanitized) != expected {
+		t.Fatalf("failed to sanitize trusted HTML. Expected:\n%q\nbut got:\n%q\n", expected, sanitized)
+	}
+}
