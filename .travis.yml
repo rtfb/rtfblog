@@ -18,7 +18,7 @@ before_install:
 
 install:
     - go get -d -t -v ./...
-    - ./scripts/genversion.sh
+    - ./scripts/genversion.sh > src/version.go
     - go build -v src/*.go
 
 script:
