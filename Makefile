@@ -7,29 +7,31 @@ BUILDDIR=build
 JSDIR=${BUILDDIR}/static/js
 CSSDIR=${BUILDDIR}/static/css
 
-all: version vet fmt copy_static browserify grunt
+JS_FILES = $(notdir $(wildcard js/*.js))
+CSS_FILES = $(notdir $(wildcard static/css/*.css))
+PNG_FILES = $(notdir $(wildcard static/*.png))
+TMPL_FILES = $(notdir $(wildcard tmpl/*.html))
+L10N_FILES = $(notdir $(wildcard l10n/*.json))
+TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
+		  $(addprefix $(CSSDIR)/, $(CSS_FILES)) \
+		  $(addprefix ${BUILDDIR}/static/, $(PNG_FILES)) \
+		  $(addprefix ${BUILDDIR}/tmpl/, $(TMPL_FILES)) \
+		  $(addprefix ${BUILDDIR}/l10n/, $(L10N_FILES)) \
+		  ${BUILDDIR}/static/robots.txt \
+		  ${BUILDDIR}/server.conf \
+		  ${JSDIR}/bundle.js \
+		  ${JSDIR}/pagedown-bundle.js \
+		  ${BUILDDIR}/static/wmd-buttons.png \
+		  ${CSSDIR}/pagedown.css \
+		  ${CSSDIR}/Ribs.css
+
+all: version vet fmt $(TARGETS) grunt
 
 grunt:
 	grunt
 
 run: all
 	./${BUILDDIR}/rtfblog
-
-copy_static:
-	mkdir -p ${JSDIR}
-	mkdir -p ${CSSDIR}
-	cp js/*.js ${JSDIR}
-	cp -r static/* ${BUILDDIR}/static/
-	cp -r tmpl ${BUILDDIR}
-	cp -r l10n ${BUILDDIR}
-	cp server.conf ${BUILDDIR}
-
-browserify:
-	browserify js/main.js -o ${JSDIR}/bundle.js
-	browserify -r pagedown-editor js/pgdown-ed.js -o ${JSDIR}/pagedown-bundle.js
-	cp ./node_modules/pagedown-editor/wmd-buttons.png ${BUILDDIR}/static/
-	cp ./node_modules/pagedown-editor/pagedown.css ${CSSDIR}
-	cp ./bower_components/ribs/build/css/Ribs.css ${CSSDIR}
 
 vet:
 	go vet ${GOFILES}
@@ -39,6 +41,46 @@ version:
 
 fmt:
 	${GOFMT} -w ${GOFILES}
+
+${JSDIR}/%.js: js/%.js
+	@mkdir -p ${JSDIR}
+	cp $< $@
+
+${CSSDIR}/%.css: static/css/%.css
+	@mkdir -p ${CSSDIR}
+	cp $< $@
+
+${BUILDDIR}/static/%.png: static/%.png
+	cp $< $@
+
+${BUILDDIR}/tmpl/%.html: tmpl/%.html
+	@mkdir -p ${BUILDDIR}/tmpl
+	cp $< $@
+
+${BUILDDIR}/l10n/%.json: l10n/%.json
+	@mkdir -p ${BUILDDIR}/l10n
+	cp $< $@
+
+${BUILDDIR}/static/robots.txt: static/robots.txt
+	cp $< $@
+
+${BUILDDIR}/server.conf: server.conf
+	cp $< $@
+
+${JSDIR}/bundle.js: js/main.js
+	browserify $< -o $@
+
+${JSDIR}/pagedown-bundle.js: js/pgdown-ed.js
+	browserify -r pagedown-editor $< -o $@
+
+${BUILDDIR}/static/wmd-buttons.png: node_modules/pagedown-editor/wmd-buttons.png
+	cp $< $@
+
+${CSSDIR}/pagedown.css: node_modules/pagedown-editor/pagedown.css
+	cp $< $@
+
+${CSSDIR}/Ribs.css: bower_components/ribs/build/css/Ribs.css
+	cp $< $@
 
 clean:
 	rm -r ${BUILDDIR}
