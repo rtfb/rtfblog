@@ -1,7 +1,7 @@
 GOFMT=gofmt -s
 
 GOFILES=\
-	src/*.go\
+	src/*.go
 
 BUILDDIR=build
 JSDIR=${BUILDDIR}/static/js
