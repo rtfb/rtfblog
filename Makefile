@@ -84,3 +84,5 @@ ${CSSDIR}/Ribs.css: bower_components/ribs/build/css/Ribs.css
 
 clean:
 	rm -r ${BUILDDIR}
+
+.PHONY: all clean grunt run vet version fmt
