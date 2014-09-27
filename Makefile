@@ -1,4 +1,4 @@
-GOFMT=gofmt -s
+GOFMT=gofmt -l -w -s
 
 GOFILES=\
 	src/*.go
@@ -40,7 +40,7 @@ version:
 	@./scripts/genversion.sh > src/version.go
 
 fmt:
-	${GOFMT} -w ${GOFILES}
+	${GOFMT} ${GOFILES}
 
 ${JSDIR}/%.js: js/%.js
 	@mkdir -p ${JSDIR}
