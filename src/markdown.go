@@ -29,9 +29,9 @@ func sanitizeTrustedHTML(html []byte) template.HTML {
 	p := bluemonday.UGCPolicy()
 	p.RequireNoFollowOnLinks(false)
 	p.AllowAttrs("alt").OnElements("img")
-	return template.HTML(p.Sanitize(string(html)))
+	return template.HTML(p.SanitizeBytes(html))
 }
 
 func sanitizeHTML(html []byte) template.HTML {
-	return template.HTML(bluemonday.UGCPolicy().Sanitize(string(html)))
+	return template.HTML(bluemonday.UGCPolicy().SanitizeBytes(html))
 }
