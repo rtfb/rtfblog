@@ -25,7 +25,7 @@ TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/Ribs.css
 
-all: version vet fmt $(TARGETS) grunt
+all: vet fmt $(TARGETS) grunt
 
 grunt:
 	grunt
@@ -36,7 +36,7 @@ run: all
 vet:
 	go vet ${GOFILES}
 
-version:
+src/version.go:
 	@./scripts/genversion.sh > src/version.go
 
 fmt:
