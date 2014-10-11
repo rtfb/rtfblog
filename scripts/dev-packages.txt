@@ -1,4 +1,5 @@
 make
 golang
+golang-go.tools
 git
 mercurial
