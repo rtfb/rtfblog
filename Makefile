@@ -23,12 +23,16 @@ TARGETS = \
 		  $(addprefix ${BUILDDIR}/tmpl/, $(TMPL_FILES)) \
 		  $(addprefix ${BUILDDIR}/l10n/, $(L10N_FILES)) \
 		  ${BUILDDIR}/static/robots.txt \
-		  ${BUILDDIR}/server.conf \
 		  ${JSDIR}/bundle.js \
 		  ${JSDIR}/pagedown-bundle.js \
 		  ${BUILDDIR}/static/wmd-buttons.png \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/Ribs.css
+
+ifneq ($(wildcard server.conf),)
+	TARGETS += ${BUILDDIR}/server.conf
+endif
+
 GO_DEPS = $(addprefix $(GOPATH)/src/, ${shell ${GO_DEPS_CMD}})
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
