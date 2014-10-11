@@ -29,13 +29,10 @@ Build instructions on Ubuntu 14.04 (older versions might differ a bit):
 * Node JS (you will need to use http://nodejs.org/download/, it doesn't work
   with the one provided by the package manager)
   * Note: make sure `node/bin/` dir is in `PATH`, build scripts assume that
-* `$ sudo npm install -g grunt-cli bower browserify`
-* `$ npm install`
-* `$ bower install ribs`
-* `$ cd src && go get`
-* `$ go get code.google.com/p/go-html-transform/css/selector`
-  * No idea why does this need to be a separate get
-* `$ cd .. && make`
+* `$ sudo npm install -g grunt-cli bower browserify json`
+* `$ make`
+  * Note: don't get surprised when make will take a lot of time and network
+    activity on the first run, it's downloading dependencies.
 
 ## Installing
 
