@@ -25,9 +25,9 @@ TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/Ribs.css
 
-all: vet fmt $(TARGETS) grunt
+all: vet fmt ${BUILDDIR}/rtfblog
 
-grunt:
+${BUILDDIR}/rtfblog: $(GOFILES) $(TARGETS) src/version.go
 	grunt
 
 run: all
