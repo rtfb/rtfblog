@@ -38,7 +38,7 @@ NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
 all: vet fmt ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS) src/version.go
+${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS)
 	grunt
 
 $(GO_DEPS):
