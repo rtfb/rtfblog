@@ -12,18 +12,10 @@ before_install:
     - go get code.google.com/p/go.tools/cmd/vet
     - go get -v code.google.com/p/go.tools/cmd/cover
     - go get -v github.com/mattn/goveralls
-    - npm install -g grunt-cli bower browserify
-    - npm install
-    - bower install ribs
-
-install:
-    - go get -d -t -v ./...
-    - ./scripts/genversion.sh > src/version.go
-    - go build -v src/*.go
+    - npm install -g grunt-cli bower browserify json
 
 script:
-    - grunt qunit
-    - go vet -x src/*.go
+    - make
     - go test -covermode=count -coverprofile=profile.cov -v ./src/...
 
 after_script:
