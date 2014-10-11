@@ -2,6 +2,9 @@ GOFMT=gofmt -l -w -s
 GO_DEPS_CMD=\
 	go list -f '{{ join .Deps  "\n"}}' ./src | grep "github\|code.google.com"
 
+NODE_DEPS_CMD=\
+	cat package.json | json devDependencies | json -ka | xargs
+
 GOFILES=\
 	src/*.go
 
@@ -27,14 +30,21 @@ TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/Ribs.css
 GO_DEPS = $(addprefix $(GOPATH)/src/, ${shell ${GO_DEPS_CMD}})
+NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
 all: vet fmt ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(GO_DEPS) $(GOFILES) $(TARGETS) src/version.go
+${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS) src/version.go
 	grunt
 
 $(GO_DEPS):
 	go get -t ./...
+
+$(NODE_DEPS):
+	npm install
+
+bower_components/ribs/build/css/Ribs.css:
+	bower install ribs
 
 run: all
 	./${BUILDDIR}/rtfblog
