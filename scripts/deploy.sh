@@ -1,6 +1,7 @@
 #!/bin/bash
 
 killall rtfblog
+rm src/version.go
 make all
 
 suffix="-staging"
