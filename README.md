@@ -26,8 +26,11 @@ tried running it on Linux, but in theory it should run everywhere where Go runs.
 Build instructions on Ubuntu 14.04 (older versions might differ a bit):
 
 * `$ cat scripts/dev-packages.txt | xargs sudo apt-get install -y`
-* Node JS (you will need to use http://nodejs.org/download/, it doesn't work
-  with the one provided by the package manager)
+  * Note: make sure your $GOPATH and $GOBIN are set up (see the
+    [docs](https://golang.org/cmd/go/#hdr-GOPATH_environment_variable))
+* Node JS (you will need to use http://nodejs.org/download/ or follow
+  [these](https://github.com/joyent/node/wiki/installing-node.js-via-package-manager)
+  instructions, it doesn't work with the one provided by the package manager)
   * Note: make sure `node/bin/` dir is in `PATH`, build scripts assume that
 * `$ sudo npm install -g grunt-cli bower browserify json`
 * `$ make`
