@@ -17,7 +17,7 @@ CSS_FILES = $(notdir $(wildcard static/css/*.css))
 PNG_FILES = $(notdir $(wildcard static/*.png))
 TMPL_FILES = $(notdir $(wildcard tmpl/*.html))
 L10N_FILES = $(notdir $(wildcard l10n/*.json))
-TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
+TARGETS = \
 		  $(addprefix $(CSSDIR)/, $(CSS_FILES)) \
 		  $(addprefix ${BUILDDIR}/static/, $(PNG_FILES)) \
 		  $(addprefix ${BUILDDIR}/tmpl/, $(TMPL_FILES)) \
@@ -58,10 +58,6 @@ src/version.go:
 fmt:
 	${GOFMT} ${GOFILES}
 
-${JSDIR}/%.js: js/%.js
-	@mkdir -p ${JSDIR}
-	cp $< $@
-
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
 	cp $< $@
@@ -84,9 +80,11 @@ ${BUILDDIR}/server.conf: server.conf
 	cp $< $@
 
 ${JSDIR}/bundle.js: js/main.js
+	@mkdir -p ${JSDIR}
 	browserify $< -o $@
 
 ${JSDIR}/pagedown-bundle.js: js/pgdown-ed.js
+	@mkdir -p ${JSDIR}
 	browserify -r pagedown-editor $< -o $@
 
 ${BUILDDIR}/static/wmd-buttons.png: node_modules/pagedown-editor/wmd-buttons.png
