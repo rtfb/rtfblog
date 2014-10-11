@@ -42,7 +42,8 @@ ${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS
 	grunt
 
 $(GO_DEPS):
-	go get -t ./...
+	@echo "Running 'go get', this will take a few minutes..."
+	@go get -t ./...
 
 $(NODE_DEPS):
 	npm install
