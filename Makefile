@@ -1,4 +1,6 @@
 GOFMT=gofmt -l -w -s
+GO_DEPS_CMD=\
+	go list -f '{{ join .Deps  "\n"}}' ./src | grep "github\|code.google.com"
 
 GOFILES=\
 	src/*.go
@@ -24,11 +26,15 @@ TARGETS = $(addprefix $(JSDIR)/, $(JS_FILES)) \
 		  ${BUILDDIR}/static/wmd-buttons.png \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/Ribs.css
+GO_DEPS = $(addprefix $(GOPATH)/src/, ${shell ${GO_DEPS_CMD}})
 
 all: vet fmt ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(GOFILES) $(TARGETS) src/version.go
+${BUILDDIR}/rtfblog: $(GO_DEPS) $(GOFILES) $(TARGETS) src/version.go
 	grunt
+
+$(GO_DEPS):
+	go get -t ./...
 
 run: all
 	./${BUILDDIR}/rtfblog
