@@ -37,7 +37,7 @@ vet:
 	go vet ${GOFILES}
 
 src/version.go:
-	@./scripts/genversion.sh > src/version.go
+	./scripts/genversion.sh > src/version.go
 
 fmt:
 	${GOFMT} ${GOFILES}
