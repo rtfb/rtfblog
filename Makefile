@@ -33,7 +33,8 @@ ifneq ($(wildcard server.conf),)
 	TARGETS += ${BUILDDIR}/server.conf
 endif
 
-GO_DEPS = $(addprefix $(GOPATH)/src/, ${shell ${GO_DEPS_CMD}})
+GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
+GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, ${shell ${GO_DEPS_CMD}})
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
 all: vet fmt ${BUILDDIR}/rtfblog
