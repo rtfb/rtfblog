@@ -37,9 +37,11 @@ GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, ${shell ${GO_DEPS_CMD}})
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
-all: vet fmt ${BUILDDIR}/rtfblog
+all: ${BUILDDIR}/rtfblog
 
 ${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS)
+	go vet ${GOFILES}
+	${GOFMT} ${GOFILES}
 	grunt
 
 $(GO_DEPS):
