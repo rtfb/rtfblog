@@ -1,6 +1,15 @@
 GOFMT=gofmt -l -w -s
+
 GO_DEPS_CMD=\
-	go list -f '{{ join .Deps  "\n"}}' ./src | grep "github\|code.google.com"
+	go list -f '{{ join .Deps  "\n"}}' ./src
+GO_TEST_DEPS_CMD=\
+	go list -f '{{ join .TestImports  "\n"}}' ./src
+GO_UNFILTERED_DEPS=\
+	${shell ${GO_DEPS_CMD}} \
+	${shell ${GO_TEST_DEPS_CMD}}
+THIRD_PARTY_PKGS=github% code.google.com%
+GO_UNIQUE_DEPS=\
+	$(sort $(filter $(THIRD_PARTY_PKGS),${GO_UNFILTERED_DEPS}))
 
 NODE_DEPS_CMD=\
 	cat package.json | json devDependencies | json -ka | xargs
@@ -34,7 +43,7 @@ ifneq ($(wildcard server.conf),)
 endif
 
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
-GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, ${shell ${GO_DEPS_CMD}})
+GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, $(GO_UNIQUE_DEPS))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 
 all: ${BUILDDIR}/rtfblog
