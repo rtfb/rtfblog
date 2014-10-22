@@ -61,7 +61,7 @@ $(NODE_DEPS):
 	npm install
 
 bower_components/ribs/build/css/Ribs.css:
-	bower install ribs
+	bower install --config.interactive=false ribs
 
 run: all
 	./${BUILDDIR}/rtfblog
