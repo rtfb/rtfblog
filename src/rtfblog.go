@@ -36,6 +36,23 @@ var (
 	logger *log.Logger
 )
 
+const (
+	usage = `rtfblog. A standalone personal blog server.
+
+Usage:
+  rtfblog
+  rtfblog -h | --help
+  rtfblog -i
+  rtfblog --version
+
+Options:
+  With no arguments it simply runs the server (with either hardcoded config or
+  a config it finds in one of locations described in README).
+  -h --help     Show this screen.
+  -i            Insert test author.
+  --version     Show version.`
+)
+
 func (c *SrvConfig) Get(key string) string {
 	val, ok := (*c)[key].(string)
 	if !ok {
@@ -654,20 +671,6 @@ func getDBConnString() string {
 
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
-	usage := `rtfblog. A standalone personal blog server.
-
-Usage:
-  rtfblog
-  rtfblog -h | --help
-  rtfblog -i
-  rtfblog --version
-
-Options:
-  With no arguments it simply runs the server (with either hardcoded config or
-  a config it finds in one of locations described in README).
-  -h --help     Show this screen.
-  -i            Insert test author.
-  --version     Show version.`
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")
