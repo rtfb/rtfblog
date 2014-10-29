@@ -1132,3 +1132,7 @@ func TestMarkdown(t *testing.T) {
 		t.Fatalf("failed to sanitize trusted HTML. Expected:\n%q\nbut got:\n%q\n", expected, sanitized)
 	}
 }
+
+func TestMd5(t *testing.T) {
+	T{t}.assertEqual("d3b07384d113edec49eaa6238ad5ff00", Md5Hash("foo\n"))
+}
