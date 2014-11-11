@@ -885,7 +885,7 @@ func TestShowCaptcha(t *testing.T) {
 	var resp map[string]interface{}
 	err := json.Unmarshal([]byte(respJSON), &resp)
 	if err != nil {
-		t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
 	}
 	T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
@@ -896,7 +896,7 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
 	var resp map[string]interface{}
 	err := json.Unmarshal([]byte(respJSON), &resp)
 	if err != nil {
-		t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
 	}
 	T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
@@ -912,7 +912,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 	var resp map[string]interface{}
 	err := json.Unmarshal([]byte(respJSON), &resp)
 	if err != nil {
-		t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
 	}
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
@@ -929,7 +929,7 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 	var resp map[string]interface{}
 	err := json.Unmarshal([]byte(respJSON), &resp)
 	if err != nil {
-		t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
 	}
 	T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
 	testData.expect(t, (*TestData).postID, "")
@@ -945,7 +945,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
 	var resp map[string]interface{}
 	err := json.Unmarshal([]byte(respJSON), &resp)
 	if err != nil {
-		t.Fatalf("Failed to parse json %q\nwith error %q", respJSON, err.Error())
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
 	}
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
@@ -1011,7 +1011,7 @@ func query0(t *testing.T, url, query string) []*html.Node {
 	html := curl(url)
 	doctree, err := h5.NewFromString(html)
 	if err != nil {
-		t.Fatalf("Error in NewFromString! doc=%q, Err=%s", html, err.Error())
+		t.Fatalf("h5.NewFromString(%s) = err %q", html, err.Error())
 	}
 	return cssSelect(T{t}, doctree.Top(), query)
 }
@@ -1117,19 +1117,20 @@ func TestMarkdown(t *testing.T) {
 	html := mdToHTML(md)
 	expected := "<p>foo <em>bar</em> <strong>baz</strong></p>\n"
 	if string(html) != expected {
-		t.Fatalf("failed to process markdown. Expected:\n%q\nbut got:\n%q\n", expected, html)
+		t.Errorf("mdToHTML(%s) = %q; want %q", md, html, expected)
 	}
 	html = []byte(`<p>foo</p><script>evil</script><a href="xyzzy"></a>`)
 	expected = `<p>foo</p><a href="xyzzy" rel="nofollow"></a>`
 	sanitized := sanitizeHTML(html)
 	if string(sanitized) != expected {
-		t.Fatalf("failed to sanitize HTML. Expected:\n%q\nbut got:\n%q\n", expected, sanitized)
+		t.Errorf("sanitizeHTML(%s) = %q; want %q", html, sanitized, expected)
 	}
 	html = []byte(`<p>foo</p><script>evil</script><img alt="xyzzy"></img>`)
 	expected = `<p>foo</p><img alt="xyzzy"></img>`
 	sanitized = sanitizeTrustedHTML(html)
 	if string(sanitized) != expected {
-		t.Fatalf("failed to sanitize trusted HTML. Expected:\n%q\nbut got:\n%q\n", expected, sanitized)
+		t.Errorf("sanitizeTrustedHTML(%s) = %q; want %q",
+			html, sanitized, expected)
 	}
 }
 
