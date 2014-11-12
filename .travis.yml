@@ -9,8 +9,8 @@ go:
     - tip
 
 before_install:
-    - go get code.google.com/p/go.tools/cmd/vet
-    - go get -v code.google.com/p/go.tools/cmd/cover
+    - go get golang.org/x/tools/cmd/vet
+    - go get -v golang.org/x/tools/cmd/cover
     - go get -v github.com/mattn/goveralls
     - npm install -g grunt-cli bower browserify json
 
