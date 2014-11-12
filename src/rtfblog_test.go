@@ -23,10 +23,10 @@ import (
 	"strings"
 	"testing"
 
-	"code.google.com/p/go-html-transform/css/selector"
-	"code.google.com/p/go-html-transform/h5"
-	"code.google.com/p/go.net/html"
 	"github.com/gorilla/sessions"
+	"github.com/rtfb/go-html-transform/css/selector"
+	"github.com/rtfb/go-html-transform/h5"
+	"golang.org/x/net/html"
 )
 
 type T struct {

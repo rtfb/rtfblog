@@ -7,7 +7,7 @@ GO_TEST_DEPS_CMD=\
 GO_UNFILTERED_DEPS=\
 	${shell ${GO_DEPS_CMD}} \
 	${shell ${GO_TEST_DEPS_CMD}}
-THIRD_PARTY_PKGS=github% code.google.com%
+THIRD_PARTY_PKGS=github% golang.org/x/%
 GO_UNIQUE_DEPS=\
 	$(sort $(filter $(THIRD_PARTY_PKGS),${GO_UNFILTERED_DEPS}))
 
