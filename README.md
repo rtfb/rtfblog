@@ -12,7 +12,7 @@ was writing it with making it available to others in mind.
 This is my first sizeable piece of Go code, so I'm a [baby
 gopher](http://www.babygopher.org/):
 
-[![baby-gopher](https://raw2.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png)](http://www.babygopher.org)
+[![baby-gopher](https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png)](http://www.babygopher.org)
 
 ## Can I use it?
 
