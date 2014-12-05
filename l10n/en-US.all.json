@@ -211,6 +211,10 @@
     "translation": "All posts:"
   },
   {
+    "id": "Posts tagged '%s'",
+    "translation": "Posts tagged '%s'"
+  },
+  {
     "id": "Edit Post",
     "translation": "Edit Post"
   }

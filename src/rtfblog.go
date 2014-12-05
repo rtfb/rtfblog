@@ -206,7 +206,7 @@ func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tag := req.URL.Query().Get(":tag")
-	heading := fmt.Sprintf("Posts tagged '%s'", tag)
+	heading := fmt.Sprintf(L10n("Posts tagged '%s'"), tag)
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"

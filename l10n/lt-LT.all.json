@@ -213,6 +213,10 @@
     "translation": "Visi įrašai:"
   },
   {
+    "id": "Posts tagged '%s'",
+    "translation": "Įrašai su tagu '%s'"
+  },
+  {
     "id": "Edit Post",
     "translation": "Redaguoti įrašą"
   }
