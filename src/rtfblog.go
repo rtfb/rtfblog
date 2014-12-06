@@ -379,12 +379,7 @@ func explodeTags(tagsWithUrls string) []*Tag {
 		if t == "" {
 			continue
 		}
-		tag, url := t, strings.ToLower(t)
-		if strings.Contains(t, ">") {
-			arr := strings.Split(t, ">")
-			tag, url = arr[0], arr[1]
-		}
-		tags = append(tags, &Tag{url, tag})
+		tags = append(tags, &Tag{strings.ToLower(t)})
 	}
 	return tags
 }
@@ -587,7 +582,7 @@ func initRoutes(basedir string) {
 	r.Add("GET", "/logout", Handler(Logout)).Name("logout")
 	r.Add("GET", "/admin", checkPerm(Handler(Admin))).Name("admin")
 	r.Add("GET", "/page/{pageNo:.*}", Handler(PageNum))
-	r.Add("GET", "/tag/{tag:[0-9a-zA-Z]+}", Handler(PostsWithTag))
+	r.Add("GET", "/tag/{tag:.+}", Handler(PostsWithTag))
 	r.Add("GET", "/archive", Handler(Archive)).Name("archive")
 	r.Add("GET", "/all_comments", checkPerm(Handler(AllComments))).Name("all_comments")
 	r.Add("GET", "/edit_post", checkPerm(Handler(EditPost))).Name("edit_post")

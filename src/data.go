@@ -14,8 +14,7 @@ const (
 )
 
 type Tag struct {
-	TagURL  string
-	TagName string
+	Name string
 }
 
 type Author struct {
@@ -78,7 +77,7 @@ func (e Entry) NumCommentsStr() string {
 func (e Entry) TagsStr() template.HTML {
 	var parts []string
 	for _, t := range e.Tags {
-		part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.TagURL, t.TagName)
+		part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.Name, t.Name)
 		parts = append(parts, part)
 	}
 	return template.HTML(strings.Join(parts, ", "))
@@ -87,11 +86,7 @@ func (e Entry) TagsStr() template.HTML {
 func (e Entry) TagsWithUrls() string {
 	var parts []string
 	for _, t := range e.Tags {
-		part := fmt.Sprintf("%s", t.TagName)
-		if t.TagURL != t.TagName {
-			part = fmt.Sprintf("%s>%s", t.TagName, t.TagURL)
-		}
-		parts = append(parts, part)
+		parts = append(parts, t.Name)
 	}
 	return strings.Join(parts, ", ")
 }

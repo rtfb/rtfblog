@@ -431,7 +431,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 }
 
 func queryTags(db *sql.DB, postID int64) []*Tag {
-	stmt, err := db.Prepare(`select t.name, t.url
+	stmt, err := db.Prepare(`select t.url
                              from tag as t, tagmap as tm
                              where t.id = tm.tag_id
                                    and tm.post_id = $1`)
@@ -449,7 +449,7 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
 	var tags []*Tag
 	for rows.Next() {
 		tag := new(Tag)
-		err = rows.Scan(&tag.TagName, &tag.TagURL)
+		err = rows.Scan(&tag.Name)
 		if err != nil {
 			logger.Println(err.Error())
 			continue
@@ -509,21 +509,21 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
 		return
 	}
 	defer query.Close()
-	err = query.QueryRow(tag.TagURL).Scan(&tagID)
+	err = query.QueryRow(tag.Name).Scan(&tagID)
 	switch err {
 	case nil:
 		return
 	case sql.ErrNoRows:
 		insertTagSql, err := xaction.Prepare(`insert into tag
-                                              (name, url)
-                                              values ($1, $2)
+                                              (url)
+                                              values ($1)
                                               returning id`)
 		if err != nil {
 			logger.Println("Failed to prepare insert tag stmt: " + err.Error())
 			return -1, err
 		}
 		defer insertTagSql.Close()
-		err = insertTagSql.QueryRow(tag.TagName, tag.TagURL).Scan(&tagID)
+		err = insertTagSql.QueryRow(tag.Name).Scan(&tagID)
 		if err != nil {
 			logger.Println("Failed to insert tag: " + err.Error())
 		}

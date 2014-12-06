@@ -365,7 +365,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 		Date:     date,
 		Body:     template.HTML(fmt.Sprintf("Body%d", i)),
 		RawBody:  fmt.Sprintf("RawBody%d", i),
-		Tags:     []*Tag{{fmt.Sprintf("u%d", i), fmt.Sprintf("n%d", i)}},
+		Tags:     []*Tag{{fmt.Sprintf("u%d", i)}},
 		Comments: testComm,
 	}
 }
@@ -677,7 +677,7 @@ func TestSubmitPost(t *testing.T) {
 	}, func(html string) {
 		testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
 			{(*TestData).updatePost, "0"},
-			{(*TestData).updateTags, "0: {TagURL:tagzorz TagName:tagzorz}"}})
+			{(*TestData).updateTags, "0: {Name:tagzorz}"}})
 	})
 }
 
@@ -755,9 +755,8 @@ func TestExplodeTags(t *testing.T) {
 	var tagSpecs = []struct {
 		spec, expected string
 	}{
-		{"tag", "{TagURL:tag TagName:tag}"},
-		{"Tag>taag", "{TagURL:taag TagName:Tag}"},
-		{",tagg", "{TagURL:tagg TagName:tagg}"},
+		{"tag", "{Name:tag}"},
+		{",tagg", "{Name:tagg}"},
 	}
 	for _, ts := range tagSpecs {
 		result := fmt.Sprintf("%+v", *explodeTags(ts.spec)[0])
