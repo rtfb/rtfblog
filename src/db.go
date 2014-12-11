@@ -149,7 +149,7 @@ func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
                   from post as p
                   where p.id in (select tm.post_id from tagmap as tm
                                  inner join tag as t
-                                 on tm.tag_id = t.id and t.url=$1)`
+                                 on tm.tag_id = t.id and t.tag=$1)`
 	if !dd.includeHidden {
 		selectSql = selectSql + " and p.hidden=FALSE"
 	}
@@ -431,7 +431,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 }
 
 func queryTags(db *sql.DB, postID int64) []*Tag {
-	stmt, err := db.Prepare(`select t.url
+	stmt, err := db.Prepare(`select t.tag
                              from tag as t, tagmap as tm
                              where t.id = tm.tag_id
                                    and tm.post_id = $1`)
@@ -503,7 +503,7 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 }
 
 func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
-	query, err := xaction.Prepare("select id from tag where url=$1")
+	query, err := xaction.Prepare("select id from tag where tag=$1")
 	if err != nil {
 		logger.Println("Failed to prepare select tag stmt: " + err.Error())
 		return
@@ -515,7 +515,7 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
 		return
 	case sql.ErrNoRows:
 		insertTagSql, err := xaction.Prepare(`insert into tag
-                                              (url)
+                                              (tag)
                                               values ($1)
                                               returning id`)
 		if err != nil {
