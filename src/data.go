@@ -77,7 +77,10 @@ func (e Entry) NumCommentsStr() string {
 func (e Entry) TagsStr() template.HTML {
 	var parts []string
 	for _, t := range e.Tags {
-		part := fmt.Sprintf(`<a href="/tag/%s">%s</a>`, t.Name, t.Name)
+		format := `<a href="/tag/%s">%s</a>`
+		url := t.Name
+		title := Capitalize(t.Name)
+		part := fmt.Sprintf(format, url, title)
 		parts = append(parts, part)
 	}
 	return template.HTML(strings.Join(parts, ", "))

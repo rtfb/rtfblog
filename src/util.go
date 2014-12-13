@@ -88,3 +88,7 @@ func Md5Hash(s string) string {
 	hash.Write([]byte(strings.ToLower(s)))
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
+
+func Capitalize(s string) string {
+	return strings.ToUpper(s[:1]) + s[1:]
+}
