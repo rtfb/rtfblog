@@ -328,7 +328,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 }
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tagsWithUrls := req.FormValue("tags")
+	tags := req.FormValue("tags")
 	url := req.FormValue("url")
 	e := Entry{
 		EntryLink: EntryLink{
@@ -366,15 +366,15 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			return nil
 		}
 	}
-	data.updateTags(explodeTags(tagsWithUrls), postID)
+	data.updateTags(explodeTags(tags), postID)
 	data.commit()
 	http.Redirect(w, req, "/"+url, http.StatusSeeOther)
 	return nil
 }
 
-func explodeTags(tagsWithUrls string) []*Tag {
+func explodeTags(tagsStr string) []*Tag {
 	var tags []*Tag
-	for _, t := range strings.Split(tagsWithUrls, ",") {
+	for _, t := range strings.Split(tagsStr, ",") {
 		t = strings.TrimSpace(t)
 		if t == "" {
 			continue

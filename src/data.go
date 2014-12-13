@@ -83,7 +83,7 @@ func (e Entry) TagsStr() template.HTML {
 	return template.HTML(strings.Join(parts, ", "))
 }
 
-func (e Entry) TagsWithUrls() string {
+func (e Entry) TagsList() string {
 	var parts []string
 	for _, t := range e.Tags {
 		parts = append(parts, t.Name)
