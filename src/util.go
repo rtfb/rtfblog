@@ -9,6 +9,8 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -90,5 +92,6 @@ func Md5Hash(s string) string {
 }
 
 func Capitalize(s string) string {
-	return strings.ToUpper(s[:1]) + s[1:]
+	firstRune, width := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(firstRune)) + s[width:]
 }
