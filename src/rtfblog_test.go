@@ -370,6 +370,19 @@ func mkTestEntry(i int, hidden bool) *Entry {
 	}
 }
 
+type TestCryptoHelper struct{}
+
+func (h TestCryptoHelper) Encrypt(passwd string) (hash string, err error) {
+	return "", nil
+}
+
+func (h TestCryptoHelper) Decrypt(hash, passwd []byte) error {
+	if string(passwd) == "testpasswd" {
+		return nil
+	}
+	return errors.New("bad passwd")
+}
+
 func init() {
 	conf = obtainConfiguration("")
 	conf["staticdir"] = "../static"
@@ -387,12 +400,7 @@ func init() {
 	DetectLanguage = func(string) string {
 		return "foo"
 	}
-	Decrypt = func(hash, passwd []byte) error {
-		if string(passwd) == "testpasswd" {
-			return nil
-		}
-		return errors.New("bad passwd")
-	}
+	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
 	initData(&testData)
 	initRoutes("..")
@@ -1030,7 +1038,7 @@ func assertElem(t *testing.T, node *html.Node, elem string) {
 }
 
 func forgeTestUser(uname, passwd string) {
-	passwdHash, err := Encrypt(passwd)
+	passwdHash, err := cryptoHelper.Encrypt(passwd)
 	if err != nil {
 		panic(fmt.Sprintf("Error in Encrypt(): %s\n", err))
 	}

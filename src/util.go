@@ -14,7 +14,7 @@ import (
 )
 
 func insertTestAuthor(db *sql.DB, uname, passwd, fullname, email, www string) error {
-	passwdHash, err := Encrypt(passwd)
+	passwdHash, err := cryptoHelper.Encrypt(passwd)
 	if err != nil {
 		return err
 	}
