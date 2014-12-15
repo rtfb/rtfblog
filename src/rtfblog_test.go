@@ -383,6 +383,18 @@ func (h TestCryptoHelper) Decrypt(hash, passwd []byte) error {
 	return errors.New("bad passwd")
 }
 
+type TestLangDetector struct{}
+
+func (d TestLangDetector) Detect(text string) string {
+	return "foo"
+}
+
+type LTLangDetector struct{}
+
+func (d LTLangDetector) Detect(text string) string {
+	return `"lt"`
+}
+
 func init() {
 	conf = obtainConfiguration("")
 	conf["staticdir"] = "../static"
@@ -397,9 +409,7 @@ func init() {
 	for i := 1; i <= 2; i++ {
 		testPosts = append(testPosts, mkTestEntry(i+1000, true))
 	}
-	DetectLanguage = func(string) string {
-		return "foo"
-	}
+	langDetector = TestLangDetector{}
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
 	initData(&testData)
@@ -910,10 +920,11 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
 
 func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 	defer testData.reset()
-	temp := DetectLanguage
-	DetectLanguage = func(string) string {
-		return `"lt"`
-	}
+	temp := langDetector
+	defer func() {
+		langDetector = temp
+	}()
+	langDetector = LTLangDetector{}
 	url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt"
 	respJSON := curl(url)
 	var resp map[string]interface{}
@@ -926,7 +937,6 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 		{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
-	DetectLanguage = temp
 }
 
 func TestUndetectedLanguageCommentDismiss(t *testing.T) {

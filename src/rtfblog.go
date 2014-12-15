@@ -432,7 +432,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 func detectLanguageWithTimeout(text string) string {
 	c := make(chan string, 1)
 	go func() {
-		c <- DetectLanguage(text)
+		c <- langDetector.Detect(text)
 	}()
 	select {
 	case lang := <-c:

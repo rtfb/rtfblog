@@ -7,11 +7,17 @@ import (
 	"net/http"
 )
 
+type LangDetector interface {
+	Detect(text string) string
+}
+
+type XeroxLangDetector struct{}
+
 var (
-	DetectLanguage = detectLanguage
+	langDetector LangDetector = new(XeroxLangDetector)
 )
 
-func detectLanguage(text string) string {
+func (d XeroxLangDetector) Detect(text string) string {
 	var rq = map[string]string{
 		"document": text,
 	}
