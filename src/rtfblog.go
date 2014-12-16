@@ -108,7 +108,7 @@ func getHost(req *http.Request) string {
 }
 
 func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
-	url := addProtocol(getHost(req))
+	url := AddProtocol(getHost(req), "http")
 	blogTitle := conf.Get("blog_title")
 	descr := conf.Get("blog_descr")
 	author := conf.Get("author")
@@ -429,16 +429,6 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 	return
 }
 
-func addProtocol(raw string) string {
-	if raw == "" {
-		return ""
-	}
-	if strings.HasPrefix(strings.ToLower(raw), "http://") {
-		return raw
-	}
-	return "http://" + raw
-}
-
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	refURL := extractReferer(req)
 	postID, err := data.postID(refURL)
@@ -450,7 +440,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	commenter := Commenter{
 		Name:    req.FormValue("name"),
 		Email:   req.FormValue("email"),
-		Website: addProtocol(req.FormValue("website")),
+		Website: AddProtocol(req.FormValue("website"), "http"),
 		IP:      getIPAddress(req),
 	}
 	body := req.FormValue("text")
