@@ -429,19 +429,6 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 	return
 }
 
-func detectLanguageWithTimeout(text string) string {
-	c := make(chan string, 1)
-	go func() {
-		c <- langDetector.Detect(text)
-	}()
-	select {
-	case lang := <-c:
-		return lang
-	case <-time.After(1500 * time.Millisecond):
-		return "timedout"
-	}
-}
-
 func addProtocol(raw string) string {
 	if raw == "" {
 		return ""
@@ -480,7 +467,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		redir = "/" + refURL + commentURL
 	} else if err == sql.ErrNoRows {
 		if captchaID == "" {
-			lang := detectLanguageWithTimeout(body)
+			lang := DetectLanguageWithTimeout(body)
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 			logger.Println(log)
 			if lang == "\"lt\"" {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type LangDetector interface {
@@ -45,4 +46,17 @@ func (d XeroxLangDetector) Detect(text string) string {
 		return ""
 	}
 	return string(body)
+}
+
+func DetectLanguageWithTimeout(text string) string {
+	c := make(chan string, 1)
+	go func() {
+		c <- langDetector.Detect(text)
+	}()
+	select {
+	case lang := <-c:
+		return lang
+	case <-time.After(1500 * time.Millisecond):
+		return "timedout"
+	}
 }
