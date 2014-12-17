@@ -25,6 +25,7 @@ type Data interface {
 	insertPost(author int64, e *Entry) (id int64, err error)
 	updatePost(id int64, e *Entry) bool
 	updateTags(tags []*Tag, postID int64)
+	queryAllTags() []*Tag
 	begin() bool
 	commit()
 	rollback()
@@ -441,6 +442,36 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(postID)
+	if err != nil {
+		logger.Println(err.Error())
+		return nil
+	}
+	defer rows.Close()
+	var tags []*Tag
+	for rows.Next() {
+		tag := new(Tag)
+		err = rows.Scan(&tag.Name)
+		if err != nil {
+			logger.Println(err.Error())
+			continue
+		}
+		tags = append(tags, tag)
+	}
+	err = rows.Err()
+	if err != nil {
+		logger.Printf("error scanning tag row: %s\n", err.Error())
+	}
+	return tags
+}
+
+func (dd *DbData) queryAllTags() []*Tag {
+	stmt, err := dd.db.Prepare(`select tag from tag`)
+	if err != nil {
+		logger.Println(err.Error())
+		return nil
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
 	if err != nil {
 		logger.Println(err.Error())
 		return nil

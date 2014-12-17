@@ -201,6 +201,10 @@ func (td *TestData) updateComment(id, text string) bool {
 	return false
 }
 
+func (td *TestData) queryAllTags() []*Tag {
+	return nil
+}
+
 func (td *TestData) begin() bool {
 	return true
 }
