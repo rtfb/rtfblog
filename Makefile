@@ -63,7 +63,7 @@ $(GO_DEPS):
 $(NODE_DEPS):
 	npm install
 
-bower_components/ribs/build/css/Ribs.css bower_components/tag-it:
+bower_components/ribs/build/css/Ribs.css bower_components/tag-it/js/tag-it.min.js:
 	bower install --config.interactive=false ribs tag-it
 
 run: all
