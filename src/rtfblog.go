@@ -228,10 +228,19 @@ func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return Tmpl("all_comments.html").Execute(w, tmplData)
 }
 
+func makeTagList(tags []*Tag) []string {
+	var strTags []string
+	for _, t := range tags {
+		strTags = append(strTags, t.Name)
+	}
+	return strTags
+}
+
 func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Edit Post")
 	tmplData["IsHidden"] = true // Assume hidden for a new post
+	tmplData["AllTags"] = makeTagList(data.queryAllTags())
 	url := strings.TrimRight(req.FormValue("post"), "&")
 	if url != "" {
 		if post := data.post(url); post != nil {
@@ -329,6 +338,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tags := req.FormValue("tags")
+	fmt.Printf("tags: %q\n", tags)
 	url := req.FormValue("url")
 	e := Entry{
 		EntryLink: EntryLink{

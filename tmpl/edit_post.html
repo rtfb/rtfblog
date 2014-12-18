@@ -1,8 +1,13 @@
 {{define "title"}}{{L10n "Edit Post"}}{{end}}
 {{define "extrahead"}}
     <link rel="stylesheet" href="/static/css/pagedown.css">
+    <link href="/static/css/jquery.tagit.css" rel="stylesheet" type="text/css">
+    <link href="/static/css/tagit.ui-zendesk.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="/static/js/pagedown-bundle.js"></script>
     <script type="text/javascript" src="/static/js/bundle.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/js/tag-it.min.js" type="text/javascript" charset="utf-8"></script>
     <style>
     #upload-progress-section p {
         display: block;
@@ -51,12 +56,14 @@
             value="{{.URL}}"
             />
         <br />
-        <label for="post_tags">{{L10n "Tags:"}}</label>
+        <label for="post_tags_widget">{{L10n "Tags:"}}</label>
+        <ul
+            id="post_tags_widget"
+            ></ul>
         <input
             id="post_tags"
-            type="text"
-            class="text"
             name="tags"
+            type="hidden"
             value="{{.TagsList}}"
             />
         <br />
@@ -125,7 +132,13 @@
              var uploadFileButton = document.getElementById('upload-file-button');
              uploadFileButton.onclick = forwardClickToFileid;
              getPagedownEditor().run();
-             }());
+             var sampleTags = {{.AllTags}};
+             $('#post_tags_widget').tagit({
+                 availableTags: sampleTags,
+                 singleField: true,
+                 singleFieldNode: $('#post_tags')
+             });
+         }());
 
         function deleteWithConfirm(postUrl) {
             var q = "{{L10n "You are about to delete this post!\nThis cannot be undone!"}}";

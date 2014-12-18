@@ -34,8 +34,11 @@ TARGETS = \
 		  ${BUILDDIR}/static/robots.txt \
 		  ${JSDIR}/bundle.js \
 		  ${JSDIR}/pagedown-bundle.js \
+		  ${JSDIR}/tag-it.min.js \
 		  ${BUILDDIR}/static/wmd-buttons.png \
 		  ${CSSDIR}/pagedown.css \
+		  ${CSSDIR}/jquery.tagit.css \
+		  ${CSSDIR}/tagit.ui-zendesk.css \
 		  ${CSSDIR}/Ribs.css
 
 ifneq ($(wildcard server.conf),)
@@ -60,8 +63,8 @@ $(GO_DEPS):
 $(NODE_DEPS):
 	npm install
 
-bower_components/ribs/build/css/Ribs.css:
-	bower install --config.interactive=false ribs
+bower_components/ribs/build/css/Ribs.css bower_components/tag-it:
+	bower install --config.interactive=false ribs tag-it
 
 run: all
 	./${BUILDDIR}/rtfblog
@@ -104,6 +107,9 @@ ${JSDIR}/pagedown-bundle.js: js/pgdown-ed.js
 	@mkdir -p ${JSDIR}
 	browserify -r pagedown-editor $< -o $@
 
+${JSDIR}/tag-it.min.js: bower_components/tag-it/js/tag-it.min.js
+	cp $< $@
+
 ${BUILDDIR}/static/wmd-buttons.png: node_modules/pagedown-editor/wmd-buttons.png
 	cp $< $@
 
@@ -111,6 +117,12 @@ ${CSSDIR}/pagedown.css: node_modules/pagedown-editor/pagedown.css
 	cp $< $@
 
 ${CSSDIR}/Ribs.css: bower_components/ribs/build/css/Ribs.css
+	cp $< $@
+
+${CSSDIR}/jquery.tagit.css: bower_components/tag-it/css/jquery.tagit.css
+	cp $< $@
+
+${CSSDIR}/tagit.ui-zendesk.css: bower_components/tag-it/css/tagit.ui-zendesk.css
 	cp $< $@
 
 clean:
