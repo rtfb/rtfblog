@@ -1060,18 +1060,6 @@ func forgeTestUser(uname, passwd string) {
 	testAuthor.UserName = uname
 }
 
-func TestExtractReferer(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://example.com", nil)
-	if err != nil {
-		t.Error(err)
-	}
-	refURL := extractReferer(req)
-	T{t}.failIf(refURL != "", "Empty string expected, but <%s> found!", refURL)
-	req.Header.Add("Referer", "foo/bar/baz")
-	refURL = extractReferer(req)
-	T{t}.failIf(refURL != "baz", "<baz> expected, but <%s> found!", refURL)
-}
-
 func TestPathToFullPath(t *testing.T) {
 	T{t}.assertEqual("/a/b/c", PathToFullPath("/a/b/c"))
 	cwd, err := os.Getwd()

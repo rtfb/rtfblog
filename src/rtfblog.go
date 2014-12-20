@@ -74,15 +74,6 @@ func loadConfig(path string) (config SrvConfig) {
 	return
 }
 
-func extractReferer(req *http.Request) string {
-	referers := req.Header["Referer"]
-	if len(referers) == 0 {
-		return ""
-	}
-	referer := referers[0]
-	return referer[strings.LastIndex(referer, "/")+1:]
-}
-
 func listOfPages(numPosts, currPage int) template.HTML {
 	list := ""
 	numPages := numPosts / PostsPerPage
@@ -99,16 +90,8 @@ func listOfPages(numPosts, currPage int) template.HTML {
 	return template.HTML(list)
 }
 
-func getHost(req *http.Request) string {
-	url := req.Header.Get("X-Forwarded-Host")
-	if url == "" {
-		url = req.Host
-	}
-	return url
-}
-
 func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
-	url := AddProtocol(getHost(req), "http")
+	url := AddProtocol(GetHost(req), "http")
 	blogTitle := conf.Get("blog_title")
 	descr := conf.Get("blog_descr")
 	author := conf.Get("author")
@@ -434,7 +417,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 }
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	refURL := extractReferer(req)
+	refURL := ExtractReferer(req)
 	postID, err := data.postID(refURL)
 	if err != nil {
 		logger.Println("data.postID() failed: " + err.Error())
@@ -445,7 +428,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		Name:    req.FormValue("name"),
 		Email:   req.FormValue("email"),
 		Website: AddProtocol(req.FormValue("website"), "http"),
-		IP:      getIPAddress(req),
+		IP:      GetIPAddress(req),
 	}
 	body := req.FormValue("text")
 	commenterID, err := data.commenter(commenter)
@@ -494,7 +477,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		return nil
 	}
 	if conf.Get("notif_send_email") == "true" {
-		url := getHost(req) + redir
+		url := GetHost(req) + redir
 		subj, body := mkCommentNotifEmail(commenter, req.FormValue("text"), url, refURL)
 		go SendEmail(subj, body)
 	}

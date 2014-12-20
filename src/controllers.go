@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -59,28 +58,6 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-func stripPort(s string) string {
-	idx := strings.LastIndex(s, ":")
-	if idx == -1 {
-		return s
-	}
-	return s[:idx]
-}
-
-func getIPAddress(req *http.Request) string {
-	hdrForwardedFor := req.Header.Get("X-Forwarded-For")
-	if hdrForwardedFor == "" {
-		return stripPort(req.RemoteAddr)
-	}
-	// X-Forwarded-For is potentially a list of addresses separated with ","
-	parts := strings.Split(hdrForwardedFor, ",")
-	for i, p := range parts {
-		parts[i] = strings.TrimSpace(p)
-	}
-	// TODO: should return first non-local address
-	return parts[0]
-}
-
 func logRequest(req *http.Request, sTime time.Time) {
 	var logEntry bytes.Buffer
 	requestPath := req.URL.Path
@@ -90,7 +67,7 @@ func logRequest(req *http.Request, sTime time.Time) {
 		return
 	}
 	duration := time.Now().Sub(sTime)
-	ip := getIPAddress(req)
+	ip := GetIPAddress(req)
 	format := "%s - \033[32;1m %s %s\033[0m - %v"
 	fmt.Fprintf(&logEntry, format, ip, req.Method, requestPath, duration)
 	if len(req.Form) > 0 {

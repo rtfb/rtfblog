@@ -79,14 +79,3 @@ func Capitalize(s string) string {
 	firstRune, width := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(firstRune)) + s[width:]
 }
-
-func AddProtocol(url, protocol string) string {
-	if url == "" {
-		return ""
-	}
-	protocol += "://"
-	if strings.HasPrefix(strings.ToLower(url), protocol) {
-		return url
-	}
-	return protocol + url
-}
