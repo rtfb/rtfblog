@@ -38,6 +38,8 @@ TARGETS = \
 		  ${JSDIR}/bundle.js \
 		  ${JSDIR}/pagedown-bundle.js \
 		  ${JSDIR}/tag-it.min.js \
+		  ${JSDIR}/jquery.min.js \
+		  ${JSDIR}/jquery-ui.min.js \
 		  ${BUILDDIR}/static/wmd-buttons.png \
 		  ${CSSDIR}/pagedown.css \
 		  ${CSSDIR}/jquery.tagit.css \
@@ -113,6 +115,12 @@ ${JSDIR}/pagedown-bundle.js: js/pgdown-ed.js
 	browserify -r pagedown-editor $< -o $@
 
 ${JSDIR}/tag-it.min.js: bower_components/tag-it/js/tag-it.min.js
+	cp $< $@
+
+${JSDIR}/jquery.min.js: bower_components/jquery/dist/jquery.min.js
+	cp $< $@
+
+${JSDIR}/jquery-ui.min.js: bower_components/jquery-ui/jquery-ui.min.js
 	cp $< $@
 
 ${BUILDDIR}/static/wmd-buttons.png: node_modules/pagedown-editor/wmd-buttons.png

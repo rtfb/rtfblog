@@ -19,6 +19,8 @@
   ],
   "dependencies": {
     "ribs": "~1.0.12",
-    "tag-it": "*"
+    "tag-it": "*",
+    "jquery": "~2.1.3",
+    "jquery-ui": "~1.11.2"
   }
 }
