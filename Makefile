@@ -14,6 +14,9 @@ GO_UNIQUE_DEPS=\
 NODE_DEPS_CMD=\
 	cat package.json | json devDependencies | json -ka | xargs
 
+BOWER_DEPS_CMD=\
+	cat bower.json | json dependencies | json -ka | xargs
+
 GOFILES=\
 	src/*.go
 
@@ -48,10 +51,12 @@ endif
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, $(GO_UNIQUE_DEPS))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
+BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(GOFILES) $(TARGETS)
+${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
+                     $(GOFILES) $(TARGETS)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
 	grunt
@@ -63,8 +68,8 @@ $(GO_DEPS):
 $(NODE_DEPS):
 	npm install
 
-bower_components/ribs/build/css/Ribs.css bower_components/tag-it/js/tag-it.min.js:
-	bower install --config.interactive=false ribs tag-it
+$(BOWER_DEPS):
+	bower install --config.interactive=false
 
 run: all
 	./${BUILDDIR}/rtfblog

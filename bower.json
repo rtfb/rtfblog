@@ -1,0 +1,24 @@
+{
+  "name": "rtfblog",
+  "version": "0.0.1",
+  "homepage": "https://github.com/rtfb/rtfblog",
+  "authors": [
+    "Vytautas Šaltenis <vytas@rtfb.lt>"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "license": "BSD",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ribs": "~1.0.12",
+    "tag-it": "*"
+  }
+}
