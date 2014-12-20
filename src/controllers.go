@@ -54,6 +54,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf.Apply(w)
 }
 
+func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	http.ServeFile(w, req, filepath.Join(conf.Get("staticdir"), "robots.txt"))
+	return nil
+}
+
 func stripPort(s string) string {
 	idx := strings.LastIndex(s, ":")
 	if idx == -1 {

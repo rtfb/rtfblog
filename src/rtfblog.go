@@ -146,12 +146,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		return Tmpl("main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
-	path := req.URL.Path[1:]
-	if path == "robots.txt" {
-		http.ServeFile(w, req, filepath.Join(conf.Get("staticdir"), "robots.txt"))
-		return nil
-	}
-	if post := data.post(path); post != nil {
+	if post := data.post(req.URL.Path[1:]); post != nil {
 		SetNextTask(-1)
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
@@ -578,6 +573,7 @@ func initRoutes(basedir string) {
 	r.Add("GET", "/comment_submit", Handler(CommentHandler)).Name("comment")
 	r.Add("GET", "/delete_comment", checkPerm(Handler(DeleteComment))).Name("delete_comment")
 	r.Add("GET", "/delete_post", checkPerm(Handler(DeletePost))).Name("delete_post")
+	r.Add("GET", "/robots.txt", Handler(ServeRobots))
 
 	r.Add("POST", "/moderate_comment", checkPerm(Handler(ModerateComment))).Name("moderate_comment")
 	r.Add("POST", "/submit_post", checkPerm(Handler(SubmitPost))).Name("submit_post")
