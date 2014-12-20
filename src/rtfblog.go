@@ -338,7 +338,6 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tags := req.FormValue("tags")
-	fmt.Printf("tags: %q\n", tags)
 	url := req.FormValue("url")
 	e := Entry{
 		EntryLink: EntryLink{
