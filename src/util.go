@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/md5"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -12,19 +11,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
-func insertTestAuthor(db *sql.DB, uname, passwd, fullname, email, www string) error {
-	passwdHash, err := cryptoHelper.Encrypt(passwd)
-	if err != nil {
-		return err
-	}
-	stmt, _ := db.Prepare(`insert into author
-		(disp_name, passwd, full_name, email, www)
-		values ($1, $2, $3, $4, $5)`)
-	defer stmt.Close()
-	stmt.Exec(uname, passwdHash, fullname, email, www)
-	return nil
-}
 
 func MkLogger(fname string) *log.Logger {
 	f, err := os.Create(fname)

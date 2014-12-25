@@ -649,7 +649,14 @@ func main() {
 	}
 	defer db.Close()
 	if args["-i"].(bool) {
-		err = insertTestAuthor(db, "testuser", "testpasswd", "Joe Blogger", "joe@blogg.er", "http://test.blog")
+		err = insertTestAuthor(db,
+			&Author{
+				UserName: "testuser",
+				Passwd:   "testpasswd",
+				FullName: "Joe Blogger",
+				Email:    "joe@blogg.er",
+				Www:      "http://test.blog",
+			})
 		if err != nil {
 			panic("Can't insert test user")
 		}
