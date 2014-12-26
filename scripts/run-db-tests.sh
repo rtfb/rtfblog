@@ -27,7 +27,13 @@ wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
 $GOPATH/bin/goose -env=development up
-./rtfblog -i
+./build/rtfblog -i
 
+echo "Running tests..."
 # Run the tests
 #nosetests
+echo "OK"
+
+killall postgres
+sleep 0.2   # give some time to remove locks, otherwise rm will fail
+rm -r ${PGSQL_DATA}
