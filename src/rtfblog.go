@@ -624,7 +624,11 @@ func versionString() string {
 func getDBConnString() string {
 	config := conf.Get("database")
 	if config != "" && config[0] == '$' {
-		return os.ExpandEnv(config)
+		envVar := os.ExpandEnv(config)
+		if envVar == "" {
+			panic(fmt.Sprintf("Can't find env var %s", config))
+		}
+		return envVar
 	}
 	return config
 }
@@ -648,6 +652,10 @@ func main() {
 		return
 	}
 	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
 	if args["-i"].(bool) {
 		err = insertTestAuthor(db,
 			&Author{
