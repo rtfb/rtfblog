@@ -574,7 +574,7 @@ func runServer() {
 
 func obtainConfiguration(basedir string) SrvConfig {
 	hardcodedConf := SrvConfig{
-		"database":         "user=tstusr dbname=tstdb password=tstpwd",
+		"database":         "$RTFBLOG_DB_TEST_URL",
 		"url":              "localhost",
 		"port":             ":8080",
 		"staticdir":        "static",
@@ -670,7 +670,11 @@ func main() {
 		}
 		return
 	}
-	initData(&DbData{db, nil, false})
+	initData(&DbData{
+		db:            db,
+		tx:            nil,
+		includeHidden: false,
+	})
 	initRoutes(bindir)
 	runServer()
 }
