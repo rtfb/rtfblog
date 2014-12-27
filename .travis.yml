@@ -8,14 +8,16 @@ go:
     - tip
 
 before_install:
-    - go get golang.org/x/tools/cmd/vet
+    - go get -v golang.org/x/tools/cmd/vet
     - go get -v golang.org/x/tools/cmd/cover
     - go get -v github.com/mattn/goveralls
+    - go get -v bitbucket.org/liamstask/goose/cmd/goose
     - npm install -g grunt-cli bower browserify json
+    - sudo /etc/init.d/postgresql stop
 
 script:
     - make
-    - go test -covermode=count -coverprofile=profile.cov -v ./src/...
+    - ./scripts/run-db-tests.sh
 
 after_script:
     - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
