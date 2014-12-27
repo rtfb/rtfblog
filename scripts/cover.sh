@@ -8,6 +8,6 @@ rm build/git-arch-for-cover.tar.gz
 make version
 cp src/version.go $dest/src
 pushd $dest
-go test -coverprofile=coverage.out ./src/...
-go tool cover -html=coverage.out
+./scripts/run-db-tests.sh
+go tool cover -html=profile.cov
 popd

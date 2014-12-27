@@ -26,14 +26,15 @@ ${PGSQL_PATH}/postgres -F -k ${PGSQL_DATA} -D ${PGSQL_DATA} &> ${PGSQL_DATA}/out
 wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
-$GOPATH/bin/goose -env=development up
-./build/rtfblog -i
+goose -env=development up
+${PGSQL_PATH}/psql "$RTFBLOG_DB_TEST_URL" < testdata/testdb.sql
 
 echo "Running tests..."
-# Run the tests
-#nosetests
-echo "OK"
+go test -covermode=count -coverprofile=profile.cov -v ./src/...
+exit_status=$?
 
 killall postgres
 sleep 0.2   # give some time to remove locks, otherwise rm will fail
 rm -r ${PGSQL_DATA}
+
+exit $exit_status
