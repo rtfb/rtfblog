@@ -242,8 +242,9 @@ func (td *TestData) updatePost(id int64, e *Entry) bool {
 	return true
 }
 
-func (td *TestData) updateTags(tags []*Tag, postID int64) {
+func (td *TestData) updateTags(tags []*Tag, postID int64) error {
 	td.pushCall(fmt.Sprintf("%d: %+v", postID, *tags[0]))
+	return nil
 }
 
 func loginWithCred(username, passwd string) string {

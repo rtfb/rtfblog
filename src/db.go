@@ -24,7 +24,7 @@ type Data interface {
 	insertComment(commenterID, postID int64, body string) (id int64, err error)
 	insertPost(author int64, e *Entry) (id int64, err error)
 	updatePost(id int64, e *Entry) bool
-	updateTags(tags []*Tag, postID int64)
+	updateTags(tags []*Tag, postID int64) error
 	queryAllTags() []*Tag
 	begin() bool
 	commit()
@@ -315,16 +315,21 @@ func (dd *DbData) updatePost(id int64, e *Entry) bool {
 	return true
 }
 
-func (dd *DbData) updateTags(tags []*Tag, postID int64) {
+func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
+	if dd.tx == nil {
+		return fmt.Errorf("DbData.updateTags() can only be called within xaction!")
+	}
 	delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=$1")
 	defer delStmt.Close()
 	delStmt.Exec(postID)
 	for _, t := range tags {
 		tagID, err := insertOrGetTagID(dd.tx, t)
-		if err == nil {
-			updateTagMap(dd.tx, postID, tagID)
+		if err != nil {
+			return err
 		}
+		updateTagMap(dd.tx, postID, tagID)
 	}
+	return nil
 }
 
 func (dd *DbData) author(username string) (*Author, error) {

@@ -353,7 +353,11 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			return nil
 		}
 	}
-	data.updateTags(explodeTags(tags), postID)
+	err := data.updateTags(explodeTags(tags), postID)
+	if err != nil {
+		data.rollback()
+		return err
+	}
 	data.commit()
 	http.Redirect(w, req, "/"+url, http.StatusSeeOther)
 	return nil

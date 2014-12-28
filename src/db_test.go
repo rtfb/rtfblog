@@ -95,6 +95,30 @@ func testInsertPost(t *testing.T) {
 	data.commit()
 }
 
+func testUpdateTags(t *testing.T) {
+	data.begin()
+	tags := []*Tag{{Name: "tag1"}, {Name: "tag2"}}
+	err := data.updateTags(tags, 1)
+	if err != nil {
+		data.rollback()
+		t.Fatalf("Failed to update tags, err = %s", err.Error())
+	}
+	data.commit()
+}
+
+func testTags(t *testing.T) {
+	tags := data.queryAllTags()
+	if tags == nil {
+		t.Fatalf("Failed to query tags")
+	}
+	if len(tags) != 2 {
+		t.Fatalf("Wrong num tags, expected %d, got %d", 2, len(tags))
+	}
+	if tags[0].Name != "tag1" {
+		t.Fatalf("Wrong tag, expected %q, got %q", "tag1", tags[0].Name)
+	}
+}
+
 func TestDB(t *testing.T) {
 	if realDB == nil {
 		return
@@ -107,4 +131,6 @@ func TestDB(t *testing.T) {
 	testExistingAuthor(t)
 	testInsertPost(t)
 	testPost(t)
+	testUpdateTags(t)
+	testTags(t)
 }
