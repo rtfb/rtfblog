@@ -44,7 +44,7 @@ func init() {
 
 func testExistingAuthor(t *testing.T) {
 	a, err := data.author("testuser")
-	if err != nil{
+	if err != nil {
 		t.Fatalf("Failed to query author: %s", err.Error())
 	}
 	if a == nil {
@@ -53,6 +53,46 @@ func testExistingAuthor(t *testing.T) {
 	if a.FullName != "Joe Blogger" {
 		t.Fatalf(`a.FullName != "Joe Blogger"`)
 	}
+}
+
+func testPost(t *testing.T) {
+	post := data.post("url")
+	if post == nil {
+		t.Fatalf("Failed to query post")
+	}
+	if post.Title != "title" {
+		t.Errorf("Wrong title, expected %q, got %q", "title", post.Title)
+	}
+	post = data.post("non-existant")
+	if post != nil {
+		t.Fatalf("Should not find this post")
+	}
+	id, err := data.postID("url")
+	if err != nil {
+		t.Fatalf("Failed to query post ID")
+	}
+	if id != 1 {
+		t.Errorf("Wrong post ID, expected %d, got %d", 1, id)
+	}
+}
+
+func testInsertPost(t *testing.T) {
+	data.begin()
+	id, err := data.insertPost(1, &Entry{
+		EntryLink: EntryLink{
+			Title:  "title",
+			URL:    "url",
+			Hidden: false,
+		},
+		Author:  "me",
+		Date:    "2014-12-28",
+		RawBody: "*markdown*",
+	})
+	if err != nil || id != 1 {
+		data.rollback()
+		t.Fatalf("Failed to insert post, err = %s", err.Error())
+	}
+	data.commit()
 }
 
 func TestDB(t *testing.T) {
@@ -65,4 +105,6 @@ func TestDB(t *testing.T) {
 		data = tempData
 	}()
 	testExistingAuthor(t)
+	testInsertPost(t)
+	testPost(t)
 }
