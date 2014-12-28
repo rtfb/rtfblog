@@ -580,16 +580,3 @@ func updateTagMap(xaction *sql.Tx, postID int64, tagID int64) {
 	defer stmt.Close()
 	stmt.Exec(tagID, postID)
 }
-
-func insertTestAuthor(db *sql.DB, a *Author) error {
-	passwdHash, err := cryptoHelper.Encrypt(a.Passwd)
-	if err != nil {
-		return err
-	}
-	stmt, _ := db.Prepare(`insert into author
-		(disp_name, passwd, full_name, email, www)
-		values ($1, $2, $3, $4, $5)`)
-	defer stmt.Close()
-	stmt.Exec(a.UserName, passwdHash, a.FullName, a.Email, a.Www)
-	return nil
-}

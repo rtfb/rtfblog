@@ -42,14 +42,12 @@ const (
 Usage:
   rtfblog
   rtfblog -h | --help
-  rtfblog -i
   rtfblog --version
 
 Options:
   With no arguments it simply runs the server (with either hardcoded config or
   a config it finds in one of locations described in README).
   -h --help     Show this screen.
-  -i            Insert test author.
   --version     Show version.`
 )
 
@@ -639,7 +637,7 @@ func getDBConnString() string {
 
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
-	args, err := docopt.Parse(usage, nil, true, versionString(), false)
+	_, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")
 	}
@@ -659,20 +657,6 @@ func main() {
 	err = db.Ping()
 	if err != nil {
 		panic(err)
-	}
-	if args["-i"].(bool) {
-		err = insertTestAuthor(db,
-			&Author{
-				UserName: "testuser",
-				Passwd:   "testpasswd",
-				FullName: "Joe Blogger",
-				Email:    "joe@blogg.er",
-				Www:      "http://test.blog",
-			})
-		if err != nil {
-			panic("Can't insert test user")
-		}
-		return
 	}
 	initData(&DbData{
 		db:            db,
