@@ -5,7 +5,7 @@ dest=$GOPATH/src/rtfblog
 mkdir -p $dest
 tar xzvf build/git-arch-for-cover.tar.gz -C $dest
 rm build/git-arch-for-cover.tar.gz
-make version
+make src/version.go
 cp src/version.go $dest/src
 pushd $dest
 ./scripts/run-db-tests.sh
