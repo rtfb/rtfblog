@@ -182,6 +182,41 @@ func testNumPosts(t *testing.T) {
 	}
 }
 
+func testTitlesByTag(t *testing.T) {
+	titles := data.titlesByTag("tag1")
+	if len(titles) != 1 {
+		t.Fatalf("Wrong len(titles), expected %d, but got %d", 1, len(titles))
+	}
+	if titles[0].Title != "title" {
+		t.Fatalf("titles[0].Title != %q, got %q", "title", titles[0].Title)
+	}
+}
+
+func testUpdatePost(t *testing.T) {
+	data.begin()
+	if !data.updatePost(3, &Entry{
+		EntryLink: EntryLink{
+			Title:  "title three",
+			URL:    "url-three",
+			Hidden: false,
+		},
+		Author:  "me",
+		Date:    "2014-12-28",
+		RawBody: "*markdown*",
+	}) {
+		data.rollback()
+		t.Fatalf("Failed to updatePost()")
+	}
+	data.commit()
+	post := data.post("url-three")
+	if post == nil {
+		t.Fatalf("Failed to query post")
+	}
+	if post.Title != "title three" {
+		t.Errorf("Wrong title, expected %q, got %q", "title three", post.Title)
+	}
+}
+
 func TestDB(t *testing.T) {
 	if realDB == nil {
 		return
@@ -197,4 +232,6 @@ func TestDB(t *testing.T) {
 	testUpdateTags(t)
 	testTags(t)
 	testNumPosts(t)
+	testTitlesByTag(t)
+	testUpdatePost(t)
 }
