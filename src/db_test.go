@@ -217,6 +217,47 @@ func testUpdatePost(t *testing.T) {
 	}
 }
 
+func testInsertComment(t *testing.T) {
+	data.begin()
+	commenterID, err := data.insertCommenter(Commenter{
+		Name: "cname",
+		Email: "cemail",
+		Website: "cwebsite",
+		IP: "cip",
+	})
+	if err != nil {
+		data.rollback()
+		t.Fatalf("Failed to insert commenter: " + err.Error())
+	}
+	if commenterID != 1 {
+		data.rollback()
+		t.Fatalf("Wrong commenterID = %d, expected %d", commenterID, 1)
+	}
+	commentID, err := data.insertComment(commenterID, 1, "comment body")
+	if err != nil {
+		data.rollback()
+		t.Fatalf("Failed to insert comment: " + err.Error())
+	}
+	if commentID != 1 {
+		data.rollback()
+		t.Fatalf("Wrong commentID = %d, expected %d", commentID, 1)
+	}
+	data.commit()
+}
+
+func testQueryAllComments(t *testing.T) {
+	comms := data.allComments()
+	if len(comms) != 1 {
+		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 1)
+	}
+	if comms[0].RawBody != "comment body" {
+		t.Fatalf("Wrong comms[0].RawBody = %q, expected %q", comms[0].RawBody, "comment body")
+	}
+	if comms[0].Title != "title" {
+		t.Fatalf("Wrong comms[0].Title = %q, expected %q", comms[0].Title, "title")
+	}
+}
+
 func TestDB(t *testing.T) {
 	if realDB == nil {
 		return
@@ -234,4 +275,6 @@ func TestDB(t *testing.T) {
 	testNumPosts(t)
 	testTitlesByTag(t)
 	testUpdatePost(t)
+	testInsertComment(t)
+	testQueryAllComments(t)
 }
