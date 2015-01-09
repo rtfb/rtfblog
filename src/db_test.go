@@ -258,6 +258,28 @@ func testQueryAllComments(t *testing.T) {
 	}
 }
 
+func testUpdateComment(t *testing.T) {
+	data.begin()
+	if !data.updateComment("1", "new body") {
+		data.rollback()
+		t.Fatalf("updateComment failed")
+	}
+	data.commit()
+}
+
+func testDeleteComment(t *testing.T) {
+	data.begin()
+	if !data.deleteComment("1") {
+		data.rollback()
+		t.Fatalf("deleteComment failed")
+	}
+	data.commit()
+	comms := data.allComments()
+	if len(comms) != 0 {
+		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 0)
+	}
+}
+
 func TestDB(t *testing.T) {
 	if realDB == nil {
 		return
@@ -277,4 +299,6 @@ func TestDB(t *testing.T) {
 	testUpdatePost(t)
 	testInsertComment(t)
 	testQueryAllComments(t)
+	testUpdateComment(t)
+	testDeleteComment(t)
 }
