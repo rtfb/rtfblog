@@ -280,6 +280,19 @@ func testDeleteComment(t *testing.T) {
 	}
 }
 
+func testDeletePost(t *testing.T) {
+	data.begin()
+	if !data.deletePost("url-three") {
+		data.rollback()
+		t.Fatalf("deletePost failed")
+	}
+	data.commit()
+	posts := data.posts(-1, 0)
+	if len(posts) != 2 {
+		t.Fatalf("Wrong len(posts) = %d, expected %d", len(posts), 2)
+	}
+}
+
 func TestDB(t *testing.T) {
 	if realDB == nil {
 		return
@@ -301,4 +314,5 @@ func TestDB(t *testing.T) {
 	testQueryAllComments(t)
 	testUpdateComment(t)
 	testDeleteComment(t)
+	testDeletePost(t)
 }
