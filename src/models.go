@@ -60,7 +60,7 @@ func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
 }
 
 func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string) (string, error) {
-	if !data.begin() {
+	if data.begin() != nil {
 		return "", nil
 	}
 	commenterID, err := data.insertCommenter(commenter)
@@ -79,7 +79,7 @@ func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string)
 }
 
 func PublishComment(postID, commenterID int64, body string) (string, error) {
-	if !data.begin() {
+	if data.begin() != nil {
 		return "", nil
 	}
 	commentID, err := data.insertComment(commenterID, postID, body)

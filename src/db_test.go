@@ -194,7 +194,7 @@ func testTitlesByTag(t *testing.T) {
 
 func testUpdatePost(t *testing.T) {
 	data.begin()
-	if !data.updatePost(3, &Entry{
+	err := data.updatePost(3, &Entry{
 		EntryLink: EntryLink{
 			Title:  "title three",
 			URL:    "url-three",
@@ -203,9 +203,10 @@ func testUpdatePost(t *testing.T) {
 		Author:  "me",
 		Date:    "2014-12-28",
 		RawBody: "*markdown*",
-	}) {
+	})
+	if err != nil {
 		data.rollback()
-		t.Fatalf("Failed to updatePost()")
+		t.Fatalf("Failed to updatePost: " + err.Error())
 	}
 	data.commit()
 	post := data.post("url-three")
@@ -220,10 +221,10 @@ func testUpdatePost(t *testing.T) {
 func testInsertComment(t *testing.T) {
 	data.begin()
 	commenterID, err := data.insertCommenter(Commenter{
-		Name: "cname",
-		Email: "cemail",
+		Name:    "cname",
+		Email:   "cemail",
 		Website: "cwebsite",
-		IP: "cip",
+		IP:      "cip",
 	})
 	if err != nil {
 		data.rollback()
@@ -260,18 +261,20 @@ func testQueryAllComments(t *testing.T) {
 
 func testUpdateComment(t *testing.T) {
 	data.begin()
-	if !data.updateComment("1", "new body") {
+	err := data.updateComment("1", "new body")
+	if err != nil {
 		data.rollback()
-		t.Fatalf("updateComment failed")
+		t.Fatalf("updateComment failed: " + err.Error())
 	}
 	data.commit()
 }
 
 func testDeleteComment(t *testing.T) {
 	data.begin()
-	if !data.deleteComment("1") {
+	err := data.deleteComment("1")
+	if err != nil {
 		data.rollback()
-		t.Fatalf("deleteComment failed")
+		t.Fatalf("deleteComment failed: " + err.Error())
 	}
 	data.commit()
 	comms := data.allComments()
@@ -282,9 +285,10 @@ func testDeleteComment(t *testing.T) {
 
 func testDeletePost(t *testing.T) {
 	data.begin()
-	if !data.deletePost("url-three") {
+	err := data.deletePost("url-three")
+	if err != nil {
 		data.rollback()
-		t.Fatalf("deletePost failed")
+		t.Fatalf("deletePost failed: " + err.Error())
 	}
 	data.commit()
 	posts := data.posts(-1, 0)

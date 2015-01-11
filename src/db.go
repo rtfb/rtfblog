@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -16,17 +17,17 @@ type Data interface {
 	allComments() []*CommentWithPostTitle
 	numPosts() int
 	author(username string) (*Author, error)
-	deleteComment(id string) bool
-	deletePost(url string) bool
-	updateComment(id, text string) bool
+	deleteComment(id string) error
+	deletePost(url string) error
+	updateComment(id, text string) error
 	commenter(c Commenter) (id int64, err error)
 	insertCommenter(c Commenter) (id int64, err error)
 	insertComment(commenterID, postID int64, body string) (id int64, err error)
 	insertPost(author int64, e *Entry) (id int64, err error)
-	updatePost(id int64, e *Entry) bool
+	updatePost(id int64, e *Entry) error
 	updateTags(tags []*Tag, postID int64) error
 	queryAllTags() []*Tag
-	begin() bool
+	begin() error
 	commit()
 	rollback()
 }
@@ -41,18 +42,16 @@ func (dd *DbData) hiddenPosts(flag bool) {
 	dd.includeHidden = flag
 }
 
-func (dd *DbData) begin() bool {
+func (dd *DbData) begin() error {
 	if dd.tx != nil {
-		logger.Println("Error! DbData.begin() called within transaction!")
-		return false
+		return errors.New("Error! DbData.begin() called within transaction!")
 	}
 	xaction, err := dd.db.Begin()
 	if err != nil {
-		logger.Println(err.Error())
-		return false
+		return err
 	}
 	dd.tx = xaction
-	return true
+	return nil
 }
 
 func (dd *DbData) commit() {
@@ -302,17 +301,16 @@ func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
 	return
 }
 
-func (dd *DbData) updatePost(id int64, e *Entry) bool {
+func (dd *DbData) updatePost(id int64, e *Entry) error {
 	updateStmt, _ := dd.tx.Prepare(`update post
                                     set title=$1, url=$2, body=$3, hidden=$4
                                     where id=$5`)
 	defer updateStmt.Close()
 	_, err := updateStmt.Exec(e.Title, e.URL, string(e.Body), e.Hidden, id)
 	if err != nil {
-		logger.Println(err.Error())
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
@@ -341,31 +339,28 @@ func (dd *DbData) author(username string) (*Author, error) {
 	return &a, err
 }
 
-func (dd *DbData) deleteComment(id string) bool {
+func (dd *DbData) deleteComment(id string) error {
 	_, err := dd.db.Exec("delete from comment where id=$1", id)
 	if err != nil {
-		logger.Println(err.Error())
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func (dd *DbData) deletePost(url string) bool {
+func (dd *DbData) deletePost(url string) error {
 	_, err := dd.db.Exec("delete from post where url=$1", url)
 	if err != nil {
-		logger.Println(err.Error())
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
-func (dd *DbData) updateComment(id, text string) bool {
+func (dd *DbData) updateComment(id, text string) error {
 	_, err := dd.db.Exec("update comment set body=$1 where id=$2", text, id)
 	if err != nil {
-		logger.Println(err.Error())
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []*Entry {

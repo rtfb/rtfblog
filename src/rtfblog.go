@@ -281,9 +281,13 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 	action := req.FormValue("action")
 	redir := req.FormValue("redirect_to")
 	id := req.FormValue("id")
-	if action == "delete" && !data.deleteComment(id) {
-		logger.Printf("DeleteComment: failed to delete comment for id %q", id)
-		return nil
+	if action == "delete" {
+		err := data.deleteComment(id)
+		if err != nil {
+			logger.Printf("DeleteComment: failed to delete comment for id %q", id)
+			logger.Printf(err.Error())
+			return err
+		}
 	}
 	http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
 	return nil
@@ -291,9 +295,10 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 
 func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	id := req.FormValue("id")
-	if !data.deletePost(id) {
+	err := data.deletePost(id)
+	if err != nil {
 		logger.Printf("DeletePost: failed to delete post for id %q", id)
-		return nil
+		return err
 	}
 	http.Redirect(w, req, reverse("admin"), http.StatusSeeOther)
 	return nil
@@ -303,9 +308,12 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 	action := req.FormValue("action")
 	text := req.FormValue("edit-comment-text")
 	id := req.FormValue("id")
-	if action == "edit" && !data.updateComment(id, text) {
-		logger.Printf("ModerateComment: failed to edit comment for id %q", id)
-		return nil
+	if action == "edit" {
+		err := data.updateComment(id, text)
+		if err != nil {
+			logger.Printf("ModerateComment: failed to edit comment for id %q", id)
+			return err
+		}
 	}
 	redir := req.FormValue("redirect_to")
 	http.Redirect(w, req, fmt.Sprintf("/%s#comment-%s", redir, id), http.StatusSeeOther)
@@ -324,9 +332,10 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		Body: template.HTML(req.FormValue("text")),
 	}
 	postID, idErr := data.postID(url)
-	if !data.begin() {
-		InternalError(w, req, "SubmitPost, !data.begin()")
-		return nil
+	txErr := data.begin()
+	if txErr != nil {
+		InternalError(w, req, "SubmitPost: "+txErr.Error())
+		return txErr
 	}
 	if idErr != nil {
 		if idErr == sql.ErrNoRows {
@@ -345,10 +354,11 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			return idErr
 		}
 	} else {
-		if !data.updatePost(postID, &e) {
+		updErr := data.updatePost(postID, &e)
+		if updErr != nil {
 			data.rollback()
-			InternalError(w, req, "SubmitPost, !data.updatePost")
-			return nil
+			InternalError(w, req, "SubmitPost: "+updErr.Error())
+			return updErr
 		}
 	}
 	err := data.updateTags(explodeTags(tags), postID)

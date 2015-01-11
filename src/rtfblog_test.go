@@ -187,27 +187,27 @@ func (td *TestData) author(username string) (*Author, error) {
 	return nil, sql.ErrNoRows
 }
 
-func (td *TestData) deleteComment(id string) bool {
+func (td *TestData) deleteComment(id string) error {
 	td.pushCall(id)
-	return false
+	return nil
 }
 
-func (td *TestData) deletePost(url string) bool {
+func (td *TestData) deletePost(url string) error {
 	td.pushCall(url)
-	return false
+	return nil
 }
 
-func (td *TestData) updateComment(id, text string) bool {
+func (td *TestData) updateComment(id, text string) error {
 	td.pushCall(fmt.Sprintf("%s - %s", id, text))
-	return false
+	return nil
 }
 
 func (td *TestData) queryAllTags() []*Tag {
 	return nil
 }
 
-func (td *TestData) begin() bool {
-	return true
+func (td *TestData) begin() error {
+	return nil
 }
 
 func (td *TestData) commit() {
@@ -237,9 +237,9 @@ func (td *TestData) insertPost(author int64, e *Entry) (id int64, err error) {
 	return
 }
 
-func (td *TestData) updatePost(id int64, e *Entry) bool {
+func (td *TestData) updatePost(id int64, e *Entry) error {
 	td.pushCall("0")
-	return true
+	return nil
 }
 
 func (td *TestData) updateTags(tags []*Tag, postID int64) error {
