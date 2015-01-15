@@ -65,14 +65,13 @@ func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string)
 	}
 	commenterID, err := data.insertCommenter(commenter)
 	if err != nil {
-		logger.Println("data.insertCommenter() failed: " + err.Error())
 		data.rollback()
-		return "", err
+		return "", logger.LogIff(err, "data.insertCommenter() failed")
 	}
 	commentID, err := data.insertComment(commenterID, postID, rawBody)
 	if err != nil {
 		data.rollback()
-		return "", err
+		return "", logger.LogIff(err, "data.insertComment() failed")
 	}
 	data.commit()
 	return fmt.Sprintf("#comment-%d", commentID), nil
@@ -85,7 +84,7 @@ func PublishComment(postID, commenterID int64, body string) (string, error) {
 	commentID, err := data.insertComment(commenterID, postID, body)
 	if err != nil {
 		data.rollback()
-		return "", err
+		return "", logger.LogIff(err, "data.insertComment() failed")
 	}
 	data.commit()
 	return fmt.Sprintf("#comment-%d", commentID), nil

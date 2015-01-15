@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
-	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -11,14 +10,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
-func MkLogger(fname string) *log.Logger {
-	f, err := os.Create(fname)
-	if err != nil {
-		panic("MkLogger: " + err.Error())
-	}
-	return log.New(f, "", log.Ldate|log.Ltime|log.Lshortfile)
-}
 
 func GetHomeDir() (string, error) {
 	usr, err := user.Current()

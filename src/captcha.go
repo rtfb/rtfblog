@@ -76,11 +76,9 @@ func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, 
 		"body":         req.FormValue("text"),
 	}
 	b, err := json.Marshal(response)
-	if err != nil {
-		logger.Println(err.Error())
-		return
+	if logger.LogIf(err) == nil {
+		w.Write(b)
 	}
-	w.Write(b)
 }
 
 func RightCaptchaReply(w http.ResponseWriter, redir string) {
@@ -89,9 +87,7 @@ func RightCaptchaReply(w http.ResponseWriter, redir string) {
 		"redir":  redir,
 	}
 	b, err := json.Marshal(response)
-	if err != nil {
-		logger.Println(err.Error())
-		return
+	if logger.LogIf(err) == nil {
+		w.Write(b)
 	}
-	w.Write(b)
 }

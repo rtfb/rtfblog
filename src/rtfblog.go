@@ -9,7 +9,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
@@ -25,6 +24,7 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
+	"github.com/rtfb/log"
 	email "github.com/ungerik/go-mail"
 )
 
@@ -102,9 +102,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
 	}
 	for _, p := range posts {
 		pubDate, err := time.Parse("2006-01-02", p.Date)
-		if err != nil {
-			logger.Printf("Error parsing date for RSS item %q\n", p.URL)
-			logger.Println(err.Error())
+		if logger.LogIff(err, "Error parsing date for RSS item %q\n", p.URL) != nil {
 			continue
 		}
 		item := feeds.Item{
@@ -117,9 +115,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
 		feed.Items = append(feed.Items, &item)
 	}
 	rss, err := feed.ToRss()
-	if err != nil {
-		logger.Println(err.Error())
-	}
+	logger.LogIf(err)
 	w.Write([]byte(rss))
 }
 
@@ -234,8 +230,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	if post := data.post(url); post != nil {
 		b, err := json.Marshal(post)
 		if err != nil {
-			logger.Println(err.Error())
-			return err
+			return logger.LogIf(err)
 		}
 		w.Write(b)
 	}
@@ -257,8 +252,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return LoginForm(w, req, ctx)
 	}
 	if err != nil {
-		logger.Println(err.Error())
-		return err
+		return logger.LogIf(err)
 	}
 	passwd := req.FormValue("passwd")
 	req.Form["passwd"] = []string{"***"} // Avoid spilling password to log
@@ -284,9 +278,7 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 	if action == "delete" {
 		err := data.deleteComment(id)
 		if err != nil {
-			logger.Printf("DeleteComment: failed to delete comment for id %q", id)
-			logger.Printf(err.Error())
-			return err
+			return logger.LogIff(err, "DeleteComment: failed to delete comment for id %q", id)
 		}
 	}
 	http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
@@ -297,8 +289,7 @@ func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	id := req.FormValue("id")
 	err := data.deletePost(id)
 	if err != nil {
-		logger.Printf("DeletePost: failed to delete post for id %q", id)
-		return err
+		return logger.LogIff(err, "DeletePost: failed to delete post for id %q", id)
 	}
 	http.Redirect(w, req, reverse("admin"), http.StatusSeeOther)
 	return nil
@@ -311,8 +302,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 	if action == "edit" {
 		err := data.updateComment(id, text)
 		if err != nil {
-			logger.Printf("ModerateComment: failed to edit comment for id %q", id)
-			return err
+			return logger.LogIff(err, "ModerateComment: failed to edit comment for id %q", id)
 		}
 	}
 	redir := req.FormValue("redirect_to")
@@ -348,10 +338,9 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			}
 			postID = newPostID
 		} else {
-			logger.Println("data.postID() failed: " + idErr.Error())
 			data.rollback()
 			InternalError(w, req, "SubmitPost, !data.postID: "+idErr.Error())
-			return idErr
+			return logger.LogIff(idErr, "data.postID() failed")
 		}
 	} else {
 		updErr := data.updatePost(postID, &e)
@@ -386,8 +375,7 @@ func explodeTags(tagsStr string) []*Tag {
 func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	mr, err := req.MultipartReader()
 	if err != nil {
-		logger.Println(err.Error())
-		return err
+		return logger.LogIf(err)
 	}
 	files := ""
 	part, err := mr.NextPart()
@@ -432,9 +420,8 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	refURL := ExtractReferer(req)
 	postID, err := data.postID(refURL)
 	if err != nil {
-		logger.Println("data.postID() failed: " + err.Error())
 		InternalError(w, req, "Server Error: "+err.Error())
-		return err
+		return logger.LogIff(err, "data.postID() failed")
 	}
 	commenter := Commenter{
 		Name:    req.FormValue("name"),
@@ -484,7 +471,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			redir = "/" + refURL + commentURL
 		}
 	} else {
-		logger.Println("err: " + err.Error())
+		logger.LogIf(err)
 		WrongCaptchaReply(w, req, "rejected", GetTask())
 		return nil
 	}
@@ -528,13 +515,13 @@ func SendEmail(subj, body string) {
 	notifee := conf.Get("email")
 	err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
 	if err != nil {
-		logger.Println("err initing gmail: ", err.Error())
+		logger.LogIff(err, "err initing gmail")
 		return
 	}
 	mess := email.NewBriefMessageFrom(subj, body, gmailSenderAcct, notifee)
 	err = mess.Send()
 	if err != nil {
-		logger.Println("err sending email: ", err.Error())
+		logger.LogIff(err, "err sending email")
 		return
 	}
 }
@@ -656,11 +643,11 @@ func main() {
 	os.Chdir(bindir)
 	conf = obtainConfiguration(bindir)
 	InitL10n("./l10n", "lt-LT")
-	logger = MkLogger(conf.Get("log"))
+	logger = log.CreateFile(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
 	db, err := sql.Open("postgres", getDBConnString())
 	if err != nil {
-		logger.Println("sql: " + err.Error())
+		logger.LogIff(err, "sql.Open")
 		return
 	}
 	defer db.Close()
