@@ -24,7 +24,7 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
-	"github.com/rtfb/log"
+	"github.com/rtfb/bark"
 	email "github.com/ungerik/go-mail"
 )
 
@@ -33,7 +33,7 @@ type SrvConfig map[string]interface{}
 var (
 	conf   SrvConfig
 	data   Data
-	logger *log.Logger
+	logger *bark.Logger
 )
 
 const (
@@ -643,7 +643,7 @@ func main() {
 	os.Chdir(bindir)
 	conf = obtainConfiguration(bindir)
 	InitL10n("./l10n", "lt-LT")
-	logger = log.CreateFile(conf.Get("log"))
+	logger = bark.CreateFile(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
 	db, err := sql.Open("postgres", getDBConnString())
 	if err != nil {

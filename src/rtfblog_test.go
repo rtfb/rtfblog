@@ -24,9 +24,9 @@ import (
 	"testing"
 
 	"github.com/gorilla/sessions"
+	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/css/selector"
 	"github.com/rtfb/go-html-transform/h5"
-	"github.com/rtfb/log"
 	"golang.org/x/net/html"
 )
 
@@ -407,7 +407,7 @@ func init() {
 	conf["staticdir"] = "../static"
 	InitL10n("../l10n", "en-US")
 	tmplDir = "../tmpl"
-	logger = log.CreateFile("tests.log")
+	logger = bark.CreateFile("tests.log")
 	store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
 	forgeTestUser("testuser", "testpasswd")
 	for i := 1; i <= 11; i++ {
