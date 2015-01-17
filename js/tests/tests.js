@@ -1,9 +1,13 @@
 module("Basic Tests");
 
-test("inputToUri", function() {
+function appendTestInputElem(name, value) {
     input = document.createElement("input");
-    input.name = 'website';
-    input.value = 'http';
+    input.name = name;
+    input.value = value;
     document.body.appendChild(input);
+}
+
+test("inputToUri", function() {
+    appendTestInputElem('website', 'http');
     equal(inputToUri("website"), "website=http");
 });
