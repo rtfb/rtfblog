@@ -16,14 +16,17 @@ test("inputToUri", function() {
 
 module("form validation", {
     setup: function() {
-        window.alert = function(msg) {
-            //console.log(msg);
+        this.alertMsg = null;
+        this.origAlert = myAlert;
+        var that = this;
+        myAlert = function(msg) {
+            that.alertMsg = msg;
         }
     },
     teardown: function() {
-        if (window.hasOwnProperty('alert')) {
-            delete window.alert;
-        }
+        myAlert = this.origAlert;
+        this.alertMsg = null;
+        this.origAlert = null;
     }
 });
 
@@ -36,6 +39,9 @@ test("completed comment form", function() {
 test("incomplete comment form", function() {
     appendTestInputElem('name', '', '');
     equal(validateCommentForm(), false);
+    equal(this.alertMsg, "Name field is mandatory.");
+    elt('name').value = 'xxx';
     appendTestInputElem('email', '', '');
     equal(validateCommentForm(), false);
+    equal(this.alertMsg, "Email field is mandatory.");
 });

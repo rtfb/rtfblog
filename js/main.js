@@ -7,15 +7,19 @@ function elt(id) {
     return document.getElementById(id);
 }
 
+function myAlert(msg) {
+    alert(msg);
+}
+
 function validateCommentForm() {
     var name = elt('name').value;
     if (name === "") {
-        alert("Name field is mandatory.");
+        myAlert("Name field is mandatory.");
         return false;
     }
     var email = elt('email').value;
     if (email === "") {
-        alert("Email field is mandatory.");
+        myAlert("Email field is mandatory.");
         return false;
     }
     return true;
