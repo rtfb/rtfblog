@@ -7,7 +7,7 @@ function elt(id) {
     return document.getElementById(id);
 }
 
-function validateForm() {
+function validateCommentForm() {
     var name = elt('name').value;
     if (name === "") {
         alert("Name field is mandatory.");
@@ -38,7 +38,7 @@ function mkXHR() {
 };
 
 function submitComment() {
-    if (!validateForm()) {
+    if (!validateCommentForm()) {
         return;
     }
 
