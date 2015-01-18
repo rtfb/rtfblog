@@ -1,10 +1,11 @@
 module("Basic Tests");
 
 function appendTestInputElem(name, value) {
+    var fixture = document.getElementById("qunit-fixture");
     input = document.createElement("input");
     input.name = name;
     input.value = value;
-    document.body.appendChild(input);
+    fixture.appendChild(input);
 }
 
 test("inputToUri", function() {
