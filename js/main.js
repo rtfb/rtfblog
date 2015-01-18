@@ -11,18 +11,18 @@ function myAlert(msg) {
     alert(msg);
 }
 
-function validateCommentForm() {
-    var name = elt('name').value;
-    if (name === "") {
-        myAlert("Name field is mandatory.");
-        return false;
-    }
-    var email = elt('email').value;
-    if (email === "") {
-        myAlert("Email field is mandatory.");
+function validateField(id, msg) {
+    var val = elt(id).value;
+    if (val === "") {
+        myAlert(msg);
         return false;
     }
     return true;
+}
+
+function validateCommentForm() {
+    return validateField('name', "Name field is mandatory.")
+        && validateField('email', "Email field is mandatory.");
 }
 
 function mkXHR() {
