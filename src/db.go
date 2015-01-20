@@ -103,7 +103,7 @@ func (dd *DbData) numPosts() int {
 	}
 	rows, err := dd.db.Query(selectSql)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return 0
 	}
 	defer rows.Close()
@@ -126,7 +126,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
 	}
 	stmt, err := dd.db.Prepare(selectSql)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return
 	}
 	defer stmt.Close()
@@ -137,7 +137,7 @@ func (dd *DbData) titles(limit int) (links []*EntryLink) {
 		rows, err = stmt.Query()
 	}
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return
 	}
 	defer rows.Close()
@@ -156,13 +156,13 @@ func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
 	selectSql = selectSql + " order by p.date desc"
 	stmt, err := dd.db.Prepare(selectSql)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(tag)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return
 	}
 	defer rows.Close()
@@ -174,15 +174,13 @@ func scanEntryLinks(rows *sql.Rows) (links []*EntryLink) {
 		entryLink := new(EntryLink)
 		err := rows.Scan(&entryLink.Title, &entryLink.URL, &entryLink.Hidden)
 		if err != nil {
-			logger.Println(err.Error())
+			logger.Log(err)
 			continue
 		}
 		links = append(links, entryLink)
 	}
 	err := rows.Err()
-	if err != nil {
-		logger.Println(err.Error())
-	}
+	logger.LogIf(err)
 	return
 }
 
@@ -195,13 +193,13 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
                                       and c.post_id = p.id
                                 order by c.timestamp desc`)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer stmt.Close()
 	data, err := stmt.Query()
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer data.Close()
@@ -212,18 +210,13 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
 		err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
 			&comment.CommentID, &unixDate, &comment.RawBody,
 			&comment.Title, &comment.URL)
-		if err != nil {
-			logger.Printf("error scanning comment row: %s\n", err.Error())
-		}
+		logger.LogIff(err, "error scanning comment row")
 		comment.EmailHash = Md5Hash(comment.Email)
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
 		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
 	}
-	err = data.Err()
-	if err != nil {
-		logger.Printf("error scanning comment row: %s\n", err.Error())
-	}
+	logger.LogIff(data.Err(), "error scanning comment row")
 	return comments
 }
 
@@ -234,14 +227,12 @@ func (dd *DbData) commenter(c Commenter) (id int64, err error) {
                                    and c.email = $2
                                    and c.www = $3`)
 	if err != nil {
-		logger.Println("err: " + err.Error())
+		logger.Log(err)
 		return
 	}
 	defer query.Close()
 	err = query.QueryRow(c.Name, c.Email, c.Website).Scan(&id)
-	if err != nil {
-		logger.Println("err: " + err.Error())
-	}
+	logger.LogIf(err)
 	return
 }
 
@@ -255,9 +246,7 @@ func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
                                          returning id`)
 	defer insertCommenter.Close()
 	err = insertCommenter.QueryRow(c.Name, c.Email, c.Website, c.IP).Scan(&id)
-	if err != nil {
-		logger.Println("Failed to insert commenter: " + err.Error())
-	}
+	logger.LogIff(err, "Failed to insert commenter")
 	return
 }
 
@@ -270,13 +259,13 @@ func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int6
                                 values ($1, $2, $3, $4)
                                 returning id`)
 	if err != nil {
-		logger.Println("Failed to prepare insert comment stmt: " + err.Error())
+		logger.LogIff(err, "Failed to prepare insert comment stmt")
 		return
 	}
 	defer stmt.Close()
 	err = stmt.QueryRow(commenterID, postID, time.Now().Unix(), body).Scan(&id)
 	if err != nil {
-		logger.Println("Failed to insert comment: " + err.Error())
+		logger.LogIff(err, "Failed to insert comment")
 		return
 	}
 	return
@@ -295,7 +284,7 @@ func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
 	err = insertPostSql.QueryRow(author, e.Title, date, e.URL,
 		string(e.Body), e.Hidden).Scan(&id)
 	if err != nil {
-		logger.Println("Failed to insert post: " + err.Error())
+		logger.LogIff(err, "Failed to insert post")
 		return
 	}
 	return
@@ -369,7 +358,7 @@ func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []
 	}
 	data, err := queryPosts(db, limit, offset, url, includeHidden)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	return data
@@ -404,7 +393,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 		limitClause, offsetClause)
 	rows, err := db.Query(query)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return
 	}
 	defer rows.Close()
@@ -415,7 +404,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 		err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
 			&entry.RawBody, &entry.URL, &entry.Hidden)
 		if err != nil {
-			logger.Println(err.Error())
+			logger.Log(err)
 			continue
 		}
 		entry.Body = sanitizeTrustedHTML(mdToHTML(entry.RawBody))
@@ -425,9 +414,7 @@ func queryPosts(db *sql.DB, limit, offset int,
 		entries = append(entries, entry)
 	}
 	err = rows.Err()
-	if err != nil {
-		logger.Printf("error scanning post row: %s\n", err.Error())
-	}
+	logger.LogIff(err, "error scanning post row")
 	return
 }
 
@@ -437,13 +424,13 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
                              where t.id = tm.tag_id
                                    and tm.post_id = $1`)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(postID)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer rows.Close()
@@ -452,28 +439,26 @@ func queryTags(db *sql.DB, postID int64) []*Tag {
 		tag := new(Tag)
 		err = rows.Scan(&tag.Name)
 		if err != nil {
-			logger.Println(err.Error())
+			logger.Log(err)
 			continue
 		}
 		tags = append(tags, tag)
 	}
 	err = rows.Err()
-	if err != nil {
-		logger.Printf("error scanning tag row: %s\n", err.Error())
-	}
+	logger.LogIff(err, "error scanning tag row")
 	return tags
 }
 
 func (dd *DbData) queryAllTags() []*Tag {
 	stmt, err := dd.db.Prepare(`select tag from tag`)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query()
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer rows.Close()
@@ -482,15 +467,13 @@ func (dd *DbData) queryAllTags() []*Tag {
 		tag := new(Tag)
 		err = rows.Scan(&tag.Name)
 		if err != nil {
-			logger.Println(err.Error())
+			logger.Log(err)
 			continue
 		}
 		tags = append(tags, tag)
 	}
 	err = rows.Err()
-	if err != nil {
-		logger.Printf("error scanning tag row: %s\n", err.Error())
-	}
+	logger.LogIff(err, "error scanning tag row")
 	return tags
 }
 
@@ -502,13 +485,13 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
                                    and c.post_id = $1
                              order by c.timestamp asc`)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer stmt.Close()
 	data, err := stmt.Query(postID)
 	if err != nil {
-		logger.Println(err.Error())
+		logger.Log(err)
 		return nil
 	}
 	defer data.Close()
@@ -518,25 +501,21 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 		var unixDate int64
 		err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
 			&comment.CommentID, &unixDate, &comment.RawBody)
-		if err != nil {
-			logger.Printf("error scanning comment row: %s\n", err.Error())
-		}
+		logger.LogIff(err, "error scanning comment row")
 		comment.EmailHash = Md5Hash(comment.Email)
 		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
 		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
 		comments = append(comments, comment)
 	}
 	err = data.Err()
-	if err != nil {
-		logger.Printf("error scanning comment row: %s\n", err.Error())
-	}
+	logger.LogIff(err, "error scanning comment row")
 	return comments
 }
 
 func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
 	query, err := xaction.Prepare("select id from tag where tag=$1")
 	if err != nil {
-		logger.Println("Failed to prepare select tag stmt: " + err.Error())
+		logger.LogIff(err, "Failed to prepare select tag stmt")
 		return
 	}
 	defer query.Close()
@@ -550,17 +529,17 @@ func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
                                               values ($1)
                                               returning id`)
 		if err != nil {
-			logger.Println("Failed to prepare insert tag stmt: " + err.Error())
+			logger.LogIff(err, "Failed to prepare insert tag stmt")
 			return -1, err
 		}
 		defer insertTagSql.Close()
 		err = insertTagSql.QueryRow(tag.Name).Scan(&tagID)
 		if err != nil {
-			logger.Println("Failed to insert tag: " + err.Error())
+			logger.LogIff(err, "Failed to insert tag")
 		}
 		return tagID, err
 	default:
-		logger.Printf("err: %s", err.Error())
+		logger.Log(err)
 		return -1, err
 	}
 }
@@ -569,9 +548,7 @@ func updateTagMap(xaction *sql.Tx, postID int64, tagID int64) {
 	stmt, err := xaction.Prepare(`insert into tagmap
                                   (tag_id, post_id)
                                   values ($1, $2)`)
-	if err != nil {
-		logger.Println("Failed to prepare insrt tagmap stmt: " + err.Error())
-	}
+	logger.LogIff(err, "Failed to prepare insrt tagmap stmt")
 	defer stmt.Close()
 	stmt.Exec(tagID, postID)
 }
