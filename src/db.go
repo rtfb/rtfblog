@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"runtime"
 	"time"
 )
 
@@ -42,6 +43,16 @@ func (dd *DbData) hiddenPosts(flag bool) {
 	dd.includeHidden = flag
 }
 
+func notInXactionErr() error {
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("runtime.Caller(1) != ok, dafuq?")
+	}
+	funcName := runtime.FuncForPC(pc).Name()
+	msg := "Error! %s() can only be called within transaction!"
+	return fmt.Errorf(msg, funcName)
+}
+
 func (dd *DbData) begin() error {
 	if dd.tx != nil {
 		return errors.New("Error! DbData.begin() called within transaction!")
@@ -56,7 +67,7 @@ func (dd *DbData) begin() error {
 
 func (dd *DbData) commit() {
 	if dd.tx == nil {
-		logger.Println("Error! DbData.commit() called outside of transaction!")
+		logger.Log(notInXactionErr())
 		return
 	}
 	dd.tx.Commit()
@@ -65,7 +76,7 @@ func (dd *DbData) commit() {
 
 func (dd *DbData) rollback() {
 	if dd.tx == nil {
-		logger.Println("Error! DbData.rollback() called outside of transaction!")
+		logger.Log(notInXactionErr())
 		return
 	}
 	dd.tx.Rollback()
@@ -238,7 +249,7 @@ func (dd *DbData) commenter(c Commenter) (id int64, err error) {
 
 func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
 	if dd.tx == nil {
-		return -1, fmt.Errorf("DbData.insertCommenter() can only be called within xaction!")
+		return -1, notInXactionErr()
 	}
 	insertCommenter, _ := dd.tx.Prepare(`insert into commenter
                                          (name, email, www, ip)
@@ -252,7 +263,7 @@ func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
 
 func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
 	if dd.tx == nil {
-		return -1, fmt.Errorf("DbData.insertComment() can only be called within xaction!")
+		return -1, notInXactionErr()
 	}
 	stmt, err := dd.tx.Prepare(`insert into comment
                                 (commenter_id, post_id, timestamp, body)
@@ -273,7 +284,7 @@ func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int6
 
 func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
 	if dd.tx == nil {
-		return -1, fmt.Errorf("DbData.insertPost() can only be called within xaction!")
+		return -1, notInXactionErr()
 	}
 	insertPostSql, _ := dd.tx.Prepare(`insert into post
                                        (author_id, title, date, url, body, hidden)
@@ -304,7 +315,7 @@ func (dd *DbData) updatePost(id int64, e *Entry) error {
 
 func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 	if dd.tx == nil {
-		return fmt.Errorf("DbData.updateTags() can only be called within xaction!")
+		return notInXactionErr()
 	}
 	delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=$1")
 	defer delStmt.Close()
