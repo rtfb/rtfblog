@@ -905,23 +905,13 @@ func TestDeleteCommentCallsDbFunc(t *testing.T) {
 
 func TestShowCaptcha(t *testing.T) {
 	url := "comment_submit?name=joe&captcha=&email=snailmail&text=cmmnt%20txt"
-	respJSON := curl(url)
-	var resp map[string]interface{}
-	err := json.Unmarshal([]byte(respJSON), &resp)
-	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
-	}
+	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
 func TestReturningCommenterSkipsCaptcha(t *testing.T) {
 	url := "comment_submit?name=N&captcha=&email=@&website=w&text=cmmnt%20txt"
-	respJSON := curl(url)
-	var resp map[string]interface{}
-	err := json.Unmarshal([]byte(respJSON), &resp)
-	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
-	}
+	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
@@ -933,12 +923,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 	}()
 	langDetector = LTLangDetector{}
 	url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt"
-	respJSON := curl(url)
-	var resp map[string]interface{}
-	err := json.Unmarshal([]byte(respJSON), &resp)
-	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
-	}
+	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
@@ -949,12 +934,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 	defer testData.reset()
 	url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt&captcha-id=666"
-	respJSON := curl(url)
-	var resp map[string]interface{}
-	err := json.Unmarshal([]byte(respJSON), &resp)
-	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
-	}
+	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
 	testData.expect(t, (*TestData).postID, "")
 }
@@ -965,12 +945,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
 	task := GetTask()
 	captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.ID, task.Answer)
 	url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
-	respJSON := curl(url)
-	var resp map[string]interface{}
-	err := json.Unmarshal([]byte(respJSON), &resp)
-	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", respJSON, err.Error())
-	}
+	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
@@ -1148,4 +1123,13 @@ func TestMarkdown(t *testing.T) {
 
 func TestMd5(t *testing.T) {
 	T{t}.assertEqual("d3b07384d113edec49eaa6238ad5ff00", Md5Hash("foo\n"))
+}
+
+func mustUnmarshal(t *testing.T, jsonObj string) map[string]interface{} {
+	var obj map[string]interface{}
+	err := json.Unmarshal([]byte(jsonObj), &obj)
+	if err != nil {
+		t.Fatalf("json.Unmarshal(%q) =\nerror %q", jsonObj, err.Error())
+	}
+	return obj
 }
