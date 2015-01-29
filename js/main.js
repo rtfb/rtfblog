@@ -25,6 +25,12 @@ function validateCommentForm() {
         && validateField('email', "Email field is mandatory.");
 }
 
+function validatePostForm() {
+    return validateField('post_title', "Title field is mandatory.")
+        && validateField('post_url', "URL field is mandatory.")
+        && validateField('wmd-input', "Post content is mandatory.");
+}
+
 function mkXHR() {
     try {
         return new ActiveXObject('Msxml2.XMLHTTP');
@@ -136,3 +142,4 @@ function uploadProgress() {
 global.window.uploadProgress = uploadProgress;
 global.window.forwardClickToFileid = forwardClickToFileid;
 global.window.submitComment = submitComment;
+global.window.validatePostForm = validatePostForm;

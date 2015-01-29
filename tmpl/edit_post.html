@@ -35,6 +35,7 @@
         id="edit-post-form"
         action="submit_post"
         method="post"
+        onsubmit="return validatePostForm()"
         >
     <div class="twelve columns content" id="content">
         {{with .post}}
