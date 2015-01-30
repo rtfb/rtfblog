@@ -172,7 +172,7 @@ func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	delete(ctx.Session.Values, "adminlogin")
-	http.Redirect(w, req, reverse("home_page"), http.StatusSeeOther)
+	http.Redirect(w, req, ctx.routeByName("home_page"), http.StatusSeeOther)
 	return nil
 }
 
@@ -291,7 +291,7 @@ func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if err != nil {
 		return logger.LogIff(err, "DeletePost: failed to delete post for id %q", id)
 	}
-	http.Redirect(w, req, reverse("admin"), http.StatusSeeOther)
+	http.Redirect(w, req, ctx.routeByName("admin"), http.StatusSeeOther)
 	return nil
 }
 

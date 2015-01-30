@@ -92,7 +92,7 @@ func PerformStatus(w http.ResponseWriter, req *http.Request, status int) error {
 	return nil
 }
 
-func reverse(name string, things ...interface{}) string {
+func (c *Context) routeByName(name string, things ...interface{}) string {
 	//convert the things to strings
 	strs := make([]string, len(things))
 	for i, th := range things {
@@ -101,7 +101,7 @@ func reverse(name string, things ...interface{}) string {
 	//grab the route
 	u, err := Router.GetRoute(name).URL(strs...)
 	if err != nil {
-		logger.Printf("reverse (%s %v): %s", name, things, err.Error())
+		logger.LogIff(err, "routeByName(%s %v)", name, things)
 		return "#"
 	}
 	return u.Path
