@@ -16,7 +16,8 @@ var (
 )
 
 func (h BcryptHelper) Encrypt(passwd string) (hash string, err error) {
-	hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	cost := bcrypt.DefaultCost
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), cost)
 	hash = string(hashBytes)
 	return
 }
