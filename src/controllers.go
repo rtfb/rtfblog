@@ -10,11 +10,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/httpbuf"
 )
 
-type Handler func(http.ResponseWriter, *http.Request, *Context) error
+type Handler struct{
+	h func(http.ResponseWriter, *http.Request, *Context) error
+	r *pat.Router
+}
 
 var (
 	cachedTemplates = map[string]*template.Template{}
@@ -29,7 +33,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	tm := time.Now().UTC()
 	defer logRequest(req, tm)
 	//create the context
-	ctx, err := NewContext(req)
+	ctx, err := NewContext(req, h.r)
 	if err != nil {
 		InternalError(w, req, "new context err: "+err.Error())
 		return
@@ -40,7 +44,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// ResponseWriter. So we pass this buffer in place of writer here, then
 	// call Save() and finally apply the buffer to the real writer.
 	buf := new(httpbuf.Buffer)
-	err = h(buf, req, ctx)
+	err = h.h(buf, req, ctx)
 	if err != nil {
 		InternalError(w, req, "buffer err: "+err.Error())
 		return
@@ -107,14 +111,17 @@ func (c *Context) routeByName(name string, things ...interface{}) string {
 	return u.Path
 }
 
-func checkPerm(handler Handler) Handler {
-	return func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-		if !ctx.AdminLogin {
-			PerformStatus(w, req, http.StatusForbidden)
+func checkPerm(handler *Handler) *Handler {
+	return &Handler{
+		h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+			if !ctx.AdminLogin {
+				PerformStatus(w, req, http.StatusForbidden)
+				return nil
+			}
+			handler.h(w, req, ctx)
 			return nil
-		}
-		handler(w, req, ctx)
-		return nil
+		},
+		r: handler.r,
 	}
 }
 

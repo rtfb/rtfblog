@@ -19,11 +19,10 @@ type Context struct {
 
 var (
 	store  sessions.Store
-	router *pat.Router
 	L10n   i18n.TranslateFunc
 )
 
-func NewContext(req *http.Request) (*Context, error) {
+func NewContext(req *http.Request, router *pat.Router) (*Context, error) {
 	sess, err := store.Get(req, "rtfblog")
 	ctx := &Context{
 		Session:    sess,

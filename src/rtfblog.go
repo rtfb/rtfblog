@@ -539,32 +539,32 @@ func initRoutes(basedir string) *pat.Router {
 	r := pat.New()
 	dir := filepath.Join(basedir, conf.Get("staticdir"))
 	r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
-	r.Add("GET", "/login", Handler(LoginForm)).Name("login")
-	r.Add("POST", "/login", Handler(Login))
-	r.Add("GET", "/logout", Handler(Logout)).Name("logout")
-	r.Add("GET", "/admin", checkPerm(Handler(Admin))).Name("admin")
-	r.Add("GET", "/page/{pageNo:.*}", Handler(PageNum))
-	r.Add("GET", "/tag/{tag:.+}", Handler(PostsWithTag))
-	r.Add("GET", "/archive", Handler(Archive)).Name("archive")
-	r.Add("GET", "/all_comments", checkPerm(Handler(AllComments))).Name("all_comments")
-	r.Add("GET", "/edit_post", checkPerm(Handler(EditPost))).Name("edit_post")
-	r.Add("GET", "/load_comments", checkPerm(Handler(LoadComments))).Name("load_comments")
-	r.Add("GET", "/feeds/rss.xml", Handler(RssFeed)).Name("rss_feed")
-	r.Add("GET", "/favicon.ico", Handler(ServeFavicon)).Name("favicon")
-	r.Add("GET", "/comment_submit", Handler(CommentHandler)).Name("comment")
-	r.Add("GET", "/delete_comment", checkPerm(Handler(DeleteComment))).Name("delete_comment")
-	r.Add("GET", "/delete_post", checkPerm(Handler(DeletePost))).Name("delete_post")
-	r.Add("GET", "/robots.txt", Handler(ServeRobots))
+	r.Add("GET", "/login", &Handler{LoginForm, r}).Name("login")
+	r.Add("POST", "/login", &Handler{Login, r})
+	r.Add("GET", "/logout", &Handler{Logout, r}).Name("logout")
+	r.Add("GET", "/admin", checkPerm(&Handler{Admin, r})).Name("admin")
+	r.Add("GET", "/page/{pageNo:.*}", &Handler{PageNum, r})
+	r.Add("GET", "/tag/{tag:.+}", &Handler{PostsWithTag, r})
+	r.Add("GET", "/archive", &Handler{Archive, r}).Name("archive")
+	r.Add("GET", "/all_comments", checkPerm(&Handler{AllComments, r})).Name("all_comments")
+	r.Add("GET", "/edit_post", checkPerm(&Handler{EditPost, r})).Name("edit_post")
+	r.Add("GET", "/load_comments", checkPerm(&Handler{LoadComments, r})).Name("load_comments")
+	r.Add("GET", "/feeds/rss.xml", &Handler{RssFeed, r}).Name("rss_feed")
+	r.Add("GET", "/favicon.ico", &Handler{ServeFavicon, r}).Name("favicon")
+	r.Add("GET", "/comment_submit", &Handler{CommentHandler, r}).Name("comment")
+	r.Add("GET", "/delete_comment", checkPerm(&Handler{DeleteComment, r})).Name("delete_comment")
+	r.Add("GET", "/delete_post", checkPerm(&Handler{DeletePost, r})).Name("delete_post")
+	r.Add("GET", "/robots.txt", &Handler{ServeRobots, r})
 
-	r.Add("POST", "/moderate_comment", checkPerm(Handler(ModerateComment))).Name("moderate_comment")
-	r.Add("POST", "/submit_post", checkPerm(Handler(SubmitPost))).Name("submit_post")
-	r.Add("POST", "/upload_images", checkPerm(Handler(UploadImage))).Name("upload_image")
+	r.Add("POST", "/moderate_comment", checkPerm(&Handler{ModerateComment, r})).Name("moderate_comment")
+	r.Add("POST", "/submit_post", checkPerm(&Handler{SubmitPost, r})).Name("submit_post")
+	r.Add("POST", "/upload_images", checkPerm(&Handler{UploadImage, r})).Name("upload_image")
 
-	r.Add("GET", "/", Handler(Home)).Name("home_page")
+	r.Add("GET", "/", &Handler{Home, r}).Name("home_page")
 	return r
 }
 
-func runServer() {
+func runServer(router *pat.Router) {
 	logger.Print("The server is listening...")
 	if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), router); err != nil {
 		logger.Print("rtfblog server: ", err)
@@ -660,6 +660,5 @@ func main() {
 		tx:            nil,
 		includeHidden: false,
 	})
-	router = initRoutes(bindir)
-	runServer()
+	runServer(initRoutes(bindir))
 }
