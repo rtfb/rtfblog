@@ -13,12 +13,13 @@ import (
 type Context struct {
 	// TODO: add db here
 	Session    *sessions.Session
+	Router     *pat.Router
 	AdminLogin bool
 }
 
 var (
 	store  sessions.Store
-	Router *pat.Router
+	router *pat.Router
 	L10n   i18n.TranslateFunc
 )
 
@@ -27,6 +28,7 @@ func NewContext(req *http.Request) (*Context, error) {
 	ctx := &Context{
 		Session:    sess,
 		AdminLogin: sess.Values["adminlogin"] == "yes",
+		Router:     router,
 	}
 	return ctx, err
 }

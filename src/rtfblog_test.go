@@ -123,9 +123,9 @@ func init() {
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
 	initData(&testData)
-	initRoutes("..")
+	router = initRoutes("..")
 	initTestClient()
-	initTestServer(Router)
+	initTestServer(router)
 }
 
 func TestMainPage(t *testing.T) {

@@ -535,9 +535,8 @@ func initData(_data Data) {
 	data = _data
 }
 
-func initRoutes(basedir string) {
-	Router = pat.New()
-	r := Router
+func initRoutes(basedir string) *pat.Router {
+	r := pat.New()
 	dir := filepath.Join(basedir, conf.Get("staticdir"))
 	r.Add("GET", "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
 	r.Add("GET", "/login", Handler(LoginForm)).Name("login")
@@ -562,11 +561,12 @@ func initRoutes(basedir string) {
 	r.Add("POST", "/upload_images", checkPerm(Handler(UploadImage))).Name("upload_image")
 
 	r.Add("GET", "/", Handler(Home)).Name("home_page")
+	return r
 }
 
 func runServer() {
 	logger.Print("The server is listening...")
-	if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), Router); err != nil {
+	if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), router); err != nil {
 		logger.Print("rtfblog server: ", err)
 	}
 }
@@ -660,6 +660,6 @@ func main() {
 		tx:            nil,
 		includeHidden: false,
 	})
-	initRoutes(bindir)
+	router = initRoutes(bindir)
 	runServer()
 }

@@ -99,7 +99,7 @@ func (c *Context) routeByName(name string, things ...interface{}) string {
 		strs[i] = fmt.Sprint(th)
 	}
 	//grab the route
-	u, err := Router.GetRoute(name).URL(strs...)
+	u, err := c.Router.GetRoute(name).URL(strs...)
 	if err != nil {
 		logger.LogIff(err, "routeByName(%s %v)", name, things)
 		return "#"
