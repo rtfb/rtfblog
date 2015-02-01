@@ -564,13 +564,6 @@ func initRoutes(basedir string) *pat.Router {
 	return r
 }
 
-func runServer(router *pat.Router) {
-	logger.Print("The server is listening...")
-	if err := http.ListenAndServe(os.Getenv("HOST")+conf.Get("port"), router); err != nil {
-		logger.Print("rtfblog server: ", err)
-	}
-}
-
 func obtainConfiguration(basedir string) SrvConfig {
 	hardcodedConf := SrvConfig{
 		"database":         "$RTFBLOG_DB_TEST_URL",
@@ -660,5 +653,7 @@ func main() {
 		tx:            nil,
 		includeHidden: false,
 	})
-	runServer(initRoutes(bindir))
+	logger.Print("The server is listening...")
+	addr := os.Getenv("HOST") + conf.Get("port")
+	logger.LogIf(http.ListenAndServe(addr, initRoutes(bindir)))
 }
