@@ -15,6 +15,7 @@ type Context struct {
 	Session    *sessions.Session
 	Router     *pat.Router
 	AdminLogin bool
+	Captcha    *Deck
 }
 
 var (
@@ -28,6 +29,7 @@ func NewContext(req *http.Request, router *pat.Router) (*Context, error) {
 		Session:    sess,
 		AdminLogin: sess.Values["adminlogin"] == "yes",
 		Router:     router,
+		Captcha:    deck,
 	}
 	return ctx, err
 }

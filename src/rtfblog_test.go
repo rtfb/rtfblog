@@ -644,8 +644,9 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 
 func TestCorrectCaptchaReply(t *testing.T) {
 	defer testData.reset()
-	SetNextTask(0)
-	task := GetTask()
+	deck := NewDeck()
+	deck.SetNextTask(0)
+	task := deck.GetTask()
 	captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.ID, task.Answer)
 	url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
 	resp := mustUnmarshal(t, curl(url))

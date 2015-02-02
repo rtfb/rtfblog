@@ -124,11 +124,11 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return Tmpl("main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
 	if post := data.post(req.URL.Path[1:]); post != nil {
-		SetNextTask(-1)
+		ctx.Captcha.SetNextTask(-1)
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
 		tmplData["entry"] = post
-		task := *GetTask()
+		task := *ctx.Captcha.GetTask()
 		// Initial task id has to be empty, gets filled by AJAX upon first time
 		// it gets shown
 		task.ID = ""
@@ -454,11 +454,11 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 				}
 				redir = "/" + refURL + commentURL
 			} else {
-				WrongCaptchaReply(w, req, "showcaptcha", GetTask())
+				WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
 				return nil
 			}
 		} else {
-			captchaTask := GetTaskByID(captchaID)
+			captchaTask := ctx.Captcha.GetTaskByID(captchaID)
 			if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
 				WrongCaptchaReply(w, req, "rejected", captchaTask)
 				return nil
@@ -472,7 +472,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		}
 	} else {
 		logger.LogIf(err)
-		WrongCaptchaReply(w, req, "rejected", GetTask())
+		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
 		return nil
 	}
 	if conf.Get("notif_send_email") == "true" {

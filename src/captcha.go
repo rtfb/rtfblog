@@ -13,12 +13,17 @@ type CaptchaTask struct {
 	Answer string
 }
 
+type Deck struct {
+	nextTask int
+	tasks    []CaptchaTask
+}
+
 var (
-	nextTask     int
-	CaptchaTasks []CaptchaTask
+	deck *Deck
 )
 
-func init() {
+func NewDeck() *Deck {
+	var deck Deck
 	answers := []string{
 		"vienuolika",
 		"dvylika",
@@ -30,35 +35,40 @@ func init() {
 		"aštuoniolika",
 		"devyniolika",
 	}
-	CaptchaTasks = make([]CaptchaTask, 0, 0)
+	deck.tasks = make([]CaptchaTask, 0, 0)
 	for i, answer := range answers {
 		task := CaptchaTask{
 			Task:   fmt.Sprintf("9 + %d =", i+2),
 			ID:     fmt.Sprintf("%d", 666+i),
 			Answer: answer,
 		}
-		CaptchaTasks = append(CaptchaTasks, task)
+		deck.tasks = append(deck.tasks, task)
 	}
+	return &deck
 }
 
-func GetTask() *CaptchaTask {
-	return &CaptchaTasks[nextTask]
+func init() {
+	deck = NewDeck()
 }
 
-func GetTaskByID(id string) *CaptchaTask {
-	for _, t := range CaptchaTasks {
+func (d *Deck) GetTask() *CaptchaTask {
+	return &d.tasks[d.nextTask]
+}
+
+func (d *Deck) GetTaskByID(id string) *CaptchaTask {
+	for _, t := range d.tasks {
 		if t.ID == id {
 			return &t
 		}
 	}
-	return &CaptchaTasks[0]
+	return &d.tasks[0]
 }
 
-func SetNextTask(task int) {
+func (d *Deck) SetNextTask(task int) {
 	if task < 0 {
-		task = rand.Int() % len(CaptchaTasks)
+		task = rand.Int() % len(d.tasks)
 	}
-	nextTask = task
+	d.nextTask = task
 }
 
 func CheckCaptcha(task *CaptchaTask, input string) bool {
