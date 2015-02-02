@@ -15,7 +15,7 @@ import (
 	"github.com/rtfb/httpbuf"
 )
 
-type Handler struct{
+type Handler struct {
 	h func(http.ResponseWriter, *http.Request, *Context) error
 	r *pat.Router
 }

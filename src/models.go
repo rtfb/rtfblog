@@ -19,8 +19,8 @@ type Context struct {
 }
 
 var (
-	store  sessions.Store
-	L10n   i18n.TranslateFunc
+	store sessions.Store
+	L10n  i18n.TranslateFunc
 )
 
 func NewContext(req *http.Request, router *pat.Router) (*Context, error) {

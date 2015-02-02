@@ -29,7 +29,7 @@ type TestData struct {
 }
 
 var (
-	testData   TestData
+	testData TestData
 )
 
 func (td *TestData) reset() {
