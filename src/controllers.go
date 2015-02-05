@@ -15,9 +15,15 @@ import (
 	"github.com/rtfb/httpbuf"
 )
 
-type Handler struct {
-	h func(http.ResponseWriter, *http.Request, *Context) error
+type GlobalContext struct {
 	r *pat.Router
+}
+
+type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error
+
+type Handler struct {
+	h HandlerFunc
+	c *GlobalContext
 }
 
 var (
@@ -33,7 +39,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	tm := time.Now().UTC()
 	defer logRequest(req, tm)
 	//create the context
-	ctx, err := NewContext(req, h.r)
+	ctx, err := NewContext(req, h.c.r)
 	if err != nil {
 		InternalError(w, req, "new context err: "+err.Error())
 		return
@@ -121,7 +127,7 @@ func checkPerm(handler *Handler) *Handler {
 			handler.h(w, req, ctx)
 			return nil
 		},
-		r: handler.r,
+		c: handler.c,
 	}
 }
 

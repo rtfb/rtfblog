@@ -535,34 +535,40 @@ func initData(_data Data) {
 	data = _data
 }
 
-func initRoutes(basedir string) *pat.Router {
-	r := pat.New()
+func initRoutes(basedir string, gctx *GlobalContext) *pat.Router {
+	r := gctx.r
 	dir := filepath.Join(basedir, conf.Get("staticdir"))
 	G := "GET"
 	P := "POST"
+	mkHandler := func(f HandlerFunc) *Handler {
+		return &Handler{f, gctx}
+	}
+	mkAdminHandler := func(f HandlerFunc) *Handler {
+		return checkPerm(&Handler{f, gctx})
+	}
 	r.Add(G, "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
-	r.Add(G, "/login", &Handler{LoginForm, r}).Name("login")
-	r.Add(P, "/login", &Handler{Login, r})
-	r.Add(G, "/logout", &Handler{Logout, r}).Name("logout")
-	r.Add(G, "/admin", checkPerm(&Handler{Admin, r})).Name("admin")
-	r.Add(G, "/page/{pageNo:.*}", &Handler{PageNum, r})
-	r.Add(G, "/tag/{tag:.+}", &Handler{PostsWithTag, r})
-	r.Add(G, "/archive", &Handler{Archive, r}).Name("archive")
-	r.Add(G, "/all_comments", checkPerm(&Handler{AllComments, r})).Name("all_comments")
-	r.Add(G, "/edit_post", checkPerm(&Handler{EditPost, r})).Name("edit_post")
-	r.Add(G, "/load_comments", checkPerm(&Handler{LoadComments, r})).Name("load_comments")
-	r.Add(G, "/feeds/rss.xml", &Handler{RssFeed, r}).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &Handler{ServeFavicon, r}).Name("favicon")
-	r.Add(G, "/comment_submit", &Handler{CommentHandler, r}).Name("comment")
-	r.Add(G, "/delete_comment", checkPerm(&Handler{DeleteComment, r})).Name("delete_comment")
-	r.Add(G, "/delete_post", checkPerm(&Handler{DeletePost, r})).Name("delete_post")
-	r.Add(G, "/robots.txt", &Handler{ServeRobots, r})
+	r.Add(G, "/login", mkHandler(LoginForm)).Name("login")
+	r.Add(P, "/login", mkHandler(Login))
+	r.Add(G, "/logout", mkHandler(Logout)).Name("logout")
+	r.Add(G, "/admin", mkAdminHandler(Admin)).Name("admin")
+	r.Add(G, "/page/{pageNo:.*}", mkHandler(PageNum))
+	r.Add(G, "/tag/{tag:.+}", mkHandler(PostsWithTag))
+	r.Add(G, "/archive", mkHandler(Archive)).Name("archive")
+	r.Add(G, "/all_comments", mkAdminHandler(AllComments)).Name("all_comments")
+	r.Add(G, "/edit_post", mkAdminHandler(EditPost)).Name("edit_post")
+	r.Add(G, "/load_comments", mkAdminHandler(LoadComments)).Name("load_comments")
+	r.Add(G, "/feeds/rss.xml", mkHandler(RssFeed)).Name("rss_feed")
+	r.Add(G, "/favicon.ico", mkHandler(ServeFavicon)).Name("favicon")
+	r.Add(G, "/comment_submit", mkHandler(CommentHandler)).Name("comment")
+	r.Add(G, "/delete_comment", mkAdminHandler(DeleteComment)).Name("delete_comment")
+	r.Add(G, "/delete_post", mkAdminHandler(DeletePost)).Name("delete_post")
+	r.Add(G, "/robots.txt", mkHandler(ServeRobots))
 
-	r.Add(P, "/moderate_comment", checkPerm(&Handler{ModerateComment, r})).Name("moderate_comment")
-	r.Add(P, "/submit_post", checkPerm(&Handler{SubmitPost, r})).Name("submit_post")
-	r.Add(P, "/upload_images", checkPerm(&Handler{UploadImage, r})).Name("upload_image")
+	r.Add(P, "/moderate_comment", mkAdminHandler(ModerateComment)).Name("moderate_comment")
+	r.Add(P, "/submit_post", mkAdminHandler(SubmitPost)).Name("submit_post")
+	r.Add(P, "/upload_images", mkAdminHandler(UploadImage)).Name("upload_image")
 
-	r.Add(G, "/", &Handler{Home, r}).Name("home_page")
+	r.Add(G, "/", mkHandler(Home)).Name("home_page")
 	return r
 }
 
@@ -657,5 +663,7 @@ func main() {
 	})
 	logger.Print("The server is listening...")
 	addr := os.Getenv("HOST") + conf.Get("port")
-	logger.LogIf(http.ListenAndServe(addr, initRoutes(bindir)))
+	logger.LogIf(http.ListenAndServe(addr, initRoutes(bindir, &GlobalContext{
+		r: pat.New(),
+	})))
 }

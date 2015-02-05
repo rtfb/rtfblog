@@ -17,6 +17,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/css/selector"
@@ -124,7 +125,9 @@ func init() {
 	testData = TestData{}
 	initData(&testData)
 	initTestClient()
-	initTestServer(initRoutes(".."))
+	initTestServer(initRoutes("..", &GlobalContext{
+		r: pat.New(),
+	}))
 }
 
 func TestMainPage(t *testing.T) {
