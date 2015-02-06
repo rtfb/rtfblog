@@ -16,7 +16,8 @@ import (
 )
 
 type GlobalContext struct {
-	r *pat.Router
+	r  *pat.Router
+	db Data
 }
 
 type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error
@@ -39,7 +40,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	tm := time.Now().UTC()
 	defer logRequest(req, tm)
 	//create the context
-	ctx, err := NewContext(req, h.c.r)
+	ctx, err := NewContext(req, h.c)
 	if err != nil {
 		InternalError(w, req, "new context err: "+err.Error())
 		return

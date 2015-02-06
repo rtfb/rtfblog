@@ -32,7 +32,6 @@ type SrvConfig map[string]interface{}
 
 var (
 	conf   SrvConfig
-	data   Data
 	logger *bark.Logger
 )
 
@@ -123,7 +122,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		return Tmpl("main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
-	if post := data.post(req.URL.Path[1:]); post != nil {
+	if post := ctx.Db.post(req.URL.Path[1:]); post != nil {
 		ctx.Captcha.SetNextTask(-1)
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
@@ -182,7 +181,7 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"
-	tmplData["all_entries"] = data.titlesByTag(tag)
+	tmplData["all_entries"] = ctx.Db.titlesByTag(tag)
 	return Tmpl("archive.html").Execute(w, tmplData)
 }
 
@@ -190,13 +189,13 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Archive")
 	tmplData["HeadingText"] = L10n("All posts:")
-	tmplData["all_entries"] = data.titles(-1)
+	tmplData["all_entries"] = ctx.Db.titles(-1)
 	return Tmpl("archive.html").Execute(w, tmplData)
 }
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
-	tmplData["all_comments"] = data.allComments()
+	tmplData["all_comments"] = ctx.Db.allComments()
 	return Tmpl("all_comments.html").Execute(w, tmplData)
 }
 
@@ -212,10 +211,10 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Edit Post")
 	tmplData["IsHidden"] = true // Assume hidden for a new post
-	tmplData["AllTags"] = makeTagList(data.queryAllTags())
+	tmplData["AllTags"] = makeTagList(ctx.Db.queryAllTags())
 	url := strings.TrimRight(req.FormValue("post"), "&")
 	if url != "" {
-		if post := data.post(url); post != nil {
+		if post := ctx.Db.post(url); post != nil {
 			tmplData["IsHidden"] = post.Hidden
 			tmplData["post"] = post
 		}
@@ -227,7 +226,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	url := req.FormValue("post")
-	if post := data.post(url); post != nil {
+	if post := ctx.Db.post(url); post != nil {
 		b, err := json.Marshal(post)
 		if err != nil {
 			return logger.LogIf(err)
@@ -238,15 +237,15 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 }
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	data.hiddenPosts(false)
-	produceFeedXML(w, req, data.posts(NumFeedItems, 0))
+	ctx.Db.hiddenPosts(false)
+	produceFeedXML(w, req, ctx.Db.posts(NumFeedItems, 0))
 	return nil
 }
 
 func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	// TODO: should not be logged in, add check
 	uname := req.FormValue("uname")
-	a, err := data.author(uname)
+	a, err := ctx.Db.author(uname)
 	if err == sql.ErrNoRows {
 		ctx.Session.AddFlash(L10n("Login failed."))
 		return LoginForm(w, req, ctx)
@@ -276,7 +275,7 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 	redir := req.FormValue("redirect_to")
 	id := req.FormValue("id")
 	if action == "delete" {
-		err := data.deleteComment(id)
+		err := ctx.Db.deleteComment(id)
 		if err != nil {
 			return logger.LogIff(err, "DeleteComment: failed to delete comment for id %q", id)
 		}
@@ -287,7 +286,7 @@ func DeleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 
 func DeletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	id := req.FormValue("id")
-	err := data.deletePost(id)
+	err := ctx.Db.deletePost(id)
 	if err != nil {
 		return logger.LogIff(err, "DeletePost: failed to delete post for id %q", id)
 	}
@@ -300,7 +299,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 	text := req.FormValue("edit-comment-text")
 	id := req.FormValue("id")
 	if action == "edit" {
-		err := data.updateComment(id, text)
+		err := ctx.Db.updateComment(id, text)
 		if err != nil {
 			return logger.LogIff(err, "ModerateComment: failed to edit comment for id %q", id)
 		}
@@ -321,8 +320,8 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		},
 		Body: template.HTML(req.FormValue("text")),
 	}
-	postID, idErr := data.postID(url)
-	txErr := data.begin()
+	postID, idErr := ctx.Db.postID(url)
+	txErr := ctx.Db.begin()
 	if txErr != nil {
 		InternalError(w, req, "SubmitPost: "+txErr.Error())
 		return txErr
@@ -330,32 +329,32 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if idErr != nil {
 		if idErr == sql.ErrNoRows {
 			authorID := int64(1) // XXX: it's only me now
-			newPostID, err := data.insertPost(authorID, &e)
+			newPostID, err := ctx.Db.insertPost(authorID, &e)
 			if err != nil {
-				data.rollback()
-				InternalError(w, req, "SubmitPost, !data.insertPost: "+err.Error())
+				ctx.Db.rollback()
+				InternalError(w, req, "SubmitPost, !ctx.Db.insertPost: "+err.Error())
 				return err
 			}
 			postID = newPostID
 		} else {
-			data.rollback()
-			InternalError(w, req, "SubmitPost, !data.postID: "+idErr.Error())
-			return logger.LogIff(idErr, "data.postID() failed")
+			ctx.Db.rollback()
+			InternalError(w, req, "SubmitPost, !ctx.Db.postID: "+idErr.Error())
+			return logger.LogIff(idErr, "ctx.Db.postID() failed")
 		}
 	} else {
-		updErr := data.updatePost(postID, &e)
+		updErr := ctx.Db.updatePost(postID, &e)
 		if updErr != nil {
-			data.rollback()
+			ctx.Db.rollback()
 			InternalError(w, req, "SubmitPost: "+updErr.Error())
 			return updErr
 		}
 	}
-	err := data.updateTags(explodeTags(tags), postID)
+	err := ctx.Db.updateTags(explodeTags(tags), postID)
 	if err != nil {
-		data.rollback()
+		ctx.Db.rollback()
 		return err
 	}
-	data.commit()
+	ctx.Db.commit()
 	http.Redirect(w, req, "/"+url, http.StatusSeeOther)
 	return nil
 }
@@ -418,10 +417,10 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	refURL := ExtractReferer(req)
-	postID, err := data.postID(refURL)
+	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
 		InternalError(w, req, "Server Error: "+err.Error())
-		return logger.LogIff(err, "data.postID() failed")
+		return logger.LogIff(err, "ctx.Db.postID() failed")
 	}
 	commenter := Commenter{
 		Name:    req.FormValue("name"),
@@ -430,12 +429,12 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		IP:      GetIPAddress(req),
 	}
 	body := req.FormValue("text")
-	commenterID, err := data.commenter(commenter)
+	commenterID, err := ctx.Db.commenter(commenter)
 	redir := ""
 	captchaID := req.FormValue("captcha-id")
 	if err == nil {
 		// This is a returning commenter, pass his comment through:
-		commentURL, err := PublishComment(postID, commenterID, body)
+		commentURL, err := PublishComment(ctx.Db, postID, commenterID, body)
 		if err != nil {
 			InternalError(w, req, "Server Error: "+err.Error())
 			return err
@@ -447,7 +446,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 			logger.Println(log)
 			if lang == "\"lt\"" {
-				commentURL, err := PublishCommentWithInsert(postID, commenter, body)
+				commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
 				if err != nil {
 					InternalError(w, req, "Server Error: "+err.Error())
 					return err
@@ -463,7 +462,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 				WrongCaptchaReply(w, req, "rejected", captchaTask)
 				return nil
 			}
-			commentURL, err := PublishCommentWithInsert(postID, commenter, body)
+			commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
 			if err != nil {
 				InternalError(w, req, "Server Error: "+err.Error())
 				return err
@@ -529,10 +528,6 @@ func SendEmail(subj, body string) {
 func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	http.ServeFile(w, req, conf.Get("favicon"))
 	return nil
-}
-
-func initData(_data Data) {
-	data = _data
 }
 
 func initRoutes(basedir string, gctx *GlobalContext) *pat.Router {
@@ -656,14 +651,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	initData(&DbData{
-		db:            db,
-		tx:            nil,
-		includeHidden: false,
-	})
 	logger.Print("The server is listening...")
 	addr := os.Getenv("HOST") + conf.Get("port")
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(bindir, &GlobalContext{
 		r: pat.New(),
+		db: &DbData{
+			db:            db,
+			tx:            nil,
+			includeHidden: false,
+		},
 	})))
 }

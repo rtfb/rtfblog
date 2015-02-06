@@ -123,10 +123,10 @@ func init() {
 	langDetector = TestLangDetector{}
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
-	initData(&testData)
 	initTestClient()
 	initTestServer(initRoutes("..", &GlobalContext{
-		r: pat.New(),
+		r:  pat.New(),
+		db: &testData,
 	}))
 }
 

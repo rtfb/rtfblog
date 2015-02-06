@@ -11,11 +11,11 @@ import (
 )
 
 type Context struct {
-	// TODO: add db here
 	Session    *sessions.Session
 	Router     *pat.Router
 	AdminLogin bool
 	Captcha    *Deck
+	Db         Data
 }
 
 var (
@@ -23,13 +23,14 @@ var (
 	L10n  i18n.TranslateFunc
 )
 
-func NewContext(req *http.Request, router *pat.Router) (*Context, error) {
+func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 	sess, err := store.Get(req, "rtfblog")
 	ctx := &Context{
 		Session:    sess,
 		AdminLogin: sess.Values["adminlogin"] == "yes",
-		Router:     router,
+		Router:     gctx.r,
 		Captcha:    deck,
+		Db:         gctx.db,
 	}
 	return ctx, err
 }
@@ -48,47 +49,47 @@ func InitL10n(l10nDir, userLocale string) {
 }
 
 func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
-	data.hiddenPosts(ctx.AdminLogin)
-	numTotalPosts := data.numPosts()
+	ctx.Db.hiddenPosts(ctx.AdminLogin)
+	numTotalPosts := ctx.Db.numPosts()
 	return map[string]interface{}{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Get("blog_title"),
 		"BlogSubtitle":    conf.Get("blog_descr"),
 		"NeedPagination":  numTotalPosts > PostsPerPage,
 		"ListOfPages":     listOfPages(numTotalPosts, pageNo),
-		"entries":         data.posts(PostsPerPage, offset),
-		"sidebar_entries": data.titles(NumRecentPosts),
+		"entries":         ctx.Db.posts(PostsPerPage, offset),
+		"sidebar_entries": ctx.Db.titles(NumRecentPosts),
 		"AdminLogin":      ctx.AdminLogin,
 	}
 }
 
-func PublishCommentWithInsert(postID int64, commenter Commenter, rawBody string) (string, error) {
-	if data.begin() != nil {
+func PublishCommentWithInsert(db Data, postID int64, commenter Commenter, rawBody string) (string, error) {
+	if db.begin() != nil {
 		return "", nil
 	}
-	commenterID, err := data.insertCommenter(commenter)
+	commenterID, err := db.insertCommenter(commenter)
 	if err != nil {
-		data.rollback()
-		return "", logger.LogIff(err, "data.insertCommenter() failed")
+		db.rollback()
+		return "", logger.LogIff(err, "db.insertCommenter() failed")
 	}
-	commentID, err := data.insertComment(commenterID, postID, rawBody)
+	commentID, err := db.insertComment(commenterID, postID, rawBody)
 	if err != nil {
-		data.rollback()
-		return "", logger.LogIff(err, "data.insertComment() failed")
+		db.rollback()
+		return "", logger.LogIff(err, "db.insertComment() failed")
 	}
-	data.commit()
+	db.commit()
 	return fmt.Sprintf("#comment-%d", commentID), nil
 }
 
-func PublishComment(postID, commenterID int64, body string) (string, error) {
-	if data.begin() != nil {
+func PublishComment(db Data, postID, commenterID int64, body string) (string, error) {
+	if db.begin() != nil {
 		return "", nil
 	}
-	commentID, err := data.insertComment(commenterID, postID, body)
+	commentID, err := db.insertComment(commenterID, postID, body)
 	if err != nil {
-		data.rollback()
-		return "", logger.LogIff(err, "data.insertComment() failed")
+		db.rollback()
+		return "", logger.LogIff(err, "db.insertComment() failed")
 	}
-	data.commit()
+	db.commit()
 	return fmt.Sprintf("#comment-%d", commentID), nil
 }

@@ -11,6 +11,7 @@ import (
 
 var (
 	realDB Data
+	data   Data
 )
 
 func init() {
