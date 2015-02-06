@@ -530,9 +530,9 @@ func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	return nil
 }
 
-func initRoutes(basedir string, gctx *GlobalContext) *pat.Router {
+func initRoutes(gctx *GlobalContext) *pat.Router {
 	r := gctx.r
-	dir := filepath.Join(basedir, conf.Get("staticdir"))
+	dir := filepath.Join(gctx.root, conf.Get("staticdir"))
 	G := "GET"
 	P := "POST"
 	mkHandler := func(f HandlerFunc) *Handler {
@@ -653,12 +653,13 @@ func main() {
 	}
 	logger.Print("The server is listening...")
 	addr := os.Getenv("HOST") + conf.Get("port")
-	logger.LogIf(http.ListenAndServe(addr, initRoutes(bindir, &GlobalContext{
+	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
 		r: pat.New(),
 		db: &DbData{
 			db:            db,
 			tx:            nil,
 			includeHidden: false,
 		},
+		root: bindir,
 	})))
 }

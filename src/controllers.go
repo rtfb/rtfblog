@@ -16,8 +16,9 @@ import (
 )
 
 type GlobalContext struct {
-	r  *pat.Router
-	db Data
+	r    *pat.Router
+	db   Data
+	root string // Root directory where the binary and all our data subdirectories reside
 }
 
 type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error

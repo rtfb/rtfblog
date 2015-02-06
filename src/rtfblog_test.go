@@ -124,9 +124,10 @@ func init() {
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
 	initTestClient()
-	initTestServer(initRoutes("..", &GlobalContext{
-		r:  pat.New(),
-		db: &testData,
+	initTestServer(initRoutes(&GlobalContext{
+		r:    pat.New(),
+		db:   &testData,
+		root: "..",
 	}))
 }
 
