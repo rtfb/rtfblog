@@ -5,17 +5,15 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/nicksnyder/go-i18n/i18n"
 )
 
 type Context struct {
+	GlobalContext
 	Session    *sessions.Session
-	Router     *pat.Router
 	AdminLogin bool
 	Captcha    *Deck
-	Db         Data
 }
 
 var (
@@ -26,11 +24,10 @@ var (
 func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 	sess, err := store.Get(req, "rtfblog")
 	ctx := &Context{
-		Session:    sess,
-		AdminLogin: sess.Values["adminlogin"] == "yes",
-		Router:     gctx.r,
-		Captcha:    deck,
-		Db:         gctx.db,
+		GlobalContext: *gctx,
+		Session:       sess,
+		AdminLogin:    sess.Values["adminlogin"] == "yes",
+		Captcha:       deck,
 	}
 	return ctx, err
 }

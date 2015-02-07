@@ -125,9 +125,9 @@ func init() {
 	testData = TestData{}
 	initTestClient()
 	initTestServer(initRoutes(&GlobalContext{
-		r:    pat.New(),
-		db:   &testData,
-		root: "..",
+		Router: pat.New(),
+		Db:     &testData,
+		Root:   "..",
 	}))
 }
 
