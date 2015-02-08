@@ -114,8 +114,7 @@ func checkPerm(handler *Handler) *Handler {
 				PerformStatus(w, req, http.StatusForbidden)
 				return nil
 			}
-			handler.h(w, req, ctx)
-			return nil
+			return handler.h(w, req, ctx)
 		},
 		c: handler.c,
 	}
