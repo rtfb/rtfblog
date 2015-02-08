@@ -31,6 +31,10 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
+func AddTemplateFunc(name string, f interface{}) {
+	funcs[name] = f
+}
+
 func Tmpl(name string) *template.Template {
 	cachedMutex.Lock()
 	defer cachedMutex.Unlock()
