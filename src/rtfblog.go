@@ -323,7 +323,6 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	postID, idErr := ctx.Db.postID(url)
 	txErr := ctx.Db.begin()
 	if txErr != nil {
-		InternalError(w, req, "SubmitPost: "+txErr.Error())
 		return txErr
 	}
 	if idErr != nil {
@@ -332,20 +331,17 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			newPostID, err := ctx.Db.insertPost(authorID, &e)
 			if err != nil {
 				ctx.Db.rollback()
-				InternalError(w, req, "SubmitPost, !ctx.Db.insertPost: "+err.Error())
 				return err
 			}
 			postID = newPostID
 		} else {
 			ctx.Db.rollback()
-			InternalError(w, req, "SubmitPost, !ctx.Db.postID: "+idErr.Error())
 			return logger.LogIff(idErr, "ctx.Db.postID() failed")
 		}
 	} else {
 		updErr := ctx.Db.updatePost(postID, &e)
 		if updErr != nil {
 			ctx.Db.rollback()
-			InternalError(w, req, "SubmitPost: "+updErr.Error())
 			return updErr
 		}
 	}
@@ -419,8 +415,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	refURL := ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
-		InternalError(w, req, "Server Error: "+err.Error())
-		return logger.LogIff(err, "ctx.Db.postID() failed")
+		return logger.LogIff(err, "ctx.Db.postID('%s') failed", refURL)
 	}
 	commenter := Commenter{
 		Name:    req.FormValue("name"),
@@ -436,7 +431,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		// This is a returning commenter, pass his comment through:
 		commentURL, err := PublishComment(ctx.Db, postID, commenterID, body)
 		if err != nil {
-			InternalError(w, req, "Server Error: "+err.Error())
 			return err
 		}
 		redir = "/" + refURL + commentURL
@@ -448,7 +442,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			if lang == "\"lt\"" {
 				commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
 				if err != nil {
-					InternalError(w, req, "Server Error: "+err.Error())
 					return err
 				}
 				redir = "/" + refURL + commentURL
@@ -464,7 +457,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			}
 			commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
 			if err != nil {
-				InternalError(w, req, "Server Error: "+err.Error())
 				return err
 			}
 			redir = "/" + refURL + commentURL

@@ -42,7 +42,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf := new(httpbuf.Buffer)
 	err = h.h(buf, req, ctx)
 	if err != nil {
-		InternalError(w, req, "buffer err: "+err.Error())
+		InternalError(w, req, "Error in handler: "+err.Error())
 		return
 	}
 	//save the session
