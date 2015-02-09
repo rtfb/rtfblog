@@ -413,11 +413,11 @@ func TestSubmitPost(t *testing.T) {
 	})
 }
 
-func TestUpoadImageHandlesWrongRequest(t *testing.T) {
+func TestUploadImageHandlesWrongRequest(t *testing.T) {
 	postForm(t, "upload_images", &url.Values{
 		"foo": {"bar"},
 	}, func(html string) {
-		T{t}.assertEqual("", html)
+		T{t}.assertEqual("HTTP Error 500", html)
 	})
 }
 
