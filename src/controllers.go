@@ -31,7 +31,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//create the context
 	ctx, err := NewContext(req, h.c)
 	if err != nil {
-		InternalError(w, req, "new context err: "+err.Error())
+		InternalError(ctx, w, req, "new context err: "+err.Error())
 		return
 	}
 	//defer ctx.Close()
@@ -42,12 +42,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf := new(httpbuf.Buffer)
 	err = h.h(buf, req, ctx)
 	if err != nil {
-		InternalError(w, req, "Error in handler: "+err.Error())
+		InternalError(ctx, w, req, "Error in handler: "+err.Error())
 		return
 	}
 	//save the session
 	if err = sessions.Save(req, w); err != nil {
-		InternalError(w, req, "session save err: "+err.Error())
+		InternalError(ctx, w, req, "session save err: "+err.Error())
 		return
 	}
 	buf.Apply(w)
@@ -77,16 +77,16 @@ func logRequest(req *http.Request, sTime time.Time) {
 }
 
 //InternalError is what is called when theres an error processing something
-func InternalError(w http.ResponseWriter, req *http.Request, err string) error {
+func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err string) error {
 	logger.Printf("Error serving request page: %s", err)
-	return PerformStatus(w, req, http.StatusInternalServerError)
+	return PerformStatus(c, w, req, http.StatusInternalServerError)
 }
 
 //PerformStatus runs the passed in status on the request and calls the appropriate block
-func PerformStatus(w http.ResponseWriter, req *http.Request, status int) error {
+func PerformStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
 	if status == 404 || status == 403 {
 		html := fmt.Sprintf("%d.html", status)
-		return Tmpl(html).Execute(w, map[string]interface{}{})
+		return Tmpl(c, html).Execute(w, map[string]interface{}{})
 	}
 	w.Write([]byte(fmt.Sprintf(L10n("HTTP Error %d"), status)))
 	return nil
@@ -111,7 +111,7 @@ func checkPerm(handler *Handler) *Handler {
 	return &Handler{
 		h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			if !ctx.AdminLogin {
-				PerformStatus(w, req, http.StatusForbidden)
+				PerformStatus(ctx, w, req, http.StatusForbidden)
 				return nil
 			}
 			return handler.h(w, req, ctx)

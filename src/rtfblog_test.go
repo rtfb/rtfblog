@@ -110,7 +110,6 @@ func init() {
 	conf = obtainConfiguration("")
 	conf["staticdir"] = "../static"
 	InitL10n("../l10n", "en-US")
-	tmplDir = "../tmpl"
 	logger = bark.CreateFile("tests.log")
 	store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
 	forgeTestUser("testuser", "testpasswd")

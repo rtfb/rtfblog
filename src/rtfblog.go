@@ -120,7 +120,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
 
 func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
-		return Tmpl("main.html").Execute(w, MkBasicData(ctx, 0, 0))
+		return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
 	if post := ctx.Db.post(req.URL.Path[1:]); post != nil {
 		ctx.Captcha.SetNextTask(-1)
@@ -132,9 +132,9 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		// it gets shown
 		task.ID = ""
 		tmplData["CaptchaHtml"] = task
-		return Tmpl("post.html").Execute(w, tmplData)
+		return Tmpl(ctx, "post.html").Execute(w, tmplData)
 	}
-	return PerformStatus(w, req, http.StatusNotFound)
+	return PerformStatus(ctx, w, req, http.StatusNotFound)
 }
 
 func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -145,11 +145,11 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	}
 	pgNo -= 1
 	offset := pgNo * PostsPerPage
-	return Tmpl("main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
+	return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	return Tmpl("admin.html").Execute(w, MkBasicData(ctx, 0, 0))
+	return Tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
 func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -164,7 +164,7 @@ func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			html = html + fmt.Sprintf(format, f)
 		}
 	}
-	return Tmpl("login.html").Execute(w, map[string]interface{}{
+	return Tmpl(ctx, "login.html").Execute(w, map[string]interface{}{
 		"Flashes": template.HTML(html),
 	})
 }
@@ -182,7 +182,7 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"
 	tmplData["all_entries"] = ctx.Db.titlesByTag(tag)
-	return Tmpl("archive.html").Execute(w, tmplData)
+	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
 func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -190,13 +190,13 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData["PageTitle"] = L10n("Archive")
 	tmplData["HeadingText"] = L10n("All posts:")
 	tmplData["all_entries"] = ctx.Db.titles(-1)
-	return Tmpl("archive.html").Execute(w, tmplData)
+	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["all_comments"] = ctx.Db.allComments()
-	return Tmpl("all_comments.html").Execute(w, tmplData)
+	return Tmpl(ctx, "all_comments.html").Execute(w, tmplData)
 }
 
 func makeTagList(tags []*Tag) []string {
@@ -221,7 +221,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	} else {
 		tmplData["post"] = Entry{}
 	}
-	return Tmpl("edit_post.html").Execute(w, tmplData)
+	return Tmpl(ctx, "edit_post.html").Execute(w, tmplData)
 }
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {

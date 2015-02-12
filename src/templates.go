@@ -7,13 +7,16 @@ import (
 	"sync"
 )
 
+const (
+	tmpl = "tmpl"
+)
+
 var (
 	cachedTemplates = map[string]*template.Template{}
 	cachedMutex     sync.Mutex
 	funcs           = template.FuncMap{
 		"dict": dict,
 	}
-	tmplDir = "tmpl"
 )
 
 func dict(values ...interface{}) (map[string]interface{}, error) {
@@ -35,21 +38,22 @@ func AddTemplateFunc(name string, f interface{}) {
 	funcs[name] = f
 }
 
-func Tmpl(name string) *template.Template {
+func Tmpl(c *Context, name string) *template.Template {
 	cachedMutex.Lock()
 	defer cachedMutex.Unlock()
 	if t, ok := cachedTemplates[name]; ok {
 		return t
 	}
+	tmplPath := filepath.Join(c.Root, tmpl)
 	t := template.New("base.html").Funcs(funcs)
 	t = template.Must(t.ParseFiles(
-		filepath.Join(tmplDir, "base.html"),
-		filepath.Join(tmplDir, "sidebar.html"),
-		filepath.Join(tmplDir, "post-title.html"),
-		filepath.Join(tmplDir, "header.html"),
-		filepath.Join(tmplDir, "author.html"),
-		filepath.Join(tmplDir, "captcha.html"),
-		filepath.Join(tmplDir, name),
+		filepath.Join(tmplPath, "base.html"),
+		filepath.Join(tmplPath, "sidebar.html"),
+		filepath.Join(tmplPath, "post-title.html"),
+		filepath.Join(tmplPath, "header.html"),
+		filepath.Join(tmplPath, "author.html"),
+		filepath.Join(tmplPath, "captcha.html"),
+		filepath.Join(tmplPath, name),
 	))
 	cachedTemplates[name] = t
 	return t
