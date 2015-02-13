@@ -528,10 +528,10 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 	G := "GET"
 	P := "POST"
 	mkHandler := func(f HandlerFunc) *Handler {
-		return &Handler{f, gctx}
+		return &Handler{h: f, c: gctx, logRq: true}
 	}
 	mkAdminHandler := func(f HandlerFunc) *Handler {
-		return checkPerm(&Handler{f, gctx})
+		return checkPerm(&Handler{h: f, c: gctx, logRq: true})
 	}
 	r.Add(G, "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
 	r.Add(G, "/login", mkHandler(LoginForm)).Name("login")
@@ -545,7 +545,7 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 	r.Add(G, "/edit_post", mkAdminHandler(EditPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(LoadComments)).Name("load_comments")
 	r.Add(G, "/feeds/rss.xml", mkHandler(RssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", mkHandler(ServeFavicon)).Name("favicon")
+	r.Add(G, "/favicon.ico", &Handler{ServeFavicon, gctx, false}).Name("favicon")
 	r.Add(G, "/comment_submit", mkHandler(CommentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(DeleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(DeletePost)).Name("delete_post")

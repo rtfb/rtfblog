@@ -21,13 +21,16 @@ type GlobalContext struct {
 type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error
 
 type Handler struct {
-	h HandlerFunc
-	c *GlobalContext
+	h     HandlerFunc
+	c     *GlobalContext
+	logRq bool
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	tm := time.Now().UTC()
-	defer logRequest(req, tm)
+	startTime := time.Now().UTC()
+	if h.logRq {
+		defer logRequest(req, startTime)
+	}
 	//create the context
 	ctx, err := NewContext(req, h.c)
 	if err != nil {
@@ -60,16 +63,10 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func logRequest(req *http.Request, sTime time.Time) {
 	var logEntry bytes.Buffer
-	requestPath := req.URL.Path
-	// TODO: remove this hack. Make Handler configurable logging-wise, specify
-	// it when setting up the routes
-	if requestPath == "/favicon.ico" {
-		return
-	}
 	duration := time.Now().Sub(sTime)
 	ip := GetIPAddress(req)
 	format := "%s - \033[32;1m %s %s\033[0m - %v"
-	fmt.Fprintf(&logEntry, format, ip, req.Method, requestPath, duration)
+	fmt.Fprintf(&logEntry, format, ip, req.Method, req.URL.Path, duration)
 	if len(req.Form) > 0 {
 		fmt.Fprintf(&logEntry, " - \033[37;1mParams: %v\033[0m\n", req.Form)
 	}
