@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/httpbuf"
+	"github.com/rtfb/httputil"
 )
 
 type GlobalContext struct {
@@ -64,7 +65,7 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 func logRequest(req *http.Request, sTime time.Time) {
 	var logEntry bytes.Buffer
 	duration := time.Now().Sub(sTime)
-	ip := GetIPAddress(req)
+	ip := httputil.GetIPAddress(req)
 	format := "%s - \033[32;1m %s %s\033[0m - %v"
 	fmt.Fprintf(&logEntry, format, ip, req.Method, req.URL.Path, duration)
 	if len(req.Form) > 0 {

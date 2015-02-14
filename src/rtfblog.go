@@ -25,6 +25,7 @@ import (
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 	"github.com/rtfb/bark"
+	"github.com/rtfb/httputil"
 	email "github.com/ungerik/go-mail"
 )
 
@@ -88,7 +89,7 @@ func listOfPages(numPosts, currPage int) template.HTML {
 }
 
 func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
-	url := AddProtocol(GetHost(req), "http")
+	url := httputil.AddProtocol(httputil.GetHost(req), "http")
 	blogTitle := conf.Get("blog_title")
 	descr := conf.Get("blog_descr")
 	author := conf.Get("author")
@@ -412,7 +413,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 }
 
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	refURL := ExtractReferer(req)
+	refURL := httputil.ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
 		return logger.LogIff(err, "ctx.Db.postID('%s') failed", refURL)
@@ -420,8 +421,8 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	commenter := Commenter{
 		Name:    req.FormValue("name"),
 		Email:   req.FormValue("email"),
-		Website: AddProtocol(req.FormValue("website"), "http"),
-		IP:      GetIPAddress(req),
+		Website: httputil.AddProtocol(req.FormValue("website"), "http"),
+		IP:      httputil.GetIPAddress(req),
 	}
 	body := req.FormValue("text")
 	commenterID, err := ctx.Db.commenter(commenter)
@@ -467,7 +468,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		return nil
 	}
 	if conf.Get("notif_send_email") == "true" {
-		url := GetHost(req) + redir
+		url := httputil.GetHost(req) + redir
 		subj, body := mkCommentNotifEmail(commenter, req.FormValue("text"), url, refURL)
 		go SendEmail(subj, body)
 	}
