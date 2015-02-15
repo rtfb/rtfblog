@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -10,7 +9,6 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/httpbuf"
-	"github.com/rtfb/httputil"
 )
 
 type GlobalContext struct {
@@ -30,7 +28,7 @@ type Handler struct {
 func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now().UTC()
 	if h.logRq {
-		defer logRequest(req, startTime)
+		defer logger.LogRq(req, startTime)
 	}
 	//create the context
 	ctx, err := NewContext(req, h.c)
@@ -60,18 +58,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	http.ServeFile(w, req, filepath.Join(conf.Get("staticdir"), "robots.txt"))
 	return nil
-}
-
-func logRequest(req *http.Request, sTime time.Time) {
-	var logEntry bytes.Buffer
-	duration := time.Now().Sub(sTime)
-	ip := httputil.GetIPAddress(req)
-	format := "%s - \033[32;1m %s %s\033[0m - %v"
-	fmt.Fprintf(&logEntry, format, ip, req.Method, req.URL.Path, duration)
-	if len(req.Form) > 0 {
-		fmt.Fprintf(&logEntry, " - \033[37;1mParams: %v\033[0m\n", req.Form)
-	}
-	logger.Print(logEntry.String())
 }
 
 //InternalError is what is called when theres an error processing something
