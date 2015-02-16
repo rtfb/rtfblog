@@ -571,6 +571,7 @@ func obtainConfiguration(basedir string) SrvConfig {
 		"cookie_secret":    "dont-forget-to-change-me",
 		"author":           "Mr. Blog Author",
 		"email":            "blog_author@ema.il",
+		"language":         "en-US",
 	}
 	conf := hardcodedConf
 	home, err := GetHomeDir()
@@ -631,7 +632,7 @@ func main() {
 	bindir := Bindir()
 	os.Chdir(bindir)
 	conf = obtainConfiguration(bindir)
-	InitL10n(bindir, "lt-LT") // TODO: move lt-LT to config
+	InitL10n(bindir, conf.Get("language"))
 	logger = bark.CreateFile(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
 	db, err := sql.Open("postgres", getDBConnString())
