@@ -631,7 +631,7 @@ func main() {
 	bindir := Bindir()
 	os.Chdir(bindir)
 	conf = obtainConfiguration(bindir)
-	InitL10n("./l10n", "lt-LT")
+	InitL10n(bindir, "lt-LT") // TODO: move lt-LT to config
 	logger = bark.CreateFile(conf.Get("log"))
 	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
 	db, err := sql.Open("postgres", getDBConnString())

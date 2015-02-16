@@ -107,9 +107,10 @@ func forgeTestUser(uname, passwd string) {
 }
 
 func init() {
+	root := ".."
 	conf = obtainConfiguration("")
-	conf["staticdir"] = "../static"
-	InitL10n("../l10n", "en-US")
+	conf["staticdir"] = filepath.Join(root, "static")
+	InitL10n(root, "en-US")
 	logger = bark.CreateFile("tests.log")
 	store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
 	forgeTestUser("testuser", "testpasswd")
@@ -126,7 +127,7 @@ func init() {
 	initTestServer(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     &testData,
-		Root:   "..",
+		Root:   root,
 	}))
 }
 

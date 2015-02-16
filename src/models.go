@@ -16,6 +16,10 @@ type Context struct {
 	Captcha    *Deck
 }
 
+const (
+	l10n = "l10n"
+)
+
 var (
 	store sessions.Store
 	L10n  i18n.TranslateFunc
@@ -36,7 +40,8 @@ func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 // l10nDir is a name of a directory with translations.
 // userLocale specifies a locale preferred by the user (a preference or accept
 // header or language cookie).
-func InitL10n(l10nDir, userLocale string) {
+func InitL10n(root, userLocale string) {
+	l10nDir := filepath.Join(root, l10n)
 	i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "en-US.all.json"))
 	i18n.MustLoadTranslationFile(filepath.Join(l10nDir, "lt-LT.all.json"))
 	defaultLocale := "en-US" // known valid locale
