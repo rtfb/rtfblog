@@ -23,6 +23,7 @@ import (
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/httputil"
@@ -634,22 +635,20 @@ func main() {
 	conf = obtainConfiguration(bindir)
 	InitL10n(bindir, conf.Get("language"))
 	logger = bark.CreateFile(conf.Get("log"))
-	db, err := sql.Open("postgres", getDBConnString())
-	if err != nil {
-		logger.LogIff(err, "sql.Open")
-		return
-	}
+	db, err := gorm.Open("postgres", getDBConnString())
 	defer db.Close()
-	err = db.Ping()
+	err = db.DB().Ping()
 	if err != nil {
 		panic(err)
 	}
+	db.SingularTable(true)
 	logger.Print("The server is listening...")
 	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db: &DbData{
-			db:            db,
+			gormDB:        &db,
+			db:            db.DB(),
 			tx:            nil,
 			includeHidden: false,
 		},

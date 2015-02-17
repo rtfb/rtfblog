@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"runtime"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Data interface {
@@ -34,6 +36,7 @@ type Data interface {
 }
 
 type DbData struct {
+	gormDB        *gorm.DB
 	db            *sql.DB
 	tx            *sql.Tx
 	includeHidden bool

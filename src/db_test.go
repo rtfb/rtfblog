@@ -1,11 +1,11 @@
 package main
 
 import (
-	"database/sql"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
 
@@ -25,16 +25,18 @@ func init() {
 		return
 	}
 	conf["database"] = config
-	db, err := sql.Open("postgres", getDBConnString())
+	db, err := gorm.Open("postgres", getDBConnString())
 	if err != nil {
 		panic(err)
 	}
-	err = db.Ping()
+	err = db.DB().Ping()
 	if err != nil {
 		panic(err)
 	}
+	db.SingularTable(true)
 	realDB = &DbData{
-		db:            db,
+		gormDB:        &db,
+		db:            db.DB(),
 		tx:            nil,
 		includeHidden: false,
 	}
