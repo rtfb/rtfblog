@@ -334,11 +334,8 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 }
 
 func (dd *DbData) author(username string) (*Author, error) {
-	row := dd.db.QueryRow(`select passwd, full_name, email, www
-                           from author where disp_name=$1`, username)
 	var a Author
-	a.UserName = username
-	err := row.Scan(&a.Passwd, &a.FullName, &a.Email, &a.Www)
+	err := dd.gormDB.Where("disp_name = ?", username).First(&a).Error
 	return &a, err
 }
 

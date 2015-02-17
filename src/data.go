@@ -18,11 +18,12 @@ type Tag struct {
 }
 
 type Author struct {
-	UserName string
-	Passwd   string
-	FullName string
-	Email    string
-	Www      string
+	Id       int64
+	UserName string `gorm:"column:disp_name"`
+	Passwd   string `gorm:"column:passwd"`
+	FullName string `gorm:"column:full_name"`
+	Email    string `gorm:"column:email"`
+	Www      string `gorm:"column:www"`
 }
 
 type Commenter struct {
