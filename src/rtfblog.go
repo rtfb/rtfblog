@@ -646,7 +646,7 @@ func main() {
 		panic(err)
 	}
 	logger.Print("The server is listening...")
-	addr := os.Getenv("HOST") + conf.Get("port")
+	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db: &DbData{
