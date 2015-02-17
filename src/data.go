@@ -18,6 +18,12 @@ type Tag struct {
 	Name string `gorm:"column:tag"`
 }
 
+type TagMap struct {
+	Id      int64
+	TagID   int64 `gorm:"column:tag_id"`
+	EntryID int64 `gorm:"column:post_id"`
+}
+
 type Author struct {
 	Id       int64
 	UserName string `gorm:"column:disp_name"`
@@ -94,4 +100,8 @@ func (e Entry) TagsList() string {
 		parts = append(parts, t.Name)
 	}
 	return strings.Join(parts, ", ")
+}
+
+func (t TagMap) TableName() string {
+	return "tagmap"
 }

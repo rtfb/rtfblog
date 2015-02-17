@@ -87,7 +87,7 @@ func (dd *DbData) rollback() {
 }
 
 func (dd *DbData) post(url string) *Entry {
-	posts := loadPosts(dd.db, -1, -1, url, dd.includeHidden)
+	posts := loadPosts(dd, -1, -1, url, dd.includeHidden)
 	if len(posts) != 1 {
 		msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
 		logger.Println(fmt.Sprintf(msg, url, len(posts)))
@@ -107,7 +107,7 @@ func (dd *DbData) postID(url string) (id int64, err error) {
 }
 
 func (dd *DbData) posts(limit, offset int) []*Entry {
-	return loadPosts(dd.db, limit, offset, "", dd.includeHidden)
+	return loadPosts(dd, limit, offset, "", dd.includeHidden)
 }
 
 func (dd *DbData) numPosts() int {
@@ -320,15 +320,16 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 	if dd.tx == nil {
 		return notInXactionErr()
 	}
-	delStmt, _ := dd.tx.Prepare("delete from tagmap where post_id=$1")
-	defer delStmt.Close()
-	delStmt.Exec(postID)
+	dd.gormDB.Where("post_id = ?", postID).Delete(TagMap{})
 	for _, t := range tags {
 		tagID, err := insertOrGetTagID(dd.gormDB, t)
 		if err != nil {
 			return err
 		}
-		updateTagMap(dd.tx, postID, tagID)
+		err = updateTagMap(dd.gormDB, postID, tagID)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -363,11 +364,11 @@ func (dd *DbData) updateComment(id, text string) error {
 	return nil
 }
 
-func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []*Entry {
-	if db == nil {
+func loadPosts(dd *DbData, limit, offset int, url string, includeHidden bool) []*Entry {
+	if dd.db == nil {
 		return nil
 	}
-	data, err := queryPosts(db, limit, offset, url, includeHidden)
+	data, err := queryPosts(dd, limit, offset, url, includeHidden)
 	if err != nil {
 		logger.Log(err)
 		return nil
@@ -375,7 +376,7 @@ func loadPosts(db *sql.DB, limit, offset int, url string, includeHidden bool) []
 	return data
 }
 
-func queryPosts(db *sql.DB, limit, offset int,
+func queryPosts(dd *DbData, limit, offset int,
 	url string, includeHidden bool) (entries []*Entry, err error) {
 	postURLWhereClause := ""
 	if url != "" {
@@ -402,7 +403,7 @@ func queryPosts(db *sql.DB, limit, offset int,
                  %s %s`
 	query := fmt.Sprintf(queryFmt, postURLWhereClause, postHiddenWhereClause,
 		limitClause, offsetClause)
-	rows, err := db.Query(query)
+	rows, err := dd.db.Query(query)
 	if err != nil {
 		logger.Log(err)
 		return
@@ -420,8 +421,8 @@ func queryPosts(db *sql.DB, limit, offset int,
 		}
 		entry.Body = sanitizeTrustedHTML(mdToHTML(entry.RawBody))
 		entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
-		entry.Tags = queryTags(db, id)
-		entry.Comments = queryComments(db, id)
+		entry.Tags = queryTags(dd.gormDB, id)
+		entry.Comments = queryComments(dd.db, id)
 		entries = append(entries, entry)
 	}
 	err = rows.Err()
@@ -429,35 +430,12 @@ func queryPosts(db *sql.DB, limit, offset int,
 	return
 }
 
-func queryTags(db *sql.DB, postID int64) []*Tag {
-	stmt, err := db.Prepare(`select t.tag
-                             from tag as t, tagmap as tm
-                             where t.id = tm.tag_id
-                                   and tm.post_id = $1`)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(postID)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer rows.Close()
-	var tags []*Tag
-	for rows.Next() {
-		tag := new(Tag)
-		err = rows.Scan(&tag.Name)
-		if err != nil {
-			logger.Log(err)
-			continue
-		}
-		tags = append(tags, tag)
-	}
-	err = rows.Err()
-	logger.LogIff(err, "error scanning tag row")
-	return tags
+func queryTags(db *gorm.DB, postID int64) []*Tag {
+	var results []*Tag
+	join := "inner join tagmap on tagmap.tag_id = tag.id"
+	tables := db.Table("tag").Select("tag.tag").Joins(join)
+	tables.Where("tagmap.post_id = ?", postID).Scan(&results)
+	return results // TODO: err
 }
 
 func (dd *DbData) queryAllTags() []*Tag {
@@ -538,11 +516,6 @@ func insertOrGetTagID(db *gorm.DB, tag *Tag) (tagID int64, err error) {
 	}
 }
 
-func updateTagMap(xaction *sql.Tx, postID int64, tagID int64) {
-	stmt, err := xaction.Prepare(`insert into tagmap
-                                  (tag_id, post_id)
-                                  values ($1, $2)`)
-	logger.LogIff(err, "Failed to prepare insrt tagmap stmt")
-	defer stmt.Close()
-	stmt.Exec(tagID, postID)
+func updateTagMap(db *gorm.DB, postID int64, tagID int64) error {
+	return db.Save(&TagMap{TagID: tagID, EntryID: postID}).Error
 }
