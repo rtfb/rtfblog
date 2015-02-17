@@ -14,7 +14,8 @@ const (
 )
 
 type Tag struct {
-	Name string
+	Id   int64
+	Name string `gorm:"column:tag"`
 }
 
 type Author struct {

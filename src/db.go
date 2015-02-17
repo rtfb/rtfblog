@@ -324,7 +324,7 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 	defer delStmt.Close()
 	delStmt.Exec(postID)
 	for _, t := range tags {
-		tagID, err := insertOrGetTagID(dd.tx, t)
+		tagID, err := insertOrGetTagID(dd.gormDB, t)
 		if err != nil {
 			return err
 		}
@@ -523,32 +523,15 @@ func queryComments(db *sql.DB, postID int64) []*Comment {
 	return comments
 }
 
-func insertOrGetTagID(xaction *sql.Tx, tag *Tag) (tagID int64, err error) {
-	query, err := xaction.Prepare("select id from tag where tag=$1")
-	if err != nil {
-		logger.LogIff(err, "Failed to prepare select tag stmt")
-		return
-	}
-	defer query.Close()
-	err = query.QueryRow(tag.Name).Scan(&tagID)
+func insertOrGetTagID(db *gorm.DB, tag *Tag) (tagID int64, err error) {
+	var result Tag
+	err = db.Where("tag = ?", tag.Name).First(&result).Error
 	switch err {
 	case nil:
-		return
-	case sql.ErrNoRows:
-		insertTagSql, err := xaction.Prepare(`insert into tag
-                                              (tag)
-                                              values ($1)
-                                              returning id`)
-		if err != nil {
-			logger.LogIff(err, "Failed to prepare insert tag stmt")
-			return -1, err
-		}
-		defer insertTagSql.Close()
-		err = insertTagSql.QueryRow(tag.Name).Scan(&tagID)
-		if err != nil {
-			logger.LogIff(err, "Failed to insert tag")
-		}
-		return tagID, err
+		return result.Id, nil
+	case gorm.RecordNotFound:
+		err = db.Save(tag).Error
+		return tag.Id, err
 	default:
 		logger.Log(err)
 		return -1, err
