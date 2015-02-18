@@ -34,11 +34,12 @@ type Author struct {
 }
 
 type Commenter struct {
+	Id        int64
 	Name      string
 	Email     string
-	EmailHash string
-	Website   string
-	IP        string
+	EmailHash string `sql:"-"`
+	Website   string `gorm:"column:www"`
+	IP        string `gorm:"column:ip"`
 }
 
 type Comment struct {

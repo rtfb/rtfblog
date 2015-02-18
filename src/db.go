@@ -23,7 +23,7 @@ type Data interface {
 	deleteComment(id string) error
 	deletePost(url string) error
 	updateComment(id, text string) error
-	commenter(c Commenter) (id int64, err error)
+	commenterID(c Commenter) (id int64, err error)
 	insertCommenter(c Commenter) (id int64, err error)
 	insertComment(commenterID, postID int64, body string) (id int64, err error)
 	insertPost(author int64, e *Entry) (id int64, err error)
@@ -234,34 +234,15 @@ func (dd *DbData) allComments() []*CommentWithPostTitle {
 	return comments
 }
 
-func (dd *DbData) commenter(c Commenter) (id int64, err error) {
-	id = -1
-	query, err := dd.db.Prepare(`select c.id from commenter as c
-                                 where c.name = $1
-                                   and c.email = $2
-                                   and c.www = $3`)
-	if err != nil {
-		logger.Log(err)
-		return
-	}
-	defer query.Close()
-	err = query.QueryRow(c.Name, c.Email, c.Website).Scan(&id)
-	logger.LogIf(err)
+func (dd *DbData) commenterID(c Commenter) (id int64, err error) {
+	where := "name = ? and email = ? and www = ?"
+	err = dd.gormDB.Select("id").Where(where, c.Name, c.Email, c.Website).Scan(&id).Error
 	return
 }
 
 func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
-	if dd.tx == nil {
-		return -1, notInXactionErr()
-	}
-	insertCommenter, _ := dd.tx.Prepare(`insert into commenter
-                                         (name, email, www, ip)
-                                         values ($1, $2, $3, $4)
-                                         returning id`)
-	defer insertCommenter.Close()
-	err = insertCommenter.QueryRow(c.Name, c.Email, c.Website, c.IP).Scan(&id)
-	logger.LogIff(err, "Failed to insert commenter")
-	return
+	err = dd.gormDB.Save(&c).Error
+	return c.Id, err
 }
 
 func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {

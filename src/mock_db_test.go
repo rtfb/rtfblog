@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/jinzhu/gorm"
 )
 
 type CallSpec struct {
@@ -188,12 +190,12 @@ func (td *TestData) insertCommenter(c Commenter) (id int64, err error) {
 	return
 }
 
-func (td *TestData) commenter(c Commenter) (id int64, err error) {
+func (td *TestData) commenterID(c Commenter) (id int64, err error) {
 	tc := testComm[0]
 	if c.Name == tc.Name && c.Email == tc.Email && c.Website == tc.Website {
 		return 1, nil
 	}
-	return -1, sql.ErrNoRows
+	return -1, gorm.RecordNotFound
 }
 
 func (td *TestData) insertComment(commenterID, postID int64, body string) (id int64, err error) {

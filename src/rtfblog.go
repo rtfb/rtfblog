@@ -426,7 +426,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		IP:      httputil.GetIPAddress(req),
 	}
 	body := req.FormValue("text")
-	commenterID, err := ctx.Db.commenter(commenter)
+	commenterID, err := ctx.Db.commenterID(commenter)
 	redir := ""
 	captchaID := req.FormValue("captcha-id")
 	if err == nil {
@@ -436,7 +436,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			return err
 		}
 		redir = "/" + refURL + commentURL
-	} else if err == sql.ErrNoRows {
+	} else if err == gorm.RecordNotFound {
 		if captchaID == "" {
 			lang := DetectLanguageWithTimeout(body)
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
