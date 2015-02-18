@@ -16,6 +16,7 @@ import (
 	"runtime/debug"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
@@ -31,7 +32,7 @@ type T struct {
 
 var (
 	testComm = []*Comment{{Commenter{0, "N", "@", "@h", "http://w", "IP"},
-		"Body", "Raw", "time", "testid"}}
+		0, "Body", "Raw", "time", time.Now().Unix(), "testid"}}
 	testPosts  = make([]*Entry, 0)
 	testAuthor = new(Author)
 )

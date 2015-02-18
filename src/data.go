@@ -44,10 +44,12 @@ type Commenter struct {
 
 type Comment struct {
 	Commenter
-	Body      template.HTML
-	RawBody   string
-	Time      string
-	CommentID string
+	CommenterID int64         `gorm:"column:commenter_id"`
+	Body        template.HTML `sql:"-"`
+	RawBody     string        `gorm:"column:body"`
+	Time        string        `sql:"-"`
+	Timestamp   int64         `gorm:"column:timestamp"`
+	CommentID   string        `gorm:"column:id; primary_key:yes"`
 }
 
 type CommentWithPostTitle struct {

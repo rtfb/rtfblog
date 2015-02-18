@@ -403,7 +403,7 @@ func queryPosts(dd *DbData, limit, offset int,
 		entry.Body = sanitizeTrustedHTML(mdToHTML(entry.RawBody))
 		entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
 		entry.Tags = queryTags(dd.gormDB, id)
-		entry.Comments = queryComments(dd.db, id)
+		entry.Comments = queryComments(dd.gormDB, id)
 		entries = append(entries, entry)
 	}
 	err = rows.Err()
@@ -447,38 +447,19 @@ func (dd *DbData) queryAllTags() []*Tag {
 	return tags
 }
 
-func queryComments(db *sql.DB, postID int64) []*Comment {
-	stmt, err := db.Prepare(`select a.name, a.email, a.www, a.ip,
-                                    c.id, c.timestamp, c.body
-                             from commenter as a, comment as c
-                             where a.id = c.commenter_id
-                                   and c.post_id = $1
-                             order by c.timestamp asc`)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer stmt.Close()
-	data, err := stmt.Query(postID)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer data.Close()
+func queryComments(db *gorm.DB, postID int64) []*Comment {
 	var comments []*Comment
-	for data.Next() {
-		comment := new(Comment)
-		var unixDate int64
-		err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
-			&comment.CommentID, &unixDate, &comment.RawBody)
-		logger.LogIff(err, "error scanning comment row")
-		comment.EmailHash = Md5Hash(comment.Email)
-		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
-		comments = append(comments, comment)
+	join := "inner join commenter on comment.commenter_id = commenter.id"
+	order := "timestamp asc"
+	tables := db.Table("comment").Select("*").Joins(join)
+	rows := tables.Where("post_id = ?", postID).Order(order)
+	err := rows.Scan(&comments).Error
+	logger.LogIff(err, "error querying comments")
+	for _, c := range comments {
+		c.EmailHash = Md5Hash(c.Email)
+		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
+		c.Body = sanitizeHTML(mdToHTML(c.RawBody))
 	}
-	err = data.Err()
-	logger.LogIff(err, "error scanning comment row")
 	return comments
 }
 
