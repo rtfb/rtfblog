@@ -112,7 +112,6 @@ func init() {
 	conf["staticdir"] = filepath.Join(root, "static")
 	InitL10n(root, "en-US")
 	logger = bark.CreateFile("tests.log")
-	store = sessions.NewCookieStore([]byte("aaabbbcccddd"))
 	forgeTestUser("testuser", "testpasswd")
 	for i := 1; i <= 11; i++ {
 		testPosts = append(testPosts, mkTestEntry(i, false))
@@ -128,6 +127,7 @@ func init() {
 		Router: pat.New(),
 		Db:     &testData,
 		Root:   root,
+		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
 	}))
 }
 

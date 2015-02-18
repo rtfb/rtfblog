@@ -21,12 +21,11 @@ const (
 )
 
 var (
-	store sessions.Store
-	L10n  i18n.TranslateFunc
+	L10n i18n.TranslateFunc
 )
 
 func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
-	sess, err := store.Get(req, "rtfblog")
+	sess, err := gctx.Store.Get(req, "rtfblog")
 	ctx := &Context{
 		GlobalContext: *gctx,
 		Session:       sess,

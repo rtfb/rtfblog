@@ -634,7 +634,6 @@ func main() {
 	conf = obtainConfiguration(bindir)
 	InitL10n(bindir, conf.Get("language"))
 	logger = bark.CreateFile(conf.Get("log"))
-	store = sessions.NewCookieStore([]byte(conf.Get("cookie_secret")))
 	db, err := sql.Open("postgres", getDBConnString())
 	if err != nil {
 		logger.LogIff(err, "sql.Open")
@@ -654,6 +653,7 @@ func main() {
 			tx:            nil,
 			includeHidden: false,
 		},
-		Root: bindir,
+		Root:  bindir,
+		Store: sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),
 	})))
 }

@@ -15,6 +15,7 @@ type GlobalContext struct {
 	Router *pat.Router
 	Db     Data
 	Root   string // Root directory where the binary and all our data subdirectories reside
+	Store  sessions.Store
 }
 
 type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error
