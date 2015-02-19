@@ -65,6 +65,7 @@ type EntryLink struct {
 
 type Entry struct {
 	EntryLink
+	Id       int64
 	Author   string
 	Date     string
 	Body     template.HTML

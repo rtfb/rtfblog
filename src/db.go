@@ -96,14 +96,11 @@ func (dd *DbData) post(url string) *Entry {
 	return posts[0]
 }
 
-func (dd *DbData) postID(url string) (id int64, err error) {
-	query, err := dd.db.Prepare("select id from post where url = $1")
-	if err != nil {
-		return
-	}
-	defer query.Close()
-	err = query.QueryRow(url).Scan(&id)
-	return
+func (dd *DbData) postID(url string) (int64, error) {
+	var post Entry
+	rows := dd.gormDB.Table("post").Where("url = ?", url).Select("id")
+	err := rows.First(&post).Error
+	return post.Id, err
 }
 
 func (dd *DbData) posts(limit, offset int) []*Entry {
