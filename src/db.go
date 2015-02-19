@@ -111,21 +111,13 @@ func (dd *DbData) posts(limit, offset int) []*Entry {
 }
 
 func (dd *DbData) numPosts() int {
-	selectSql := "select count(*) from post as p"
-	if !dd.includeHidden {
-		selectSql = selectSql + " where p.hidden=FALSE"
+	var count int
+	if dd.includeHidden {
+		dd.gormDB.Table("post").Count(&count)
+	} else {
+		dd.gormDB.Table("post").Where("hidden=?", false).Count(&count)
 	}
-	rows, err := dd.db.Query(selectSql)
-	if err != nil {
-		logger.Log(err)
-		return 0
-	}
-	defer rows.Close()
-	num := 0
-	if rows.Next() {
-		rows.Scan(&num)
-	}
-	return num
+	return count
 }
 
 func (dd *DbData) titles(limit int) (links []*EntryLink) {
