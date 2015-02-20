@@ -11,6 +11,8 @@ const (
 	tmpl = "tmpl"
 )
 
+type TmplMap map[string]interface{}
+
 var (
 	cachedTemplates = map[string]*template.Template{}
 	cachedMutex     sync.Mutex
@@ -19,11 +21,11 @@ var (
 	}
 )
 
-func dict(values ...interface{}) (map[string]interface{}, error) {
+func dict(values ...interface{}) (TmplMap, error) {
 	if len(values)%2 != 0 {
 		return nil, errors.New("invalid dict call")
 	}
-	dict := make(map[string]interface{}, len(values)/2)
+	dict := make(TmplMap, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {

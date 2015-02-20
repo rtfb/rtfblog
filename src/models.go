@@ -48,10 +48,10 @@ func InitL10n(root, userLocale string) {
 	AddTemplateFunc("L10n", L10n)
 }
 
-func MkBasicData(ctx *Context, pageNo, offset int) map[string]interface{} {
+func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	ctx.Db.hiddenPosts(ctx.AdminLogin)
 	numTotalPosts := ctx.Db.numPosts()
-	return map[string]interface{}{
+	return TmplMap{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Get("blog_title"),
 		"BlogSubtitle":    conf.Get("blog_descr"),

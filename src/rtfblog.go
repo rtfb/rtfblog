@@ -165,7 +165,7 @@ func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			html = html + fmt.Sprintf(format, f)
 		}
 	}
-	return Tmpl(ctx, "login.html").Execute(w, map[string]interface{}{
+	return Tmpl(ctx, "login.html").Execute(w, TmplMap{
 		"Flashes": template.HTML(html),
 	})
 }

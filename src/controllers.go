@@ -71,7 +71,7 @@ func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err str
 func PerformStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
 	if status == 404 || status == 403 {
 		html := fmt.Sprintf("%d.html", status)
-		return Tmpl(c, html).Execute(w, map[string]interface{}{})
+		return Tmpl(c, html).Execute(w, TmplMap{})
 	}
 	w.Write([]byte(fmt.Sprintf(L10n("HTTP Error %d"), status)))
 	return nil
