@@ -94,12 +94,17 @@ type EntryLink struct {
 type Entry struct {
 	EntryLink
 	Id       int64
-	Author   string
-	Date     string
-	Body     template.HTML
-	RawBody  string
-	Tags     []*Tag
-	Comments []*Comment
+	Author   string        `gorm:"column:disp_name"`
+	Date     string        `sql:"-"`
+	UnixDate int64         `gorm:"column:date"`
+	Body     template.HTML `sql:"-"`
+	RawBody  string        `gorm:"column:body"`
+	Tags     []*Tag        `sql:"-"`
+	Comments []*Comment    `sql:"-"`
+}
+
+func (e Entry) TableName() string {
+	return "post"
 }
 
 func (e Entry) HasTags() bool {

@@ -274,58 +274,28 @@ func loadPosts(dd *DbData, limit, offset int, url string, includeHidden bool) []
 	return data
 }
 
-func queryPosts(dd *DbData, limit, offset int,
-	url string, includeHidden bool) (entries []*Entry, err error) {
-	postURLWhereClause := ""
-	if url != "" {
-		postURLWhereClause = fmt.Sprintf("and p.url='%s'", url)
-	}
-	postHiddenWhereClause := ""
+func queryPosts(dd *DbData, limit, offset int, url string,
+	includeHidden bool) ([]*Entry, error) {
+	var results []*Entry
+	cols := `author.disp_name, post.id, post.title, post.date, post.body,
+		post.url, post.hidden`
+	join := "inner join author on post.author_id=author.id"
+	posts := dd.gormDB.Table("post").Select(cols).Joins(join)
 	if !includeHidden {
-		postHiddenWhereClause = "and p.hidden=FALSE"
+		posts = posts.Where("hidden=?", false)
 	}
-	limitClause := ""
-	if limit >= 0 {
-		limitClause = fmt.Sprintf("limit %d", limit)
+	if url != "" {
+		posts = posts.Where("url=?", url)
 	}
-	offsetClause := ""
-	if offset > 0 {
-		offsetClause = fmt.Sprintf("offset %d", offset)
+	rows := posts.Order("date desc").Limit(limit).Offset(offset)
+	err := rows.Scan(&results).Error
+	for _, p := range results {
+		p.Body = sanitizeTrustedHTML(mdToHTML(p.RawBody))
+		p.Date = time.Unix(p.UnixDate, 0).Format("2006-01-02")
+		p.Tags = queryTags(dd.gormDB, p.Id)
+		p.Comments = queryComments(dd.gormDB, p.Id)
 	}
-	queryFmt := `select a.disp_name, p.id, p.title, p.date, p.body,
-                        p.url, p.hidden
-                 from author as a, post as p
-                 where a.id=p.author_id
-                 %s %s
-                 order by p.date desc
-                 %s %s`
-	query := fmt.Sprintf(queryFmt, postURLWhereClause, postHiddenWhereClause,
-		limitClause, offsetClause)
-	rows, err := dd.db.Query(query)
-	if err != nil {
-		logger.Log(err)
-		return
-	}
-	defer rows.Close()
-	for rows.Next() {
-		entry := new(Entry)
-		var id int64
-		var unixDate int64
-		err = rows.Scan(&entry.Author, &id, &entry.Title, &unixDate,
-			&entry.RawBody, &entry.URL, &entry.Hidden)
-		if err != nil {
-			logger.Log(err)
-			continue
-		}
-		entry.Body = sanitizeTrustedHTML(mdToHTML(entry.RawBody))
-		entry.Date = time.Unix(unixDate, 0).Format("2006-01-02")
-		entry.Tags = queryTags(dd.gormDB, id)
-		entry.Comments = queryComments(dd.gormDB, id)
-		entries = append(entries, entry)
-	}
-	err = rows.Err()
-	logger.LogIff(err, "error scanning post row")
-	return
+	return results, err
 }
 
 func queryTags(db *gorm.DB, postID int64) []*Tag {
