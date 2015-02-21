@@ -17,7 +17,7 @@ type Data interface {
 	posts(limit, offset int) []*Entry
 	titles(limit int) ([]EntryLink, error)
 	titlesByTag(tag string) ([]EntryLink, error)
-	allComments() []*CommentWithPostTitle
+	allComments() ([]*CommentWithPostTitle, error)
 	numPosts() int
 	author(username string) (*Author, error)
 	deleteComment(id string) error
@@ -141,40 +141,23 @@ func (dd *DbData) titlesByTag(tag string) ([]EntryLink, error) {
 	return results, err
 }
 
-func (dd *DbData) allComments() []*CommentWithPostTitle {
-	stmt, err := dd.db.Prepare(`select a.name, a.email, a.www, a.ip,
-                                       c.id, c.timestamp, c.body,
-                                       p.title, p.url
-                                from commenter as a, comment as c, post as p
-                                where a.id = c.commenter_id
-                                      and c.post_id = p.id
-                                order by c.timestamp desc`)
-	if err != nil {
-		logger.Log(err)
-		return nil
+func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
+	var results []*CommentWithPostTitle
+	sel := `commenter.name, commenter.email, commenter.www, commenter.ip,
+		comment.id, comment.timestamp, comment.body,
+		post.title, post.url`
+	join := `right join comment on commenter.id = comment.commenter_id
+		inner join post on comment.post_id = post.id`
+	joined := dd.gormDB.Table("commenter").Select(sel).Joins(join)
+	err := joined.Order("comment.timestamp desc").Scan(&results).Error
+	// TODO: there's an identical loop in queryComments, but it loops over
+	// []Comment instead of []CommentWithPostTitle. Would be nice to unify.
+	for _, c := range results {
+		c.EmailHash = Md5Hash(c.Email)
+		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
+		c.Body = sanitizeHTML(mdToHTML(c.RawBody))
 	}
-	defer stmt.Close()
-	data, err := stmt.Query()
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer data.Close()
-	var comments []*CommentWithPostTitle
-	for data.Next() {
-		comment := new(CommentWithPostTitle)
-		var unixDate int64
-		err = data.Scan(&comment.Name, &comment.Email, &comment.Website, &comment.IP,
-			&comment.CommentID, &unixDate, &comment.RawBody,
-			&comment.Title, &comment.URL)
-		logger.LogIff(err, "error scanning comment row")
-		comment.EmailHash = Md5Hash(comment.Email)
-		comment.Time = time.Unix(unixDate, 0).Format("2006-01-02 15:04")
-		comment.Body = sanitizeHTML(mdToHTML(comment.RawBody))
-		comments = append(comments, comment)
-	}
-	logger.LogIff(data.Err(), "error scanning comment row")
-	return comments
+	return results, err
 }
 
 func (dd *DbData) commenterID(c Commenter) (id int64, err error) {

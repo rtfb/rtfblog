@@ -259,7 +259,10 @@ func testInsertComment(t *testing.T) {
 }
 
 func testQueryAllComments(t *testing.T) {
-	comms := data.allComments()
+	comms, err := data.allComments()
+	if err != nil {
+		t.Fatalf("Error querying comments: %s", err.Error())
+	}
 	if len(comms) != 1 {
 		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 1)
 	}
@@ -289,7 +292,10 @@ func testDeleteComment(t *testing.T) {
 		t.Fatalf("deleteComment failed: " + err.Error())
 	}
 	data.commit()
-	comms := data.allComments()
+	comms, err := data.allComments()
+	if err != nil {
+		t.Fatalf("Error querying comments: %s", err.Error())
+	}
 	if len(comms) != 0 {
 		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 0)
 	}

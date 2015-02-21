@@ -205,7 +205,11 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
-	tmplData["all_comments"] = ctx.Db.allComments()
+	comm, err := ctx.Db.allComments()
+	if err != nil {
+		return err
+	}
+	tmplData["all_comments"] = comm
 	return Tmpl(ctx, "all_comments.html").Execute(w, tmplData)
 }
 

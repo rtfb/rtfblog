@@ -136,17 +136,19 @@ func (td *TestData) titlesByTag(tag string) ([]EntryLink, error) {
 	return nil, nil
 }
 
-func (td *TestData) allComments() []*CommentWithPostTitle {
+func (td *TestData) allComments() ([]*CommentWithPostTitle, error) {
 	td.pushCall("")
 	var comments []*CommentWithPostTitle
 	for _, c := range testComm {
-		comment := new(CommentWithPostTitle)
-		comment.Comment = *c
-		comment.URL = testPosts[0].URL
-		comment.Title = testPosts[0].Title
-		comments = append(comments, comment)
+		comments = append(comments, &CommentWithPostTitle{
+			Comment: *c,
+			EntryLink: EntryLink{
+				URL:   testPosts[0].URL,
+				Title: testPosts[0].Title,
+			},
+		})
 	}
-	return comments
+	return comments, nil
 }
 
 func (td *TestData) author(username string) (*Author, error) {
