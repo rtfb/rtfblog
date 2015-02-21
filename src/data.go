@@ -33,8 +33,16 @@ type Author struct {
 	Www      string `gorm:"column:www"`
 }
 
+// Commenter and Comment tables have been split up a bit to avoid a couple of
+// problems:
+// 1. If Comment contains Commenter substruct, gorm complains about duplicate
+// 'id' columns and rightfully so. Thus, Commenter's Id is moved to
+// CommenterTable.
+// 2. If Comment contains Commenter and I try to insert it into a table, gorm
+// tries to map Commenter's fields to 'comment' table and fails. Thus,
+// CommentTable contains only the fields that map to 'comment' table.
+
 type Commenter struct {
-	Id        int64
 	Name      string
 	Email     string
 	EmailHash string `sql:"-"`
@@ -42,14 +50,32 @@ type Commenter struct {
 	IP        string `gorm:"column:ip"`
 }
 
-type Comment struct {
+type CommenterTable struct {
+	Id int64
 	Commenter
+}
+
+func (t CommenterTable) TableName() string {
+	return "commenter"
+}
+
+type CommentTable struct {
 	CommenterID int64         `gorm:"column:commenter_id"`
+	PostID      int64         `gorm:"column:post_id"`
 	Body        template.HTML `sql:"-"`
 	RawBody     string        `gorm:"column:body"`
 	Time        string        `sql:"-"`
 	Timestamp   int64         `gorm:"column:timestamp"`
-	CommentID   string        `gorm:"column:id; primary_key:yes"`
+	CommentID   int64         `gorm:"column:id; primary_key:yes"`
+}
+
+func (t CommentTable) TableName() string {
+	return "comment"
+}
+
+type Comment struct {
+	Commenter
+	CommentTable
 }
 
 type CommentWithPostTitle struct {

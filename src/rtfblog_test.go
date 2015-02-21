@@ -31,8 +31,8 @@ type T struct {
 }
 
 var (
-	testComm = []*Comment{{Commenter{0, "N", "@", "@h", "http://w", "IP"},
-		0, "Body", "Raw", "time", time.Now().Unix(), "testid"}}
+	testComm = []*Comment{{Commenter{"N", "@", "@h", "http://w", "IP"},
+		CommentTable{0, 0, "Body", "Raw", "time", time.Now().Unix(), 0}}}
 	testPosts  = make([]*Entry, 0)
 	testAuthor = new(Author)
 )
@@ -397,7 +397,7 @@ func TestModerateCommentIgnoresWrongAction(t *testing.T) {
 func TestLoadComments(t *testing.T) {
 	login()
 	json := curl("/load_comments?post=hello1")
-	mustContain(t, json, `"Comments":[{"Id":0,"Name":"N","Email":"@"`)
+	mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
 }
 
 func TestSubmitPost(t *testing.T) {

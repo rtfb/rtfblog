@@ -184,29 +184,20 @@ func (dd *DbData) commenterID(c Commenter) (id int64, err error) {
 }
 
 func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
-	err = dd.gormDB.Save(&c).Error
-	return c.Id, err
+	entry := CommenterTable{Id: 0, Commenter: c}
+	err = dd.gormDB.Save(&entry).Error
+	return entry.Id, err
 }
 
 func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
-	if dd.tx == nil {
-		return -1, notInXactionErr()
+	c := CommentTable{
+		CommenterID: commenterID,
+		PostID:      postID,
+		RawBody:     body,
+		Timestamp:   time.Now().Unix(),
 	}
-	stmt, err := dd.tx.Prepare(`insert into comment
-                                (commenter_id, post_id, timestamp, body)
-                                values ($1, $2, $3, $4)
-                                returning id`)
-	if err != nil {
-		logger.LogIff(err, "Failed to prepare insert comment stmt")
-		return
-	}
-	defer stmt.Close()
-	err = stmt.QueryRow(commenterID, postID, time.Now().Unix(), body).Scan(&id)
-	if err != nil {
-		logger.LogIff(err, "Failed to insert comment")
-		return
-	}
-	return
+	err = dd.gormDB.Save(&c).Error
+	return c.CommentID, err
 }
 
 func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
