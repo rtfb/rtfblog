@@ -183,7 +183,11 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"
-	tmplData["all_entries"] = ctx.Db.titlesByTag(tag)
+	titles, err := ctx.Db.titlesByTag(tag)
+	if err != nil {
+		return err
+	}
+	tmplData["all_entries"] = titles
 	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
@@ -191,7 +195,11 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Archive")
 	tmplData["HeadingText"] = L10n("All posts:")
-	tmplData["all_entries"] = ctx.Db.titles(-1)
+	titles, err := ctx.Db.titles(-1)
+	if err != nil {
+		return err
+	}
+	tmplData["all_entries"] = titles
 	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 

@@ -57,10 +57,12 @@ type CommentWithPostTitle struct {
 	EntryLink
 }
 
+// Note: URL mapping is required, gorm won't be able to map to all-caps URL
+// without it. Others are only for consistency.
 type EntryLink struct {
-	Title  string
-	URL    string
-	Hidden bool
+	Title  string `gorm:"column:title"`
+	URL    string `gorm:"column:url"`
+	Hidden bool   `gorm:"column:hidden"`
 }
 
 type Entry struct {

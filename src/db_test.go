@@ -171,12 +171,18 @@ func testNumPosts(t *testing.T) {
 		t.Errorf("Wrong len(secondPost): expected %d, but got %d", 1, len(secondPost))
 	}
 
-	titles := data.titles(-1)
+	titles, err := data.titles(-1)
+	if err != nil {
+		t.Fatalf("Failed to query titles, err = %s", err.Error())
+	}
 	if len(titles) != 3 {
 		t.Errorf("Wrong len(titles): expected %d, but got %d", 3, len(titles))
 	}
 
-	firstTitle := data.titles(1)
+	firstTitle, err := data.titles(1)
+	if err != nil {
+		t.Fatalf("Failed to query titles, err = %s", err.Error())
+	}
 	if len(firstTitle) != 1 {
 		t.Errorf("Wrong len(firstTitle): expected %d, but got %d", 1, len(firstTitle))
 	}
@@ -186,7 +192,10 @@ func testNumPosts(t *testing.T) {
 }
 
 func testTitlesByTag(t *testing.T) {
-	titles := data.titlesByTag("tag1")
+	titles, err := data.titlesByTag("tag1")
+	if err != nil {
+		t.Fatalf("Failed to query titles, err = %s", err.Error())
+	}
 	if len(titles) != 1 {
 		t.Fatalf("Wrong len(titles), expected %d, but got %d", 1, len(titles))
 	}

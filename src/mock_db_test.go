@@ -123,17 +123,17 @@ func (td *TestData) numPosts() int {
 	return len(td.testPosts())
 }
 
-func (td *TestData) titles(limit int) (links []*EntryLink) {
+func (td *TestData) titles(limit int) (links []EntryLink, err error) {
+	err = nil
 	for _, p := range td.testPosts() {
-		entryLink := &EntryLink{p.Title, p.URL, false}
-		links = append(links, entryLink)
+		links = append(links, EntryLink{p.Title, p.URL, false})
 	}
 	return
 }
 
-func (td *TestData) titlesByTag(tag string) (links []*EntryLink) {
+func (td *TestData) titlesByTag(tag string) ([]EntryLink, error) {
 	td.pushCall(tag)
-	return
+	return nil, nil
 }
 
 func (td *TestData) allComments() []*CommentWithPostTitle {

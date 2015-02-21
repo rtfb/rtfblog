@@ -15,8 +15,8 @@ type Data interface {
 	post(url string) *Entry
 	postID(url string) (id int64, err error)
 	posts(limit, offset int) []*Entry
-	titles(limit int) []*EntryLink
-	titlesByTag(tag string) []*EntryLink
+	titles(limit int) ([]EntryLink, error)
+	titlesByTag(tag string) ([]EntryLink, error)
 	allComments() []*CommentWithPostTitle
 	numPosts() int
 	author(username string) (*Author, error)
@@ -117,74 +117,28 @@ func (dd *DbData) numPosts() int {
 	return count
 }
 
-func (dd *DbData) titles(limit int) (links []*EntryLink) {
-	selectSql := `select p.title, p.url, p.hidden
-                  from post as p`
-	if !dd.includeHidden {
-		selectSql = selectSql + " where p.hidden=FALSE"
-	}
-	selectSql = selectSql + " order by p.date desc"
-	if limit > 0 {
-		selectSql = selectSql + " limit $1"
-	}
-	stmt, err := dd.db.Prepare(selectSql)
-	if err != nil {
-		logger.Log(err)
-		return
-	}
-	defer stmt.Close()
-	var rows *sql.Rows
-	if limit > 0 {
-		rows, err = stmt.Query(limit)
-	} else {
-		rows, err = stmt.Query()
-	}
-	if err != nil {
-		logger.Log(err)
-		return
-	}
-	defer rows.Close()
-	return scanEntryLinks(rows)
+func (dd *DbData) titles(limit int) ([]EntryLink, error) {
+	var results []EntryLink
+	posts := dd.gormDB.Table("post").Select("title, url, hidden")
+	posts = posts.Where("hidden=?", false)
+	err := posts.Order("date desc").Limit(limit).Scan(&results).Error
+	return results, err
 }
 
-func (dd *DbData) titlesByTag(tag string) (links []*EntryLink) {
-	selectSql := `select p.title, p.url, p.hidden
-                  from post as p
-                  where p.id in (select tm.post_id from tagmap as tm
-                                 inner join tag as t
-                                 on tm.tag_id = t.id and t.tag=$1)`
-	if !dd.includeHidden {
-		selectSql = selectSql + " and p.hidden=FALSE"
-	}
-	selectSql = selectSql + " order by p.date desc"
-	stmt, err := dd.db.Prepare(selectSql)
+func (dd *DbData) titlesByTag(tag string) ([]EntryLink, error) {
+	var postIDs []int64
+	var results []EntryLink
+	join := "inner join tag on tagmap.tag_id = tag.id"
+	rows := dd.gormDB.Table("tagmap").Joins(join).Where("tag.tag=?", tag)
+	err := rows.Pluck("post_id", &postIDs).Error
 	if err != nil {
-		logger.Log(err)
-		return
+		return nil, err
 	}
-	defer stmt.Close()
-	rows, err := stmt.Query(tag)
-	if err != nil {
-		logger.Log(err)
-		return
-	}
-	defer rows.Close()
-	return scanEntryLinks(rows)
-}
-
-func scanEntryLinks(rows *sql.Rows) (links []*EntryLink) {
-	for rows.Next() {
-		entryLink := new(EntryLink)
-		err := rows.Scan(&entryLink.Title, &entryLink.URL, &entryLink.Hidden)
-		if err != nil {
-			logger.Log(err)
-			continue
-		}
-		links = append(links, entryLink)
-	}
-	err := rows.Err()
-	logger.LogIf(err)
-	return
+	columns := "title, url, hidden"
+	posts := dd.gormDB.Table("post").Select(columns).Where("id in (?)", postIDs)
+	posts = posts.Where("hidden=?", false)
+	err = posts.Order("date desc").Scan(&results).Error
+	return results, err
 }
 
 func (dd *DbData) allComments() []*CommentWithPostTitle {

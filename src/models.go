@@ -28,6 +28,8 @@ func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	ctx.Db.hiddenPosts(ctx.AdminLogin)
 	numTotalPosts := ctx.Db.numPosts()
+	titles, err := ctx.Db.titles(NumRecentPosts)
+	logger.LogIf(err)
 	return TmplMap{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Get("blog_title"),
@@ -35,7 +37,7 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 		"NeedPagination":  numTotalPosts > PostsPerPage,
 		"ListOfPages":     listOfPages(numTotalPosts, pageNo),
 		"entries":         ctx.Db.posts(PostsPerPage, offset),
-		"sidebar_entries": ctx.Db.titles(NumRecentPosts),
+		"sidebar_entries": titles,
 		"AdminLogin":      ctx.AdminLogin,
 	}
 }
