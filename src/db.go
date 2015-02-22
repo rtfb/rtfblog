@@ -29,7 +29,7 @@ type Data interface {
 	insertPost(author int64, e *Entry) (id int64, err error)
 	updatePost(id int64, e *Entry) error
 	updateTags(tags []*Tag, postID int64) error
-	queryAllTags() []*Tag
+	queryAllTags() ([]*Tag, error)
 	begin() error
 	commit()
 	rollback()
@@ -298,32 +298,10 @@ func queryTags(db *gorm.DB, postID int64) []*Tag {
 	return results // TODO: err
 }
 
-func (dd *DbData) queryAllTags() []*Tag {
-	stmt, err := dd.db.Prepare(`select tag from tag`)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query()
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	defer rows.Close()
+func (dd *DbData) queryAllTags() ([]*Tag, error) {
 	var tags []*Tag
-	for rows.Next() {
-		tag := new(Tag)
-		err = rows.Scan(&tag.Name)
-		if err != nil {
-			logger.Log(err)
-			continue
-		}
-		tags = append(tags, tag)
-	}
-	err = rows.Err()
-	logger.LogIff(err, "error scanning tag row")
-	return tags
+	err := dd.gormDB.Find(&tags).Error
+	return tags, err
 }
 
 func queryComments(db *gorm.DB, postID int64) []*Comment {

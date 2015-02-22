@@ -225,7 +225,11 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Edit Post")
 	tmplData["IsHidden"] = true // Assume hidden for a new post
-	tmplData["AllTags"] = makeTagList(ctx.Db.queryAllTags())
+	tags, err := ctx.Db.queryAllTags()
+	if err != nil {
+		return err
+	}
+	tmplData["AllTags"] = makeTagList(tags)
 	url := strings.TrimRight(req.FormValue("post"), "&")
 	if url != "" {
 		if post := ctx.Db.post(url); post != nil {

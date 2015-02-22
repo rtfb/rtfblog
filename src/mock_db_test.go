@@ -173,8 +173,8 @@ func (td *TestData) updateComment(id, text string) error {
 	return nil
 }
 
-func (td *TestData) queryAllTags() []*Tag {
-	return nil
+func (td *TestData) queryAllTags() ([]*Tag, error) {
+	return nil, nil
 }
 
 func (td *TestData) begin() error {

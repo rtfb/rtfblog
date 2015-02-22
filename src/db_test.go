@@ -110,7 +110,10 @@ func testUpdateTags(t *testing.T) {
 }
 
 func testTags(t *testing.T) {
-	tags := data.queryAllTags()
+	tags, err := data.queryAllTags()
+	if err != nil {
+		t.Fatalf("Failed to query tags")
+	}
 	if tags == nil {
 		t.Fatalf("Failed to query tags")
 	}
