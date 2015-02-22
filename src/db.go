@@ -243,11 +243,7 @@ func (dd *DbData) deleteComment(id string) error {
 }
 
 func (dd *DbData) deletePost(url string) error {
-	_, err := dd.db.Exec("delete from post where url=$1", url)
-	if err != nil {
-		return err
-	}
-	return nil
+	return dd.gormDB.Where("url=?", url).Delete(Entry{}).Error
 }
 
 func (dd *DbData) updateComment(id, text string) error {
