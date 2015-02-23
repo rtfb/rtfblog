@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -264,7 +263,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	// TODO: should not be logged in, add check
 	uname := req.FormValue("uname")
 	a, err := ctx.Db.author(uname)
-	if err == sql.ErrNoRows {
+	if err == gorm.RecordNotFound {
 		ctx.Session.AddFlash(L10n("Login failed."))
 		return LoginForm(w, req, ctx)
 	}
@@ -344,7 +343,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return txErr
 	}
 	if idErr != nil {
-		if idErr == sql.ErrNoRows {
+		if idErr == gorm.RecordNotFound {
 			authorID := int64(1) // XXX: it's only me now
 			newPostID, err := ctx.Db.insertPost(authorID, &e)
 			if err != nil {

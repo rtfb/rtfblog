@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -155,7 +154,7 @@ func (td *TestData) author(username string) (*Author, error) {
 	if username == testAuthor.UserName {
 		return testAuthor, nil
 	}
-	return nil, sql.ErrNoRows
+	return nil, gorm.RecordNotFound
 }
 
 func (td *TestData) deleteComment(id string) error {
