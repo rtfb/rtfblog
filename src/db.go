@@ -247,11 +247,7 @@ func (dd *DbData) deletePost(url string) error {
 }
 
 func (dd *DbData) updateComment(id, text string) error {
-	_, err := dd.db.Exec("update comment set body=$1 where id=$2", text, id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return dd.gormDB.Model(CommentTable{}).Where("id=?", id).Update("body", text).Error
 }
 
 func loadPosts(dd *DbData, limit, offset int, url string, includeHidden bool) []*Entry {
