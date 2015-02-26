@@ -91,20 +91,25 @@ type EntryLink struct {
 	Hidden bool   `gorm:"column:hidden"`
 }
 
-type Entry struct {
+type EntryTable struct {
 	EntryLink
 	Id       int64
-	Author   string        `gorm:"column:disp_name"`
+	AuthorID int64         `gorm:"column:author_id"`
 	Date     string        `sql:"-"`
 	UnixDate int64         `gorm:"column:date"`
 	Body     template.HTML `sql:"-"`
 	RawBody  string        `gorm:"column:body"`
-	Tags     []*Tag        `sql:"-"`
-	Comments []*Comment    `sql:"-"`
 }
 
-func (e Entry) TableName() string {
+func (e EntryTable) TableName() string {
 	return "post"
+}
+
+type Entry struct {
+	EntryTable
+	Author   string     `gorm:"column:disp_name"`
+	Tags     []*Tag     `sql:"-"`
+	Comments []*Comment `sql:"-"`
 }
 
 func (e Entry) HasTags() bool {

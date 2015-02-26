@@ -26,8 +26,8 @@ type Data interface {
 	commenterID(c Commenter) (id int64, err error)
 	insertCommenter(c Commenter) (id int64, err error)
 	insertComment(commenterID, postID int64, body string) (id int64, err error)
-	insertPost(author int64, e *Entry) (id int64, err error)
-	updatePost(id int64, e *Entry) error
+	insertPost(e *EntryTable) (id int64, err error)
+	updatePost(e *EntryTable) error
 	updateTags(tags []*Tag, postID int64) error
 	queryAllTags() ([]*Tag, error)
 	begin() error
@@ -183,35 +183,13 @@ func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int6
 	return c.CommentID, err
 }
 
-func (dd *DbData) insertPost(author int64, e *Entry) (id int64, err error) {
-	if dd.tx == nil {
-		return -1, notInXactionErr()
-	}
-	insertPostSql, _ := dd.tx.Prepare(`insert into post
-                                       (author_id, title, date, url, body, hidden)
-                                       values ($1, $2, $3, $4, $5, $6)
-                                       returning id`)
-	defer insertPostSql.Close()
-	date := time.Now().Unix()
-	err = insertPostSql.QueryRow(author, e.Title, date, e.URL,
-		string(e.Body), e.Hidden).Scan(&id)
-	if err != nil {
-		logger.LogIff(err, "Failed to insert post")
-		return
-	}
-	return
+func (dd *DbData) insertPost(e *EntryTable) (id int64, err error) {
+	err = dd.gormDB.Save(e).Error
+	return e.Id, err
 }
 
-func (dd *DbData) updatePost(id int64, e *Entry) error {
-	updateStmt, _ := dd.tx.Prepare(`update post
-                                    set title=$1, url=$2, body=$3, hidden=$4
-                                    where id=$5`)
-	defer updateStmt.Close()
-	_, err := updateStmt.Exec(e.Title, e.URL, string(e.Body), e.Hidden, id)
-	if err != nil {
-		return err
-	}
-	return nil
+func (dd *DbData) updatePost(e *EntryTable) error {
+	return dd.gormDB.Save(e).Error
 }
 
 func (dd *DbData) updateTags(tags []*Tag, postID int64) error {

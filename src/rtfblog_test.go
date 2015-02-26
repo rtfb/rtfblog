@@ -59,15 +59,17 @@ func mkTestEntry(i int, hidden bool) *Entry {
 	auth := "Author"
 	date := "2013-03-19"
 	return &Entry{
-		EntryLink: EntryLink{
-			Title:  fmt.Sprintf("Hi%d", i),
-			URL:    fmt.Sprintf("hello%d", i),
-			Hidden: hidden,
+		EntryTable: EntryTable{
+			EntryLink: EntryLink{
+				Title:  fmt.Sprintf("Hi%d", i),
+				URL:    fmt.Sprintf("hello%d", i),
+				Hidden: hidden,
+			},
+			Date:    date,
+			Body:    template.HTML(fmt.Sprintf("Body%d", i)),
+			RawBody: fmt.Sprintf("RawBody%d", i),
 		},
 		Author:   auth,
-		Date:     date,
-		Body:     template.HTML(fmt.Sprintf("Body%d", i)),
-		RawBody:  fmt.Sprintf("RawBody%d", i),
 		Tags:     []*Tag{{Id: int64(i), Name: fmt.Sprintf("u%d", i)}},
 		Comments: testComm,
 	}

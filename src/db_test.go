@@ -81,15 +81,15 @@ func testPost(t *testing.T) {
 
 func testInsertPost(t *testing.T) {
 	data.begin()
-	id, err := data.insertPost(1, &Entry{
+	id, err := data.insertPost(&EntryTable{
 		EntryLink: EntryLink{
 			Title:  "title",
 			URL:    "url",
 			Hidden: false,
 		},
-		Author:  "me",
-		Date:    "2014-12-28",
-		RawBody: "*markdown*",
+		AuthorID: 1,
+		Date:     "2014-12-28",
+		RawBody:  "*markdown*",
 	})
 	if err != nil || id != 1 {
 		data.rollback()
@@ -128,29 +128,29 @@ func testTags(t *testing.T) {
 func testNumPosts(t *testing.T) {
 	// Insert couple more posts
 	data.begin()
-	id, err := data.insertPost(1, &Entry{
+	id, err := data.insertPost(&EntryTable{
 		EntryLink: EntryLink{
 			Title:  "title2",
 			URL:    "url2",
 			Hidden: false,
 		},
-		Author:  "me",
-		Date:    "2014-12-30",
-		RawBody: "*markdown 2*",
+		AuthorID: 1,
+		Date:     "2014-12-30",
+		RawBody:  "*markdown 2*",
 	})
 	if err != nil || id != 2 {
 		data.rollback()
 		t.Fatalf("Failed to insert post, err = %s", err.Error())
 	}
-	id, err = data.insertPost(1, &Entry{
+	id, err = data.insertPost(&EntryTable{
 		EntryLink: EntryLink{
 			Title:  "title3",
 			URL:    "url3",
 			Hidden: false,
 		},
-		Author:  "me",
-		Date:    "2014-12-30",
-		RawBody: "*markdown 3*",
+		AuthorID: 1,
+		Date:     "2014-12-30",
+		RawBody:  "*markdown 3*",
 	})
 	if err != nil || id != 3 {
 		data.rollback()
@@ -209,15 +209,16 @@ func testTitlesByTag(t *testing.T) {
 
 func testUpdatePost(t *testing.T) {
 	data.begin()
-	err := data.updatePost(3, &Entry{
+	err := data.updatePost(&EntryTable{
 		EntryLink: EntryLink{
 			Title:  "title three",
 			URL:    "url-three",
 			Hidden: false,
 		},
-		Author:  "me",
-		Date:    "2014-12-28",
-		RawBody: "*markdown*",
+		AuthorID: 1,
+		Id:       3,
+		Date:     "2014-12-28",
+		RawBody:  "*markdown*",
 	})
 	if err != nil {
 		data.rollback()

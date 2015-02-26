@@ -203,11 +203,11 @@ func (td *TestData) insertComment(commenterID, postID int64, body string) (id in
 	return
 }
 
-func (td *TestData) insertPost(author int64, e *Entry) (id int64, err error) {
+func (td *TestData) insertPost(e *EntryTable) (id int64, err error) {
 	return
 }
 
-func (td *TestData) updatePost(id int64, e *Entry) error {
+func (td *TestData) updatePost(e *EntryTable) error {
 	td.pushCall("0")
 	return nil
 }

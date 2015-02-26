@@ -329,7 +329,7 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tags := req.FormValue("tags")
 	url := req.FormValue("url")
-	e := Entry{
+	e := EntryTable{
 		EntryLink: EntryLink{
 			Title:  req.FormValue("title"),
 			URL:    url,
@@ -344,8 +344,8 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	}
 	if idErr != nil {
 		if idErr == gorm.RecordNotFound {
-			authorID := int64(1) // XXX: it's only me now
-			newPostID, err := ctx.Db.insertPost(authorID, &e)
+			e.AuthorID = int64(1) // XXX: it's only me now
+			newPostID, err := ctx.Db.insertPost(&e)
 			if err != nil {
 				ctx.Db.rollback()
 				return err
@@ -356,7 +356,8 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			return logger.LogIff(idErr, "ctx.Db.postID() failed")
 		}
 	} else {
-		updErr := ctx.Db.updatePost(postID, &e)
+		e.Id = postID
+		updErr := ctx.Db.updatePost(&e)
 		if updErr != nil {
 			ctx.Db.rollback()
 			return updErr
