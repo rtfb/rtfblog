@@ -36,8 +36,6 @@ func init() {
 	db.SingularTable(true)
 	realDB = &DbData{
 		gormDB:        &db,
-		db:            db.DB(),
-		tx:            nil,
 		includeHidden: false,
 	}
 	// TODO: insertTestAuthor is not needed, I inserted the entry in

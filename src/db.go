@@ -1,10 +1,7 @@
 package main
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -37,8 +34,6 @@ type Data interface {
 
 type DbData struct {
 	gormDB        *gorm.DB
-	db            *sql.DB
-	tx            *sql.Tx
 	includeHidden bool
 }
 
@@ -46,44 +41,20 @@ func (dd *DbData) hiddenPosts(flag bool) {
 	dd.includeHidden = flag
 }
 
-func notInXactionErr() error {
-	pc, _, _, ok := runtime.Caller(1)
-	if !ok {
-		panic("runtime.Caller(1) != ok, dafuq?")
-	}
-	funcName := runtime.FuncForPC(pc).Name()
-	msg := "Error! %s() can only be called within transaction!"
-	return fmt.Errorf(msg, funcName)
-}
-
 func (dd *DbData) begin() error {
-	if dd.tx != nil {
-		return errors.New("Error! DbData.begin() called within transaction!")
-	}
-	xaction, err := dd.db.Begin()
-	if err != nil {
-		return err
-	}
-	dd.tx = xaction
+	//dd.gormDB = dd.gormDB.Begin()
+	//return dd.gormDB.Error
 	return nil
 }
 
 func (dd *DbData) commit() {
-	if dd.tx == nil {
-		logger.Log(notInXactionErr())
-		return
-	}
-	dd.tx.Commit()
-	dd.tx = nil
+	//dd.gormDB = dd.gormDB.Commit()
+	//logger.LogIf(dd.gormDB.Error)
 }
 
 func (dd *DbData) rollback() {
-	if dd.tx == nil {
-		logger.Log(notInXactionErr())
-		return
-	}
-	dd.tx.Rollback()
-	dd.tx = nil
+	//dd.gormDB = dd.gormDB.Rollback()
+	//logger.LogIf(dd.gormDB.Error)
 }
 
 func (dd *DbData) post(url string) *Entry {
@@ -193,9 +164,6 @@ func (dd *DbData) updatePost(e *EntryTable) error {
 }
 
 func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
-	if dd.tx == nil {
-		return notInXactionErr()
-	}
 	dd.gormDB.Where("post_id = ?", postID).Delete(TagMap{})
 	for _, t := range tags {
 		tagID, err := insertOrGetTagID(dd.gormDB, t)
@@ -229,9 +197,6 @@ func (dd *DbData) updateComment(id, text string) error {
 }
 
 func loadPosts(dd *DbData, limit, offset int, url string, includeHidden bool) []*Entry {
-	if dd.db == nil {
-		return nil
-	}
 	data, err := queryPosts(dd, limit, offset, url, includeHidden)
 	if err != nil {
 		logger.Log(err)

@@ -664,8 +664,6 @@ func main() {
 		Router: pat.New(),
 		Db: &DbData{
 			gormDB:        &db,
-			db:            db.DB(),
-			tx:            nil,
 			includeHidden: false,
 		},
 		Root:  bindir,
