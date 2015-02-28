@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -34,6 +35,7 @@ type Data interface {
 
 type DbData struct {
 	gormDB        *gorm.DB
+	tx            *gorm.DB
 	includeHidden bool
 }
 
@@ -41,20 +43,34 @@ func (dd *DbData) hiddenPosts(flag bool) {
 	dd.includeHidden = flag
 }
 
+func notInXactionErr() error {
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("runtime.Caller(1) != ok, dafuq?")
+	}
+	funcName := runtime.FuncForPC(pc).Name()
+	msg := "Error! %s() can only be called within transaction!"
+	return fmt.Errorf(msg, funcName)
+}
+
 func (dd *DbData) begin() error {
-	//dd.gormDB = dd.gormDB.Begin()
-	//return dd.gormDB.Error
-	return nil
+	dd.tx = dd.gormDB.Begin()
+	return dd.tx.Error
 }
 
 func (dd *DbData) commit() {
-	//dd.gormDB = dd.gormDB.Commit()
-	//logger.LogIf(dd.gormDB.Error)
+	dd.tx.Commit()
+	logger.LogIf(dd.gormDB.Error)
+	dd.tx = nil
 }
 
 func (dd *DbData) rollback() {
-	//dd.gormDB = dd.gormDB.Rollback()
-	//logger.LogIf(dd.gormDB.Error)
+	if dd.tx == nil {
+		return
+	}
+	dd.tx.Rollback()
+	logger.LogIf(dd.gormDB.Error)
+	dd.tx = nil
 }
 
 func (dd *DbData) post(url string) *Entry {
@@ -138,39 +154,54 @@ func (dd *DbData) commenterID(c Commenter) (id int64, err error) {
 }
 
 func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
+	if dd.tx == nil {
+		return -1, notInXactionErr()
+	}
 	entry := CommenterTable{Id: 0, Commenter: c}
-	err = dd.gormDB.Save(&entry).Error
+	err = dd.tx.Save(&entry).Error
 	return entry.Id, err
 }
 
 func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
+	if dd.tx == nil {
+		return -1, notInXactionErr()
+	}
 	c := CommentTable{
 		CommenterID: commenterID,
 		PostID:      postID,
 		RawBody:     body,
 		Timestamp:   time.Now().Unix(),
 	}
-	err = dd.gormDB.Save(&c).Error
+	err = dd.tx.Save(&c).Error
 	return c.CommentID, err
 }
 
 func (dd *DbData) insertPost(e *EntryTable) (id int64, err error) {
-	err = dd.gormDB.Save(e).Error
+	if dd.tx == nil {
+		return -1, notInXactionErr()
+	}
+	err = dd.tx.Save(e).Error
 	return e.Id, err
 }
 
 func (dd *DbData) updatePost(e *EntryTable) error {
-	return dd.gormDB.Save(e).Error
+	if dd.tx == nil {
+		return notInXactionErr()
+	}
+	return dd.tx.Save(e).Error
 }
 
 func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
-	dd.gormDB.Where("post_id = ?", postID).Delete(TagMap{})
+	if dd.tx == nil {
+		return notInXactionErr()
+	}
+	dd.tx.Where("post_id = ?", postID).Delete(TagMap{})
 	for _, t := range tags {
-		tagID, err := insertOrGetTagID(dd.gormDB, t)
+		tagID, err := insertOrGetTagID(dd.tx, t)
 		if err != nil {
 			return err
 		}
-		err = updateTagMap(dd.gormDB, postID, tagID)
+		err = updateTagMap(dd.tx, postID, tagID)
 		if err != nil {
 			return err
 		}
