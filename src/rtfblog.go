@@ -342,30 +342,27 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if txErr != nil {
 		return txErr
 	}
+	defer ctx.Db.rollback()
 	if idErr != nil {
 		if idErr == gorm.RecordNotFound {
 			e.AuthorID = int64(1) // XXX: it's only me now
 			newPostID, err := ctx.Db.insertPost(&e)
 			if err != nil {
-				ctx.Db.rollback()
 				return err
 			}
 			postID = newPostID
 		} else {
-			ctx.Db.rollback()
 			return logger.LogIff(idErr, "ctx.Db.postID() failed")
 		}
 	} else {
 		e.Id = postID
 		updErr := ctx.Db.updatePost(&e)
 		if updErr != nil {
-			ctx.Db.rollback()
 			return updErr
 		}
 	}
 	err := ctx.Db.updateTags(explodeTags(tags), postID)
 	if err != nil {
-		ctx.Db.rollback()
 		return err
 	}
 	ctx.Db.commit()

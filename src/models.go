@@ -46,14 +46,13 @@ func PublishCommentWithInsert(db Data, postID int64, commenter Commenter, rawBod
 	if db.begin() != nil {
 		return "", nil
 	}
+	defer db.rollback()
 	commenterID, err := db.insertCommenter(commenter)
 	if err != nil {
-		db.rollback()
 		return "", logger.LogIff(err, "db.insertCommenter() failed")
 	}
 	commentID, err := db.insertComment(commenterID, postID, rawBody)
 	if err != nil {
-		db.rollback()
 		return "", logger.LogIff(err, "db.insertComment() failed")
 	}
 	db.commit()
@@ -64,9 +63,9 @@ func PublishComment(db Data, postID, commenterID int64, body string) (string, er
 	if db.begin() != nil {
 		return "", nil
 	}
+	defer db.rollback()
 	commentID, err := db.insertComment(commenterID, postID, body)
 	if err != nil {
-		db.rollback()
 		return "", logger.LogIff(err, "db.insertComment() failed")
 	}
 	db.commit()
