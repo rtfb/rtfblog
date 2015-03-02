@@ -25,8 +25,7 @@ type TestDataI interface {
 type TestData struct {
 	Data
 	TestDataI
-	includeHidden bool
-	lastCalls     []string
+	lastCalls []string
 }
 
 var (
@@ -74,12 +73,8 @@ func (td *TestData) expectSeries(t *testing.T, series []CallSpec) {
 	}
 }
 
-func (td *TestData) hiddenPosts(flag bool) {
-	td.includeHidden = flag
-}
-
-func (td *TestData) post(url string) *Entry {
-	for _, e := range td.testPosts() {
+func (td *TestData) post(url string, includeHidden bool) *Entry {
+	for _, e := range td.testPosts(includeHidden) {
 		if e.URL == url {
 			return e
 		}
@@ -93,8 +88,8 @@ func (td *TestData) postID(url string) (id int64, err error) {
 	return
 }
 
-func (td *TestData) testPosts() []*Entry {
-	if td.includeHidden {
+func (td *TestData) testPosts(includeHidden bool) []*Entry {
+	if includeHidden {
 		return testPosts
 	}
 	var posts []*Entry
@@ -107,30 +102,30 @@ func (td *TestData) testPosts() []*Entry {
 	return posts
 }
 
-func (td *TestData) posts(limit, offset int) []*Entry {
+func (td *TestData) posts(limit, offset int, includeHidden bool) []*Entry {
 	if offset < 0 {
 		offset = 0
 	}
-	tp := td.testPosts()
+	tp := td.testPosts(includeHidden)
 	if limit > 0 && limit < len(tp) {
 		return tp[offset:(offset + limit)]
 	}
 	return tp
 }
 
-func (td *TestData) numPosts() int {
-	return len(td.testPosts())
+func (td *TestData) numPosts(includeHidden bool) int {
+	return len(td.testPosts(includeHidden))
 }
 
-func (td *TestData) titles(limit int) (links []EntryLink, err error) {
+func (td *TestData) titles(limit int, includeHidden bool) (links []EntryLink, err error) {
 	err = nil
-	for _, p := range td.testPosts() {
+	for _, p := range td.testPosts(includeHidden) {
 		links = append(links, EntryLink{p.Title, p.URL, false})
 	}
 	return
 }
 
-func (td *TestData) titlesByTag(tag string) ([]EntryLink, error) {
+func (td *TestData) titlesByTag(tag string, includeHidden bool) ([]EntryLink, error) {
 	td.pushCall(tag)
 	return nil, nil
 }

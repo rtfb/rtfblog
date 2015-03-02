@@ -35,8 +35,7 @@ func init() {
 	}
 	db.SingularTable(true)
 	realDB = &DbData{
-		gormDB:        &db,
-		includeHidden: false,
+		gormDB: &db,
 	}
 	// TODO: insertTestAuthor is not needed, I inserted the entry in
 	// testdb.sql. However, that row has an empty passwd field, which should be
@@ -57,14 +56,14 @@ func testExistingAuthor(t *testing.T) {
 }
 
 func testPost(t *testing.T) {
-	post := data.post("url")
+	post := data.post("url", true)
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
 	if post.Title != "title" {
 		t.Errorf("Wrong title, expected %q, got %q", "title", post.Title)
 	}
-	post = data.post("non-existant")
+	post = data.post("non-existant", true)
 	if post != nil {
 		t.Fatalf("Should not find this post")
 	}
@@ -156,22 +155,22 @@ func testNumPosts(t *testing.T) {
 	data.commit()
 
 	// Now test a few methods
-	numPosts := data.numPosts()
+	numPosts := data.numPosts(true)
 	if numPosts != 3 {
 		t.Errorf("Wrong numPosts: expected %d, but got %d", 3, numPosts)
 	}
 
-	allPosts := data.posts(-1, 0)
+	allPosts := data.posts(-1, 0, true)
 	if len(allPosts) != 3 {
 		t.Errorf("Wrong len(allPosts): expected %d, but got %d", 3, len(allPosts))
 	}
 
-	secondPost := data.posts(1, 1)
+	secondPost := data.posts(1, 1, true)
 	if len(secondPost) != 1 {
 		t.Errorf("Wrong len(secondPost): expected %d, but got %d", 1, len(secondPost))
 	}
 
-	titles, err := data.titles(-1)
+	titles, err := data.titles(-1, true)
 	if err != nil {
 		t.Fatalf("Failed to query titles, err = %s", err.Error())
 	}
@@ -179,7 +178,7 @@ func testNumPosts(t *testing.T) {
 		t.Errorf("Wrong len(titles): expected %d, but got %d", 3, len(titles))
 	}
 
-	firstTitle, err := data.titles(1)
+	firstTitle, err := data.titles(1, true)
 	if err != nil {
 		t.Fatalf("Failed to query titles, err = %s", err.Error())
 	}
@@ -192,7 +191,7 @@ func testNumPosts(t *testing.T) {
 }
 
 func testTitlesByTag(t *testing.T) {
-	titles, err := data.titlesByTag("tag1")
+	titles, err := data.titlesByTag("tag1", true)
 	if err != nil {
 		t.Fatalf("Failed to query titles, err = %s", err.Error())
 	}
@@ -222,7 +221,7 @@ func testUpdatePost(t *testing.T) {
 		t.Fatalf("Failed to updatePost: " + err.Error())
 	}
 	data.commit()
-	post := data.post("url-three")
+	post := data.post("url-three", true)
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
@@ -307,7 +306,7 @@ func testDeletePost(t *testing.T) {
 		t.Fatalf("deletePost failed: " + err.Error())
 	}
 	data.commit()
-	posts := data.posts(-1, 0)
+	posts := data.posts(-1, 0, true)
 	if len(posts) != 2 {
 		t.Fatalf("Wrong len(posts) = %d, expected %d", len(posts), 2)
 	}

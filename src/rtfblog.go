@@ -123,7 +123,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
-	if post := ctx.Db.post(req.URL.Path[1:]); post != nil {
+	if post := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin); post != nil {
 		ctx.Captcha.SetNextTask(-1)
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
@@ -182,7 +182,7 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"
-	titles, err := ctx.Db.titlesByTag(tag)
+	titles, err := ctx.Db.titlesByTag(tag, ctx.AdminLogin)
 	if err != nil {
 		return err
 	}
@@ -194,7 +194,7 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	tmplData["PageTitle"] = L10n("Archive")
 	tmplData["HeadingText"] = L10n("All posts:")
-	titles, err := ctx.Db.titles(-1)
+	titles, err := ctx.Db.titles(-1, ctx.AdminLogin)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData["AllTags"] = makeTagList(tags)
 	url := strings.TrimRight(req.FormValue("post"), "&")
 	if url != "" {
-		if post := ctx.Db.post(url); post != nil {
+		if post := ctx.Db.post(url, ctx.AdminLogin); post != nil {
 			tmplData["IsHidden"] = post.Hidden
 			tmplData["post"] = post
 		}
@@ -243,7 +243,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	url := req.FormValue("post")
-	if post := ctx.Db.post(url); post != nil {
+	if post := ctx.Db.post(url, ctx.AdminLogin); post != nil {
 		b, err := json.Marshal(post)
 		if err != nil {
 			return logger.LogIf(err)
@@ -254,8 +254,7 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 }
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	ctx.Db.hiddenPosts(false)
-	produceFeedXML(w, req, ctx.Db.posts(NumFeedItems, 0))
+	produceFeedXML(w, req, ctx.Db.posts(NumFeedItems, 0, false))
 	return nil
 }
 
@@ -660,8 +659,7 @@ func main() {
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db: &DbData{
-			gormDB:        &db,
-			includeHidden: false,
+			gormDB: &db,
 		},
 		Root:  bindir,
 		Store: sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),

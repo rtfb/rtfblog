@@ -9,14 +9,13 @@ import (
 )
 
 type Data interface {
-	hiddenPosts(flag bool)
-	post(url string) *Entry
+	post(url string, includeHidden bool) *Entry
 	postID(url string) (id int64, err error)
-	posts(limit, offset int) []*Entry
-	titles(limit int) ([]EntryLink, error)
-	titlesByTag(tag string) ([]EntryLink, error)
+	posts(limit, offset int, includeHidden bool) []*Entry
+	titles(limit int, includeHidden bool) ([]EntryLink, error)
+	titlesByTag(tag string, includeHidden bool) ([]EntryLink, error)
 	allComments() ([]*CommentWithPostTitle, error)
-	numPosts() int
+	numPosts(includeHidden bool) int
 	author(username string) (*Author, error)
 	deleteComment(id string) error
 	deletePost(url string) error
@@ -34,13 +33,8 @@ type Data interface {
 }
 
 type DbData struct {
-	gormDB        *gorm.DB
-	tx            *gorm.DB
-	includeHidden bool
-}
-
-func (dd *DbData) hiddenPosts(flag bool) {
-	dd.includeHidden = flag
+	gormDB *gorm.DB
+	tx     *gorm.DB
 }
 
 func notInXactionErr() error {
@@ -73,8 +67,8 @@ func (dd *DbData) rollback() {
 	dd.tx = nil
 }
 
-func (dd *DbData) post(url string) *Entry {
-	posts := loadPosts(dd, -1, -1, url, dd.includeHidden)
+func (dd *DbData) post(url string, includeHidden bool) *Entry {
+	posts := loadPosts(dd, -1, -1, url, includeHidden)
 	if len(posts) != 1 {
 		msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
 		logger.Println(fmt.Sprintf(msg, url, len(posts)))
@@ -90,13 +84,13 @@ func (dd *DbData) postID(url string) (int64, error) {
 	return post.Id, err
 }
 
-func (dd *DbData) posts(limit, offset int) []*Entry {
-	return loadPosts(dd, limit, offset, "", dd.includeHidden)
+func (dd *DbData) posts(limit, offset int, includeHidden bool) []*Entry {
+	return loadPosts(dd, limit, offset, "", includeHidden)
 }
 
-func (dd *DbData) numPosts() int {
+func (dd *DbData) numPosts(includeHidden bool) int {
 	var count int
-	if dd.includeHidden {
+	if includeHidden {
 		dd.gormDB.Table("post").Count(&count)
 	} else {
 		dd.gormDB.Table("post").Where("hidden=?", false).Count(&count)
@@ -104,15 +98,17 @@ func (dd *DbData) numPosts() int {
 	return count
 }
 
-func (dd *DbData) titles(limit int) ([]EntryLink, error) {
+func (dd *DbData) titles(limit int, includeHidden bool) ([]EntryLink, error) {
 	var results []EntryLink
 	posts := dd.gormDB.Table("post").Select("title, url, hidden")
-	posts = posts.Where("hidden=?", false)
+	if !includeHidden {
+		posts = posts.Where("hidden=?", false)
+	}
 	err := posts.Order("date desc").Limit(limit).Scan(&results).Error
 	return results, err
 }
 
-func (dd *DbData) titlesByTag(tag string) ([]EntryLink, error) {
+func (dd *DbData) titlesByTag(tag string, includeHidden bool) ([]EntryLink, error) {
 	var postIDs []int64
 	var results []EntryLink
 	join := "inner join tag on tagmap.tag_id = tag.id"
@@ -123,7 +119,9 @@ func (dd *DbData) titlesByTag(tag string) ([]EntryLink, error) {
 	}
 	columns := "title, url, hidden"
 	posts := dd.gormDB.Table("post").Select(columns).Where("id in (?)", postIDs)
-	posts = posts.Where("hidden=?", false)
+	if !includeHidden {
+		posts = posts.Where("hidden=?", false)
+	}
 	err = posts.Order("date desc").Scan(&results).Error
 	return results, err
 }
