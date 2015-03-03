@@ -37,6 +37,19 @@ type DbData struct {
 	tx     *gorm.DB
 }
 
+func InitDB(conn string) *DbData {
+	db, err := gorm.Open("postgres", conn)
+	err = db.DB().Ping()
+	if err != nil {
+		panic(err)
+	}
+	db.SingularTable(true)
+	return &DbData{
+		gormDB: &db,
+		tx:     nil,
+	}
+}
+
 func notInXactionErr() error {
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {

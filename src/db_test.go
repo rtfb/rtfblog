@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
 
@@ -25,18 +24,7 @@ func init() {
 		return
 	}
 	conf["database"] = config
-	db, err := gorm.Open("postgres", getDBConnString())
-	if err != nil {
-		panic(err)
-	}
-	err = db.DB().Ping()
-	if err != nil {
-		panic(err)
-	}
-	db.SingularTable(true)
-	realDB = &DbData{
-		gormDB: &db,
-	}
+	realDB = InitDB(getDBConnString())
 	// TODO: insertTestAuthor is not needed, I inserted the entry in
 	// testdb.sql. However, that row has an empty passwd field, which should be
 	// altered.

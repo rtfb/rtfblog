@@ -647,21 +647,14 @@ func main() {
 	conf = obtainConfiguration(bindir)
 	InitL10n(bindir, conf.Get("language"))
 	logger = bark.CreateFile(conf.Get("log"))
-	db, err := gorm.Open("postgres", getDBConnString())
-	defer db.Close()
-	err = db.DB().Ping()
-	if err != nil {
-		panic(err)
-	}
-	db.SingularTable(true)
+	db := InitDB(getDBConnString())
+	defer db.gormDB.Close()
 	logger.Print("The server is listening...")
 	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
 		Router: pat.New(),
-		Db: &DbData{
-			gormDB: &db,
-		},
-		Root:  bindir,
-		Store: sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),
+		Db:     db,
+		Root:   bindir,
+		Store:  sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),
 	})))
 }
