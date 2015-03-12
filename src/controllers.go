@@ -34,7 +34,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//create the context
 	ctx, err := NewContext(req, h.c)
 	if err != nil {
-		InternalError(ctx, w, req, "new context err: "+err.Error())
+		InternalError(ctx, w, req, err, "New context err")
 		return
 	}
 	//defer ctx.Close()
@@ -45,12 +45,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf := new(httpbuf.Buffer)
 	err = h.h(buf, req, ctx)
 	if err != nil {
-		InternalError(ctx, w, req, "Error in handler: "+err.Error())
+		InternalError(ctx, w, req, err, "Error in handler")
 		return
 	}
 	//save the session
 	if err = sessions.Save(req, w); err != nil {
-		InternalError(ctx, w, req, "session save err: "+err.Error())
+		InternalError(ctx, w, req, err, "Session save err")
 		return
 	}
 	buf.Apply(w)
@@ -61,9 +61,8 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-//InternalError is what is called when theres an error processing something
-func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err string) error {
-	logger.Printf("Error serving request page: %s", err)
+func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
+	logger.Printf("%s: %s", prefix, err.Error())
 	return PerformStatus(c, w, req, http.StatusInternalServerError)
 }
 
