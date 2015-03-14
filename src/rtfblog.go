@@ -532,10 +532,12 @@ func SendEmail(subj, body string) {
 }
 
 func initRoutes(gctx *GlobalContext) *pat.Router {
+	const (
+		G = "GET"
+		P = "POST"
+	)
 	r := gctx.Router
 	dir := filepath.Join(gctx.Root, conf.Get("staticdir"))
-	G := "GET"
-	P := "POST"
 	mkHandler := func(f HandlerFunc) *Handler {
 		return &Handler{h: f, c: gctx, logRq: true}
 	}
