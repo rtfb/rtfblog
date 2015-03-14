@@ -95,16 +95,3 @@ func (c *Context) routeByName(name string, things ...interface{}) string {
 	}
 	return u.Path
 }
-
-func checkPerm(handler *Handler) *Handler {
-	return &Handler{
-		h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-			if !ctx.AdminLogin {
-				PerformStatus(ctx, w, req, http.StatusForbidden)
-				return nil
-			}
-			return handler.h(w, req, ctx)
-		},
-		c: handler.c,
-	}
-}

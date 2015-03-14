@@ -542,7 +542,17 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 		return &Handler{h: f, c: gctx, logRq: true}
 	}
 	mkAdminHandler := func(f HandlerFunc) *Handler {
-		return checkPerm(&Handler{h: f, c: gctx, logRq: true})
+		return &Handler{
+			h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+				if !ctx.AdminLogin {
+					PerformStatus(ctx, w, req, http.StatusForbidden)
+					return nil
+				}
+				return f(w, req, ctx)
+			},
+			c:     gctx,
+			logRq: true,
+		}
 	}
 	r.Add(G, "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
 	r.Add(G, "/login", mkHandler(LoginForm)).Name("login")
