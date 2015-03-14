@@ -5,3 +5,7 @@ production:
 development:
     driver: postgres
     open: $RTFBLOG_DB_TEST_URL
+
+staging:
+    driver: postgres
+    open: $RTFBLOG_DB_STAGING_TEST_URL
