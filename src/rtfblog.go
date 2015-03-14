@@ -531,11 +531,6 @@ func SendEmail(subj, body string) {
 	}
 }
 
-func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	http.ServeFile(w, req, conf.Get("favicon"))
-	return nil
-}
-
 func initRoutes(gctx *GlobalContext) *pat.Router {
 	r := gctx.Router
 	dir := filepath.Join(gctx.Root, conf.Get("staticdir"))

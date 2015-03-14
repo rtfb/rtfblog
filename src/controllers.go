@@ -61,6 +61,11 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
+func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	http.ServeFile(w, req, conf.Get("favicon"))
+	return nil
+}
+
 func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
 	logger.Printf("%s: %s", prefix, err.Error())
 	return PerformStatus(c, w, req, http.StatusInternalServerError)
