@@ -2,9 +2,6 @@ build
 tests.log
 server.conf
 vim-session
-testdata/rtfblog-dump.sql
-testdata/legacy-db.conf
-testdata/db.conf
 stuff/
 priv_key
 node_modules
