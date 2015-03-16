@@ -326,41 +326,25 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 }
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tags := req.FormValue("tags")
+	txErr := ctx.Db.begin()
+	if txErr != nil {
+		return txErr
+	}
+	defer ctx.Db.rollback()
 	url := req.FormValue("url")
-	e := EntryTable{
+	postID, err := InsertOrUpdatePost(ctx.Db, &EntryTable{
 		EntryLink: EntryLink{
 			Title:  req.FormValue("title"),
 			URL:    url,
 			Hidden: req.FormValue("hidden") == "on",
 		},
 		Body: template.HTML(req.FormValue("text")),
+	})
+	if err != nil {
+		return err
 	}
-	postID, idErr := ctx.Db.postID(url)
-	txErr := ctx.Db.begin()
-	if txErr != nil {
-		return txErr
-	}
-	defer ctx.Db.rollback()
-	if idErr != nil {
-		if idErr == gorm.RecordNotFound {
-			e.AuthorID = int64(1) // XXX: it's only me now
-			newPostID, err := ctx.Db.insertPost(&e)
-			if err != nil {
-				return err
-			}
-			postID = newPostID
-		} else {
-			return logger.LogIff(idErr, "ctx.Db.postID() failed")
-		}
-	} else {
-		e.Id = postID
-		updErr := ctx.Db.updatePost(&e)
-		if updErr != nil {
-			return updErr
-		}
-	}
-	err := ctx.Db.updateTags(explodeTags(tags), postID)
+	tags := req.FormValue("tags")
+	err = ctx.Db.updateTags(explodeTags(tags), postID)
 	if err != nil {
 		return err
 	}

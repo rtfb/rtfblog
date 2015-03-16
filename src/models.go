@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/jinzhu/gorm"
 )
 
 type Context struct {
@@ -69,4 +70,27 @@ func PublishComment(db Data, postID, commenterID int64, body string) (string, er
 	}
 	db.commit()
 	return fmt.Sprintf("#comment-%d", commentID), nil
+}
+
+func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
+	postID, idErr := db.postID(post.URL)
+	if idErr != nil {
+		if idErr == gorm.RecordNotFound {
+			post.AuthorID = int64(1) // XXX: it's only me now
+			newPostID, err := db.insertPost(post)
+			if err != nil {
+				return -1, err
+			}
+			postID = newPostID
+		} else {
+			return -1, logger.LogIff(idErr, "db.postID() failed")
+		}
+	} else {
+		post.Id = postID
+		updErr := db.updatePost(post)
+		if updErr != nil {
+			return -1, updErr
+		}
+	}
+	return postID, nil
 }
