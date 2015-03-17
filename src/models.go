@@ -42,6 +42,20 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	}
 }
 
+func withTransaction(db Data, fn func(db Data) error) error {
+	txErr := db.begin()
+	if txErr != nil {
+		return txErr
+	}
+	err := fn(db)
+	if err != nil {
+		db.rollback()
+		return err
+	}
+	db.commit()
+	return nil
+}
+
 func PublishCommentWithInsert(db Data, postID int64, commenter Commenter, rawBody string) (string, error) {
 	if db.begin() != nil {
 		return "", nil

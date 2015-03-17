@@ -326,31 +326,25 @@ func ModerateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 }
 
 func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	txErr := ctx.Db.begin()
-	if txErr != nil {
-		return txErr
-	}
-	defer ctx.Db.rollback()
 	url := req.FormValue("url")
-	postID, err := InsertOrUpdatePost(ctx.Db, &EntryTable{
-		EntryLink: EntryLink{
-			Title:  req.FormValue("title"),
-			URL:    url,
-			Hidden: req.FormValue("hidden") == "on",
-		},
-		Body: template.HTML(req.FormValue("text")),
+	err := withTransaction(ctx.Db, func(db Data) error {
+		postID, err := InsertOrUpdatePost(db, &EntryTable{
+			EntryLink: EntryLink{
+				Title:  req.FormValue("title"),
+				URL:    url,
+				Hidden: req.FormValue("hidden") == "on",
+			},
+			Body: template.HTML(req.FormValue("text")),
+		})
+		if err != nil {
+			return err
+		}
+		return db.updateTags(explodeTags(req.FormValue("tags")), postID)
 	})
-	if err != nil {
-		return err
+	if err == nil {
+		http.Redirect(w, req, "/"+url, http.StatusSeeOther)
 	}
-	tags := req.FormValue("tags")
-	err = ctx.Db.updateTags(explodeTags(tags), postID)
-	if err != nil {
-		return err
-	}
-	ctx.Db.commit()
-	http.Redirect(w, req, "/"+url, http.StatusSeeOther)
-	return nil
+	return err
 }
 
 func explodeTags(tagsStr string) []*Tag {
