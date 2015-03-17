@@ -57,33 +57,29 @@ func withTransaction(db Data, fn func(db Data) error) error {
 }
 
 func PublishCommentWithInsert(db Data, postID int64, commenter Commenter, rawBody string) (string, error) {
-	if db.begin() != nil {
-		return "", nil
-	}
-	defer db.rollback()
-	commenterID, err := db.insertCommenter(commenter)
-	if err != nil {
-		return "", logger.LogIff(err, "db.insertCommenter() failed")
-	}
-	commentID, err := db.insertComment(commenterID, postID, rawBody)
-	if err != nil {
-		return "", logger.LogIff(err, "db.insertComment() failed")
-	}
-	db.commit()
-	return fmt.Sprintf("#comment-%d", commentID), nil
+	var commentID int64
+	err := withTransaction(db, func(db Data) error {
+		commenterID, err := db.insertCommenter(commenter)
+		if err != nil {
+			return logger.LogIff(err, "db.insertCommenter() failed")
+		}
+		commentID, err = db.insertComment(commenterID, postID, rawBody)
+		if err != nil {
+			return logger.LogIff(err, "db.insertComment() failed")
+		}
+		return nil
+	})
+	return fmt.Sprintf("#comment-%d", commentID), err
 }
 
 func PublishComment(db Data, postID, commenterID int64, body string) (string, error) {
-	if db.begin() != nil {
-		return "", nil
-	}
-	defer db.rollback()
-	commentID, err := db.insertComment(commenterID, postID, body)
-	if err != nil {
-		return "", logger.LogIff(err, "db.insertComment() failed")
-	}
-	db.commit()
-	return fmt.Sprintf("#comment-%d", commentID), nil
+	var commentID int64
+	err := withTransaction(db, func(db Data) error {
+		var insErr error
+		commentID, insErr = db.insertComment(commenterID, postID, body)
+		return logger.LogIff(insErr, "db.insertComment() failed")
+	})
+	return fmt.Sprintf("#comment-%d", commentID), err
 }
 
 func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
