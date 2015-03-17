@@ -432,7 +432,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 			logger.Println(log)
 			if lang == "\"lt\"" {
-				commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
+				commentURL, err := PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 				if err != nil {
 					return err
 				}
@@ -447,7 +447,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 				WrongCaptchaReply(w, req, "rejected", captchaTask)
 				return nil
 			}
-			commentURL, err := PublishCommentWithInsert(ctx.Db, postID, commenter, body)
+			commentURL, err := PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 			if err != nil {
 				return err
 			}

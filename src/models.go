@@ -56,7 +56,7 @@ func withTransaction(db Data, fn func(db Data) error) error {
 	return nil
 }
 
-func PublishCommentWithInsert(db Data, postID int64, commenter Commenter, rawBody string) (string, error) {
+func PublishCommentAndCommenter(db Data, postID int64, commenter Commenter, rawBody string) (string, error) {
 	var commentID int64
 	err := withTransaction(db, func(db Data) error {
 		commenterID, err := db.insertCommenter(commenter)
