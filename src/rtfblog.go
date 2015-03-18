@@ -427,9 +427,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			lang := DetectLanguageWithTimeout(body)
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 			logger.Println(log)
-			if lang == "\"lt\"" {
-				commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
-			} else {
+			if lang != "\"lt\"" {
 				WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
 				return nil
 			}
@@ -439,8 +437,8 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 				WrongCaptchaReply(w, req, "rejected", captchaTask)
 				return nil
 			}
-			commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 		}
+		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	} else {
 		logger.LogIf(err)
 		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
