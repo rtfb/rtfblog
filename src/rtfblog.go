@@ -418,11 +418,12 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	body := req.FormValue("text")
 	commenterID, err := ctx.Db.commenterID(commenter)
 	commentURL := ""
-	captchaID := req.FormValue("captcha-id")
-	if err == nil {
+	switch err {
+	case nil:
 		// This is a returning commenter, pass his comment through:
 		commentURL, err = PublishComment(ctx.Db, postID, commenterID, body)
-	} else if err == gorm.RecordNotFound {
+	case gorm.RecordNotFound:
+		captchaID := req.FormValue("captcha-id")
 		if captchaID == "" {
 			lang := DetectLanguageWithTimeout(body)
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
@@ -439,7 +440,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			}
 		}
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
-	} else {
+	default:
 		logger.LogIf(err)
 		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
 		return nil
