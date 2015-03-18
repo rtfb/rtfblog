@@ -20,8 +20,8 @@ type Data interface {
 	deleteComment(id string) error
 	deletePost(url string) error
 	updateComment(id, text string) error
-	commenterID(c Commenter) (id int64, err error)
-	insertCommenter(c Commenter) (id int64, err error)
+	commenterID(c *Commenter) (id int64, err error)
+	insertCommenter(c *Commenter) (id int64, err error)
 	insertComment(commenterID, postID int64, body string) (id int64, err error)
 	insertPost(e *EntryTable) (id int64, err error)
 	updatePost(e *EntryTable) error
@@ -158,17 +158,17 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 	return results, err
 }
 
-func (dd *DbData) commenterID(c Commenter) (id int64, err error) {
+func (dd *DbData) commenterID(c *Commenter) (id int64, err error) {
 	where := "name = ? and email = ? and www = ?"
 	err = dd.gormDB.Select("id").Where(where, c.Name, c.Email, c.Website).Scan(&id).Error
 	return
 }
 
-func (dd *DbData) insertCommenter(c Commenter) (id int64, err error) {
+func (dd *DbData) insertCommenter(c *Commenter) (id int64, err error) {
 	if dd.tx == nil {
 		return -1, notInXactionErr()
 	}
-	entry := CommenterTable{Id: 0, Commenter: c}
+	entry := CommenterTable{Id: 0, Commenter: *c}
 	err = dd.tx.Save(&entry).Error
 	return entry.Id, err
 }

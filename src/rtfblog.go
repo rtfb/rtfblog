@@ -409,7 +409,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	if err != nil {
 		return logger.LogIff(err, "ctx.Db.postID('%s') failed", refURL)
 	}
-	commenter := Commenter{
+	commenter := &Commenter{
 		Name:    req.FormValue("name"),
 		Email:   req.FormValue("email"),
 		Website: httputil.AddProtocol(req.FormValue("website"), "http"),
@@ -467,7 +467,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	return nil
 }
 
-func mkCommentNotifEmail(commenter Commenter, rawBody, url, postTitle string) (subj, body string) {
+func mkCommentNotifEmail(commenter *Commenter, rawBody, url, postTitle string) (subj, body string) {
 	const messageTmpl = `
 {{with .Commenter}}
 New comment from {{.Name}} <{{.Email}}> ({{.Website}}):
@@ -484,7 +484,7 @@ URL: {{.URL}}
 		RawBody string
 		URL     string
 	}{
-		Commenter: commenter,
+		Commenter: *commenter,
 		RawBody:   rawBody,
 		URL:       url,
 	})

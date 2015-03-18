@@ -181,12 +181,12 @@ func (td *TestData) commit() {
 func (td *TestData) rollback() {
 }
 
-func (td *TestData) insertCommenter(c Commenter) (id int64, err error) {
+func (td *TestData) insertCommenter(c *Commenter) (id int64, err error) {
 	td.pushCall(c.Name)
 	return
 }
 
-func (td *TestData) commenterID(c Commenter) (id int64, err error) {
+func (td *TestData) commenterID(c *Commenter) (id int64, err error) {
 	tc := testComm[0]
 	if c.Name == tc.Name && c.Email == tc.Email && c.Website == tc.Website {
 		return 1, nil

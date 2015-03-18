@@ -737,7 +737,7 @@ func TestObtainConfiguration(t *testing.T) {
 }
 
 func TestMkNotifEmail(t *testing.T) {
-	subj, body := mkCommentNotifEmail(Commenter{
+	subj, body := mkCommentNotifEmail(&Commenter{
 		Name:    "Commenter",
 		Email:   "comm@ent.er",
 		Website: "wwweb",

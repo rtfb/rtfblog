@@ -221,7 +221,7 @@ func testUpdatePost(t *testing.T) {
 func testInsertComment(t *testing.T) {
 	data.begin()
 	defer data.rollback()
-	commenterID, err := data.insertCommenter(Commenter{
+	commenterID, err := data.insertCommenter(&Commenter{
 		Name:    "cname",
 		Email:   "cemail",
 		Website: "cwebsite",
