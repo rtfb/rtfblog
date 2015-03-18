@@ -38,7 +38,7 @@ func mustUnmarshal(t *testing.T, jsonObj string) map[string]interface{} {
 	var obj map[string]interface{}
 	err := json.Unmarshal([]byte(jsonObj), &obj)
 	if err != nil {
-		t.Fatalf("json.Unmarshal(%q) =\nerror %q", jsonObj, err.Error())
+		t.Fatalf("json.Unmarshal(%v) =\nerror %q", jsonObj, err.Error())
 	}
 	return obj
 }
