@@ -403,18 +403,22 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 	return
 }
 
+func prepareCommenter(req *http.Request) *Commenter {
+	return &Commenter{
+		Name:    req.FormValue("name"),
+		Email:   req.FormValue("email"),
+		Website: httputil.AddProtocol(req.FormValue("website"), "http"),
+		IP:      httputil.GetIPAddress(req),
+	}
+}
+
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	refURL := httputil.ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
 		return logger.LogIff(err, "ctx.Db.postID('%s') failed", refURL)
 	}
-	commenter := &Commenter{
-		Name:    req.FormValue("name"),
-		Email:   req.FormValue("email"),
-		Website: httputil.AddProtocol(req.FormValue("website"), "http"),
-		IP:      httputil.GetIPAddress(req),
-	}
+	commenter := prepareCommenter(req)
 	body := req.FormValue("text")
 	commenterID, err := ctx.Db.commenterID(commenter)
 	commentURL := ""
