@@ -422,9 +422,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	if err == nil {
 		// This is a returning commenter, pass his comment through:
 		commentURL, err = PublishComment(ctx.Db, postID, commenterID, body)
-		if err != nil {
-			return err
-		}
 	} else if err == gorm.RecordNotFound {
 		if captchaID == "" {
 			lang := DetectLanguageWithTimeout(body)
@@ -432,9 +429,6 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			logger.Println(log)
 			if lang == "\"lt\"" {
 				commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
-				if err != nil {
-					return err
-				}
 			} else {
 				WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
 				return nil
@@ -446,14 +440,14 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 				return nil
 			}
 			commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
-			if err != nil {
-				return err
-			}
 		}
 	} else {
 		logger.LogIf(err)
 		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
 		return nil
+	}
+	if err != nil {
+		return err
 	}
 	redir := "/" + refURL + commentURL
 	sendNewCommentNotif(req, redir, commenter)
