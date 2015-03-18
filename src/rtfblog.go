@@ -458,13 +458,20 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
 		return nil
 	}
-	if conf.Get("notif_send_email") == "true" {
-		url := httputil.GetHost(req) + redir
-		subj, body := mkCommentNotifEmail(commenter, req.FormValue("text"), url, refURL)
-		go SendEmail(subj, body)
-	}
+	sendNewCommentNotif(req, redir, commenter)
 	RightCaptchaReply(w, redir)
 	return nil
+}
+
+func sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
+	if conf.Get("notif_send_email") != "true" {
+		return
+	}
+	refURL := httputil.ExtractReferer(req)
+	url := httputil.GetHost(req) + redir
+	text := req.FormValue("text")
+	subj, body := mkCommentNotifEmail(commenter, text, url, refURL)
+	go SendEmail(subj, body)
 }
 
 func mkCommentNotifEmail(commenter *Commenter, rawBody, url, postTitle string) (subj, body string) {
