@@ -429,29 +429,25 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 			logger.Println(log)
 			if lang != "\"lt\"" {
-				WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
-				return nil
+				return WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
 			}
 		} else {
 			captchaTask := ctx.Captcha.GetTaskByID(captchaID)
 			if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
-				WrongCaptchaReply(w, req, "rejected", captchaTask)
-				return nil
+				return WrongCaptchaReply(w, req, "rejected", captchaTask)
 			}
 		}
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	default:
 		logger.LogIf(err)
-		WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
-		return nil
+		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
 	}
 	if err != nil {
 		return err
 	}
 	redir := "/" + refURL + commentURL
 	sendNewCommentNotif(req, redir, commenter)
-	RightCaptchaReply(w, redir)
-	return nil
+	return RightCaptchaReply(w, redir)
 }
 
 func sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
