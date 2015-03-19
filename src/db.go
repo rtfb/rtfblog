@@ -15,7 +15,7 @@ type Data interface {
 	titles(limit int, includeHidden bool) ([]EntryLink, error)
 	titlesByTag(tag string, includeHidden bool) ([]EntryLink, error)
 	allComments() ([]*CommentWithPostTitle, error)
-	numPosts(includeHidden bool) int
+	numPosts(includeHidden bool) (int, error)
 	author(username string) (*Author, error)
 	deleteComment(id string) error
 	deletePost(url string) error
@@ -101,14 +101,14 @@ func (dd *DbData) posts(limit, offset int, includeHidden bool) []*Entry {
 	return loadPosts(dd, limit, offset, "", includeHidden)
 }
 
-func (dd *DbData) numPosts(includeHidden bool) int {
+func (dd *DbData) numPosts(includeHidden bool) (int, error) {
 	var count int
 	if includeHidden {
 		dd.gormDB.Table("post").Count(&count)
 	} else {
 		dd.gormDB.Table("post").Where("hidden=?", false).Count(&count)
 	}
-	return count
+	return count, dd.gormDB.Error
 }
 
 func (dd *DbData) titles(limit int, includeHidden bool) ([]EntryLink, error) {

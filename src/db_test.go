@@ -143,7 +143,10 @@ func testNumPosts(t *testing.T) {
 	data.commit()
 
 	// Now test a few methods
-	numPosts := data.numPosts(true)
+	numPosts, err := data.numPosts(true)
+	if err != nil {
+		t.Fatalf("Failed to get numPosts, err = %s", err.Error())
+	}
 	if numPosts != 3 {
 		t.Errorf("Wrong numPosts: expected %d, but got %d", 3, numPosts)
 	}

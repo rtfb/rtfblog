@@ -27,7 +27,8 @@ func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 }
 
 func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
-	numTotalPosts := ctx.Db.numPosts(ctx.AdminLogin)
+	numTotalPosts, err := ctx.Db.numPosts(ctx.AdminLogin)
+	logger.LogIf(err)
 	titles, err := ctx.Db.titles(NumRecentPosts, ctx.AdminLogin)
 	logger.LogIf(err)
 	return TmplMap{

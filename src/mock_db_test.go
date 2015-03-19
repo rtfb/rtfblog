@@ -113,8 +113,8 @@ func (td *TestData) posts(limit, offset int, includeHidden bool) []*Entry {
 	return tp
 }
 
-func (td *TestData) numPosts(includeHidden bool) int {
-	return len(td.testPosts(includeHidden))
+func (td *TestData) numPosts(includeHidden bool) (int, error) {
+	return len(td.testPosts(includeHidden)), nil
 }
 
 func (td *TestData) titles(limit int, includeHidden bool) (links []EntryLink, err error) {
