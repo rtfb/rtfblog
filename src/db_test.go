@@ -44,14 +44,20 @@ func testExistingAuthor(t *testing.T) {
 }
 
 func testPost(t *testing.T) {
-	post := data.post("url", true)
+	post, err := data.post("url", true)
+	if err != nil {
+		t.Fatalf("Failed to query post, err = %s", err.Error())
+	}
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
 	if post.Title != "title" {
 		t.Errorf("Wrong title, expected %q, got %q", "title", post.Title)
 	}
-	post = data.post("non-existant", true)
+	post, err = data.post("non-existant", true)
+	if err == nil {
+		t.Fatalf("Expected to fail querying non-existant post, but err == nil")
+	}
 	if post != nil {
 		t.Fatalf("Should not find this post")
 	}
@@ -151,12 +157,18 @@ func testNumPosts(t *testing.T) {
 		t.Errorf("Wrong numPosts: expected %d, but got %d", 3, numPosts)
 	}
 
-	allPosts := data.posts(-1, 0, true)
+	allPosts, err := data.posts(-1, 0, true)
+	if err != nil {
+		t.Fatalf("Failed to query posts, err = %s", err.Error())
+	}
 	if len(allPosts) != 3 {
 		t.Errorf("Wrong len(allPosts): expected %d, but got %d", 3, len(allPosts))
 	}
 
-	secondPost := data.posts(1, 1, true)
+	secondPost, err := data.posts(1, 1, true)
+	if err != nil {
+		t.Fatalf("Failed to query posts, err = %s", err.Error())
+	}
 	if len(secondPost) != 1 {
 		t.Errorf("Wrong len(secondPost): expected %d, but got %d", 1, len(secondPost))
 	}
@@ -212,7 +224,10 @@ func testUpdatePost(t *testing.T) {
 		t.Fatalf("Failed to updatePost: " + err.Error())
 	}
 	data.commit()
-	post := data.post("url-three", true)
+	post, err := data.post("url-three", true)
+	if err != nil {
+		t.Fatalf("Failed to query post, err = %s", err.Error())
+	}
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
@@ -297,7 +312,10 @@ func testDeletePost(t *testing.T) {
 		t.Fatalf("deletePost failed: " + err.Error())
 	}
 	data.commit()
-	posts := data.posts(-1, 0, true)
+	posts, err := data.posts(-1, 0, true)
+	if err != nil {
+		t.Fatalf("Failed to query posts, err = %s", err.Error())
+	}
 	if len(posts) != 2 {
 		t.Fatalf("Wrong len(posts) = %d, expected %d", len(posts), 2)
 	}

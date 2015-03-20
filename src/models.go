@@ -31,13 +31,15 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	logger.LogIf(err)
 	titles, err := ctx.Db.titles(NumRecentPosts, ctx.AdminLogin)
 	logger.LogIf(err)
+	posts, err := ctx.Db.posts(PostsPerPage, offset, ctx.AdminLogin)
+	logger.LogIf(err)
 	return TmplMap{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Get("blog_title"),
 		"BlogSubtitle":    conf.Get("blog_descr"),
 		"NeedPagination":  numTotalPosts > PostsPerPage,
 		"ListOfPages":     listOfPages(numTotalPosts, pageNo),
-		"entries":         ctx.Db.posts(PostsPerPage, offset, ctx.AdminLogin),
+		"entries":         posts,
 		"sidebar_entries": titles,
 		"AdminLogin":      ctx.AdminLogin,
 	}

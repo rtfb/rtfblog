@@ -73,13 +73,13 @@ func (td *TestData) expectSeries(t *testing.T, series []CallSpec) {
 	}
 }
 
-func (td *TestData) post(url string, includeHidden bool) *Entry {
+func (td *TestData) post(url string, includeHidden bool) (*Entry, error) {
 	for _, e := range td.testPosts(includeHidden) {
 		if e.URL == url {
-			return e
+			return e, nil
 		}
 	}
-	return nil
+	return nil, fmt.Errorf("post %q not found", url)
 }
 
 func (td *TestData) postID(url string) (id int64, err error) {
@@ -102,15 +102,15 @@ func (td *TestData) testPosts(includeHidden bool) []*Entry {
 	return posts
 }
 
-func (td *TestData) posts(limit, offset int, includeHidden bool) []*Entry {
+func (td *TestData) posts(limit, offset int, includeHidden bool) ([]*Entry, error) {
 	if offset < 0 {
 		offset = 0
 	}
 	tp := td.testPosts(includeHidden)
 	if limit > 0 && limit < len(tp) {
-		return tp[offset:(offset + limit)]
+		return tp[offset:(offset + limit)], nil
 	}
-	return tp
+	return tp, nil
 }
 
 func (td *TestData) numPosts(includeHidden bool) (int, error) {

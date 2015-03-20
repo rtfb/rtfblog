@@ -9,9 +9,9 @@ import (
 )
 
 type Data interface {
-	post(url string, includeHidden bool) *Entry
+	post(url string, includeHidden bool) (*Entry, error)
 	postID(url string) (id int64, err error)
-	posts(limit, offset int, includeHidden bool) []*Entry
+	posts(limit, offset int, includeHidden bool) ([]*Entry, error)
 	titles(limit int, includeHidden bool) ([]EntryLink, error)
 	titlesByTag(tag string, includeHidden bool) ([]EntryLink, error)
 	allComments() ([]*CommentWithPostTitle, error)
@@ -80,14 +80,16 @@ func (dd *DbData) rollback() {
 	dd.tx = nil
 }
 
-func (dd *DbData) post(url string, includeHidden bool) *Entry {
-	posts := loadPosts(dd, -1, -1, url, includeHidden)
-	if len(posts) != 1 {
-		msg := "Error! DbData.post(%q) should return 1 post, but returned %d\n"
-		logger.Println(fmt.Sprintf(msg, url, len(posts)))
-		return nil
+func (dd *DbData) post(url string, includeHidden bool) (*Entry, error) {
+	posts, err := queryPosts(dd, -1, -1, url, includeHidden)
+	if err != nil {
+		return nil, err
 	}
-	return posts[0]
+	if len(posts) != 1 {
+		msg := "DbData.post(%q) should return 1 post, but returned %d"
+		return nil, fmt.Errorf(msg, url, len(posts))
+	}
+	return posts[0], nil
 }
 
 func (dd *DbData) postID(url string) (int64, error) {
@@ -97,8 +99,8 @@ func (dd *DbData) postID(url string) (int64, error) {
 	return post.Id, err
 }
 
-func (dd *DbData) posts(limit, offset int, includeHidden bool) []*Entry {
-	return loadPosts(dd, limit, offset, "", includeHidden)
+func (dd *DbData) posts(limit, offset int, includeHidden bool) ([]*Entry, error) {
+	return queryPosts(dd, limit, offset, "", includeHidden)
 }
 
 func (dd *DbData) numPosts(includeHidden bool) (int, error) {
@@ -236,15 +238,6 @@ func (dd *DbData) deletePost(url string) error {
 
 func (dd *DbData) updateComment(id, text string) error {
 	return dd.gormDB.Model(CommentTable{}).Where("id=?", id).Update("body", text).Error
-}
-
-func loadPosts(dd *DbData, limit, offset int, url string, includeHidden bool) []*Entry {
-	data, err := queryPosts(dd, limit, offset, url, includeHidden)
-	if err != nil {
-		logger.Log(err)
-		return nil
-	}
-	return data
 }
 
 func queryPosts(dd *DbData, limit, offset int, url string,

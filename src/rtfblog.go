@@ -123,7 +123,8 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
-	if post := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin); post != nil {
+	post, err := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin)
+	if err == nil && post != nil {
 		ctx.Captcha.SetNextTask(-1)
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
@@ -231,7 +232,8 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData["AllTags"] = makeTagList(tags)
 	url := strings.TrimRight(req.FormValue("post"), "&")
 	if url != "" {
-		if post := ctx.Db.post(url, ctx.AdminLogin); post != nil {
+		post, err := ctx.Db.post(url, ctx.AdminLogin)
+		if err == nil && post != nil {
 			tmplData["IsHidden"] = post.Hidden
 			tmplData["post"] = post
 		}
@@ -243,7 +245,8 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	url := req.FormValue("post")
-	if post := ctx.Db.post(url, ctx.AdminLogin); post != nil {
+	post, err := ctx.Db.post(url, ctx.AdminLogin)
+	if err == nil && post != nil {
 		b, err := json.Marshal(post)
 		if err != nil {
 			return logger.LogIf(err)
@@ -254,7 +257,11 @@ func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 }
 
 func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	produceFeedXML(w, req, ctx.Db.posts(NumFeedItems, 0, false))
+	posts, err := ctx.Db.posts(NumFeedItems, 0, false)
+	if err != nil {
+		return logger.LogIf(err)
+	}
+	produceFeedXML(w, req, posts)
 	return nil
 }
 
