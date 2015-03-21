@@ -638,7 +638,7 @@ func main() {
 	InitL10n(bindir, conf.Get("language"))
 	logger = bark.CreateFile(conf.Get("log"))
 	db := InitDB(getDBConnString())
-	defer db.gormDB.Close()
+	defer db.db.Close()
 	logger.Print("The server is listening...")
 	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
 	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{

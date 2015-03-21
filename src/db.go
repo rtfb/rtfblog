@@ -33,8 +33,8 @@ type Data interface {
 }
 
 type DbData struct {
-	gormDB *gorm.DB
-	tx     *gorm.DB
+	db *gorm.DB
+	tx *gorm.DB
 }
 
 func InitDB(conn string) *DbData {
@@ -45,8 +45,8 @@ func InitDB(conn string) *DbData {
 	}
 	db.SingularTable(true)
 	return &DbData{
-		gormDB: &db,
-		tx:     nil,
+		db: &db,
+		tx: nil,
 	}
 }
 
@@ -61,13 +61,13 @@ func notInXactionErr() error {
 }
 
 func (dd *DbData) begin() error {
-	dd.tx = dd.gormDB.Begin()
+	dd.tx = dd.db.Begin()
 	return dd.tx.Error
 }
 
 func (dd *DbData) commit() {
 	dd.tx.Commit()
-	logger.LogIf(dd.gormDB.Error)
+	logger.LogIf(dd.db.Error)
 	dd.tx = nil
 }
 
@@ -76,7 +76,7 @@ func (dd *DbData) rollback() {
 		return
 	}
 	dd.tx.Rollback()
-	logger.LogIf(dd.gormDB.Error)
+	logger.LogIf(dd.db.Error)
 	dd.tx = nil
 }
 
@@ -94,7 +94,7 @@ func (dd *DbData) post(url string, includeHidden bool) (*Entry, error) {
 
 func (dd *DbData) postID(url string) (int64, error) {
 	var post Entry
-	rows := dd.gormDB.Table("post").Where("url = ?", url).Select("id")
+	rows := dd.db.Table("post").Where("url = ?", url).Select("id")
 	err := rows.First(&post).Error
 	return post.Id, err
 }
@@ -106,16 +106,16 @@ func (dd *DbData) posts(limit, offset int, includeHidden bool) ([]*Entry, error)
 func (dd *DbData) numPosts(includeHidden bool) (int, error) {
 	var count int
 	if includeHidden {
-		dd.gormDB.Table("post").Count(&count)
+		dd.db.Table("post").Count(&count)
 	} else {
-		dd.gormDB.Table("post").Where("hidden=?", false).Count(&count)
+		dd.db.Table("post").Where("hidden=?", false).Count(&count)
 	}
-	return count, dd.gormDB.Error
+	return count, dd.db.Error
 }
 
 func (dd *DbData) titles(limit int, includeHidden bool) ([]EntryLink, error) {
 	var results []EntryLink
-	posts := dd.gormDB.Table("post").Select("title, url, hidden")
+	posts := dd.db.Table("post").Select("title, url, hidden")
 	if !includeHidden {
 		posts = posts.Where("hidden=?", false)
 	}
@@ -127,13 +127,13 @@ func (dd *DbData) titlesByTag(tag string, includeHidden bool) ([]EntryLink, erro
 	var postIDs []int64
 	var results []EntryLink
 	join := "inner join tag on tagmap.tag_id = tag.id"
-	rows := dd.gormDB.Table("tagmap").Joins(join).Where("tag.tag=?", tag)
+	rows := dd.db.Table("tagmap").Joins(join).Where("tag.tag=?", tag)
 	err := rows.Pluck("post_id", &postIDs).Error
 	if err != nil {
 		return nil, err
 	}
 	columns := "title, url, hidden"
-	posts := dd.gormDB.Table("post").Select(columns).Where("id in (?)", postIDs)
+	posts := dd.db.Table("post").Select(columns).Where("id in (?)", postIDs)
 	if !includeHidden {
 		posts = posts.Where("hidden=?", false)
 	}
@@ -148,7 +148,7 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 		post.title, post.url`
 	join := `right join comment on commenter.id = comment.commenter_id
 		inner join post on comment.post_id = post.id`
-	joined := dd.gormDB.Table("commenter").Select(sel).Joins(join)
+	joined := dd.db.Table("commenter").Select(sel).Joins(join)
 	err := joined.Order("comment.timestamp desc").Scan(&results).Error
 	// TODO: there's an identical loop in queryComments, but it loops over
 	// []Comment instead of []CommentWithPostTitle. Would be nice to unify.
@@ -162,7 +162,7 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 
 func (dd *DbData) commenterID(c *Commenter) (id int64, err error) {
 	where := "name = ? and email = ? and www = ?"
-	err = dd.gormDB.Select("id").Where(where, c.Name, c.Email, c.Website).Scan(&id).Error
+	err = dd.db.Select("id").Where(where, c.Name, c.Email, c.Website).Scan(&id).Error
 	return
 }
 
@@ -224,20 +224,20 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 
 func (dd *DbData) author(username string) (*Author, error) {
 	var a Author
-	err := dd.gormDB.Where("disp_name = ?", username).First(&a).Error
+	err := dd.db.Where("disp_name = ?", username).First(&a).Error
 	return &a, err
 }
 
 func (dd *DbData) deleteComment(id string) error {
-	return dd.gormDB.Where("id=?", id).Delete(CommentTable{}).Error
+	return dd.db.Where("id=?", id).Delete(CommentTable{}).Error
 }
 
 func (dd *DbData) deletePost(url string) error {
-	return dd.gormDB.Where("url=?", url).Delete(Entry{}).Error
+	return dd.db.Where("url=?", url).Delete(Entry{}).Error
 }
 
 func (dd *DbData) updateComment(id, text string) error {
-	return dd.gormDB.Model(CommentTable{}).Where("id=?", id).Update("body", text).Error
+	return dd.db.Model(CommentTable{}).Where("id=?", id).Update("body", text).Error
 }
 
 func queryPosts(dd *DbData, limit, offset int, url string,
@@ -246,7 +246,7 @@ func queryPosts(dd *DbData, limit, offset int, url string,
 	cols := `author.disp_name, post.id, post.title, post.date, post.body,
 		post.url, post.hidden`
 	join := "inner join author on post.author_id=author.id"
-	posts := dd.gormDB.Table("post").Select(cols).Joins(join)
+	posts := dd.db.Table("post").Select(cols).Joins(join)
 	if !includeHidden {
 		posts = posts.Where("hidden=?", false)
 	}
@@ -258,8 +258,8 @@ func queryPosts(dd *DbData, limit, offset int, url string,
 	for _, p := range results {
 		p.Body = sanitizeTrustedHTML(mdToHTML(p.RawBody))
 		p.Date = time.Unix(p.UnixDate, 0).Format("2006-01-02")
-		p.Tags = queryTags(dd.gormDB, p.Id)
-		p.Comments = queryComments(dd.gormDB, p.Id)
+		p.Tags = queryTags(dd.db, p.Id)
+		p.Comments = queryComments(dd.db, p.Id)
 	}
 	return results, err
 }
@@ -274,7 +274,7 @@ func queryTags(db *gorm.DB, postID int64) []*Tag {
 
 func (dd *DbData) queryAllTags() ([]*Tag, error) {
 	var tags []*Tag
-	err := dd.gormDB.Find(&tags).Error
+	err := dd.db.Find(&tags).Error
 	return tags, err
 }
 
