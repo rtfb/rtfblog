@@ -269,7 +269,8 @@ func queryTags(db *gorm.DB, postID int64) []*Tag {
 	join := "inner join tagmap on tagmap.tag_id = tag.id"
 	tables := db.Table("tag").Select("tag.tag").Joins(join)
 	tables.Where("tagmap.post_id = ?", postID).Scan(&results)
-	return results // TODO: err
+	logger.LogIff(db.Error, "error querying tags for post %d", postID)
+	return results
 }
 
 func (dd *DbData) queryAllTags() ([]*Tag, error) {
