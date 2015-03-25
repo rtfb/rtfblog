@@ -1,7 +1,7 @@
 # rtfblog
 
-[![Build Status](https://travis-ci.org/rtfb/rtfblog.svg?branch=master)](https://travis-ci.org/rtfb/rtfblog)
-[![Coverage Status](https://coveralls.io/repos/rtfb/rtfblog/badge.png)](https://coveralls.io/r/rtfb/rtfblog)
+[![Build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
 
 ## What is this?
 
@@ -75,3 +75,8 @@ local tweaks for each instance.
 ## License
 
 BSD Simplified, see [LICENSE.md](LICENSE.md).
+
+[travis-image]: https://travis-ci.org/rtfb/rtfblog.svg?branch=master
+[travis-url]: https://travis-ci.org/rtfb/rtfblog
+[coveralls-image]: https://coveralls.io/repos/rtfb/rtfblog/badge.png
+[coveralls-url]: https://coveralls.io/r/rtfb/rtfblog
