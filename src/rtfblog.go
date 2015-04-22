@@ -636,7 +636,7 @@ func main() {
 	os.Chdir(bindir)
 	conf = obtainConfiguration(bindir)
 	InitL10n(bindir, conf.Get("language"))
-	logger = bark.CreateFile(conf.Get("log"))
+	logger = bark.AppendFile(conf.Get("log"))
 	db := InitDB(getDBConnString())
 	defer db.db.Close()
 	logger.Print("The server is listening...")
