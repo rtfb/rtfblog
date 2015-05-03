@@ -217,5 +217,9 @@
   {
     "id": "Edit Post",
     "translation": "Edit Post"
+  },
+  {
+    "id": "Version",
+    "translation": "Version"
   }
 ]

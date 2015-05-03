@@ -42,6 +42,7 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 		"entries":         posts,
 		"sidebar_entries": titles,
 		"AdminLogin":      ctx.AdminLogin,
+		"Version":         versionString(),
 	}
 }
 

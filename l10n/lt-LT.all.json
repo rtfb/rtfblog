@@ -219,5 +219,9 @@
   {
     "id": "Edit Post",
     "translation": "Redaguoti įrašą"
+  },
+  {
+    "id": "Version",
+    "translation": "Versija"
   }
 ]
