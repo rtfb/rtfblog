@@ -261,6 +261,20 @@ func testInsertComment(t *testing.T) {
 	data.commit()
 }
 
+func testQueryCommenterID(t *testing.T) {
+	id, err := data.commenterID(&Commenter{
+		Name:    "cname",
+		Email:   "cemail",
+		Website: "cwebsite",
+	})
+	if err != nil {
+		t.Fatalf("Error querying commenter ID: %s", err.Error())
+	}
+	if id != 0 {
+		t.Fatalf("Wrong commenter id = %d, expected %d", id, 0)
+	}
+}
+
 func testQueryAllComments(t *testing.T) {
 	comms, err := data.allComments()
 	if err != nil {
@@ -339,6 +353,7 @@ func TestDB(t *testing.T) {
 	testTitlesByTag(t)
 	testUpdatePost(t)
 	testInsertComment(t)
+	testQueryCommenterID(t)
 	testQueryAllComments(t)
 	testUpdateComment(t)
 	testDeleteComment(t)
