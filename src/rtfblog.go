@@ -625,6 +625,12 @@ func getDBConnString() string {
 	return config
 }
 
+func runForever(handlers *pat.Router) {
+	logger.Print("The server is listening...")
+	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
+	logger.LogIf(http.ListenAndServe(addr, handlers))
+}
+
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
 	_, err := docopt.Parse(usage, nil, true, versionString(), false)
@@ -639,12 +645,10 @@ func main() {
 	logger = bark.AppendFile(conf.Get("log"))
 	db := InitDB(getDBConnString())
 	defer db.db.Close()
-	logger.Print("The server is listening...")
-	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
-	logger.LogIf(http.ListenAndServe(addr, initRoutes(&GlobalContext{
+	runForever(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     db,
 		Root:   bindir,
 		Store:  sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),
-	})))
+	}))
 }
