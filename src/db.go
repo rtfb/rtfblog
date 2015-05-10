@@ -161,9 +161,11 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 }
 
 func (dd *DbData) commenterID(c *Commenter) (id int64, err error) {
+	var result CommenterTable
 	where := "name = ? and email = ? and www = ?"
 	rows := dd.db.Table("commenter").Select("id")
-	err = rows.Where(where, c.Name, c.Email, c.Website).Scan(&id).Error
+	err = rows.Where(where, c.Name, c.Email, c.Website).Scan(&result).Error
+	id = result.Id
 	return
 }
 

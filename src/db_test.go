@@ -270,8 +270,8 @@ func testQueryCommenterID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error querying commenter ID: %s", err.Error())
 	}
-	if id != 0 {
-		t.Fatalf("Wrong commenter id = %d, expected %d", id, 0)
+	if id != 1 {
+		t.Fatalf("Wrong commenter id = %d, expected %d", id, 1)
 	}
 }
 
