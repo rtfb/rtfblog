@@ -19,6 +19,14 @@ func GetHomeDir() (string, error) {
 	return usr.HomeDir, nil
 }
 
+func FileExistsNoErr(path string) bool {
+	exists, err := FileExists(path)
+	if err != nil {
+		return false
+	}
+	return exists
+}
+
 func FileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {

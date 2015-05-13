@@ -625,9 +625,21 @@ func getDBConnString() string {
 	return config
 }
 
+func serveAndLogTLS(addr, cert, key string, h http.Handler) {
+	logger.LogIf(http.ListenAndServeTLS(addr, cert, key, h))
+}
+
 func runForever(handlers *pat.Router) {
 	logger.Print("The server is listening...")
-	addr := httputil.JoinHostAndPort(os.Getenv("HOST"), conf.Get("port"))
+	host := os.Getenv("HOST")
+	addr := httputil.JoinHostAndPort(host, conf.Get("port"))
+	tlsPort := conf.Get("tls_port")
+	cert := conf.Get("tls_cert")
+	key := conf.Get("tls_key")
+	if tlsPort != "" && FileExistsNoErr(cert) && FileExistsNoErr(key) {
+		tlsAddr := httputil.JoinHostAndPort(host, tlsPort)
+		go serveAndLogTLS(tlsAddr, cert, key, handlers)
+	}
 	logger.LogIf(http.ListenAndServe(addr, handlers))
 }
 
