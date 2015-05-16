@@ -47,6 +47,13 @@ function mkXHR() {
     }
 };
 
+function scrollIntoView(id) {
+    var e = elt(id);
+    if (!!e && e.scrollIntoView) {
+        e.scrollIntoView();
+    }
+}
+
 function submitComment() {
     if (!validateCommentForm()) {
         return;
@@ -64,6 +71,7 @@ function submitComment() {
                     elt('captcha-task-text').textContent = task;
                     elt('captcha-alert-box').style.visibility = 'visible';
                     elt('captcha-id').value = response["captcha-id"];
+                    scrollIntoView('captcha-alert-box');
                 } else {
                     window.location.href = response["redir"];
                     window.location.reload(true);
