@@ -72,6 +72,7 @@ function submitComment() {
                     elt('captcha-alert-box').style.visibility = 'visible';
                     elt('captcha-id').value = response["captcha-id"];
                     scrollIntoView('captcha-alert-box');
+                    elt('captcha-input').focus();
                 } else {
                     window.location.href = response["redir"];
                     window.location.reload(true);
