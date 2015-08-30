@@ -40,8 +40,8 @@ Build instructions on Ubuntu 14.04 (older versions might differ a bit):
 ## Installing
 
 You will need [goose](https://bitbucket.org/liamstask/goose/) for DB migration.
-Read [deploy.sh](deploy.sh) to get an overview of how I install it on my server,
-you would need to do essentially the same.
+Read [deploy.sh][deploy-sh-url] to get an overview of how I install it on my
+server, you would need to do essentially the same.
 
 ## Configuration
 
@@ -80,3 +80,4 @@ BSD Simplified, see [LICENSE.md](LICENSE.md).
 [travis-url]: https://travis-ci.org/rtfb/rtfblog
 [coveralls-image]: https://coveralls.io/repos/rtfb/rtfblog/badge.png
 [coveralls-url]: https://coveralls.io/r/rtfb/rtfblog
+[deploy-sh-url]: https://github.com/rtfb/blog-rtfb-lt/blob/master/scripts/deploy.sh
