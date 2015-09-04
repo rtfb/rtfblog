@@ -34,6 +34,7 @@ type SrvConfig map[string]interface{}
 var (
 	conf   SrvConfig
 	logger *bark.Logger
+	genVer string = ""
 )
 
 const (
@@ -608,7 +609,7 @@ func obtainConfiguration(basedir string) SrvConfig {
 func versionString() string {
 	ver, err := ioutil.ReadFile("VERSION")
 	if err != nil {
-		return generatedVersionString
+		return genVer
 	}
 	return strings.TrimSpace(string(ver))
 }

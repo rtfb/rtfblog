@@ -57,7 +57,7 @@ BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: src/version.go $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
+${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
                      $(GOFILES) $(TARGETS)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
@@ -78,9 +78,6 @@ run: all
 
 vet:
 	go vet ${GOFILES}
-
-src/version.go:
-	./scripts/genversion.sh > src/version.go
 
 fmt:
 	${GOFMT} ${GOFILES}
