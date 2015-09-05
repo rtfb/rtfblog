@@ -148,7 +148,7 @@ function uploadProgress() {
     uploadNo += 1;
 }
 
-global.window.uploadProgress = uploadProgress;
-global.window.forwardClickToFileid = forwardClickToFileid;
-global.window.submitComment = submitComment;
-global.window.validatePostForm = validatePostForm;
+window.uploadProgress = uploadProgress;
+window.forwardClickToFileid = forwardClickToFileid;
+window.submitComment = submitComment;
+window.validatePostForm = validatePostForm;
