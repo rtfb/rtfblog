@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
 
@@ -25,9 +26,44 @@ func init() {
 	}
 	conf["database"] = config
 	realDB = InitDB(getDBConnString())
-	// TODO: insertTestAuthor is not needed, I inserted the entry in
-	// testdb.sql. However, that row has an empty passwd field, which should be
-	// altered.
+}
+
+func testInsertAuthor(t *testing.T) {
+	passwd, err := EncryptBcrypt([]byte("testpasswd"))
+	if err != nil {
+		t.Fatalf("Failed to encrypt passwd: %s", err.Error())
+	}
+	err = data.begin()
+	if err != nil {
+		t.Fatalf("Failed to start xaction: %s", err.Error())
+	}
+	defer data.rollback()
+	// XXX: panics when trying to insert a second copy. Investigate.
+	id, err := data.insertAuthor(&Author{
+		UserName: "testuser",
+		Passwd:   passwd,
+		FullName: "Joe Blogger",
+		Email:    "joe@blogg.er",
+		Www:      "http://test.blog",
+	})
+	if err != nil || id != 1 {
+		t.Fatalf("Failed to insert author: %s", err.Error())
+	}
+	data.commit()
+}
+
+func testDeleteAuthor(t *testing.T) {
+	data.begin()
+	defer data.rollback()
+	err := data.deleteAuthor(1)
+	if err != nil {
+		t.Fatalf("deleteAuthor failed: " + err.Error())
+	}
+	data.commit()
+	_, err = data.author()
+	if err != gorm.RecordNotFound {
+		t.Fatalf("Unexpected error querying author: %s", err.Error())
+	}
 }
 
 func testExistingAuthor(t *testing.T) {
@@ -344,6 +380,7 @@ func TestDB(t *testing.T) {
 	defer func() {
 		data = tempData
 	}()
+	testInsertAuthor(t)
 	testExistingAuthor(t)
 	testInsertPost(t)
 	testPost(t)
@@ -358,4 +395,5 @@ func TestDB(t *testing.T) {
 	testUpdateComment(t)
 	testDeleteComment(t)
 	testDeletePost(t)
+	testDeleteAuthor(t)
 }

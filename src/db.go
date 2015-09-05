@@ -17,6 +17,8 @@ type Data interface {
 	allComments() ([]*CommentWithPostTitle, error)
 	numPosts(includeHidden bool) (int, error)
 	author() (*Author, error)
+	insertAuthor(a *Author) (id int64, err error)
+	deleteAuthor(id int64) error
 	deleteComment(id string) error
 	deletePost(url string) error
 	updateComment(id, text string) error
@@ -229,6 +231,18 @@ func (dd *DbData) author() (*Author, error) {
 	var a Author
 	err := dd.db.First(&a).Error
 	return &a, err
+}
+
+func (dd *DbData) insertAuthor(a *Author) (id int64, err error) {
+	if dd.tx == nil {
+		return -1, notInXactionErr()
+	}
+	err = dd.tx.Save(a).Error
+	return a.Id, err
+}
+
+func (dd *DbData) deleteAuthor(id int64) error {
+	return dd.db.Where("id=?", id).Delete(Author{}).Error
 }
 
 func (dd *DbData) deleteComment(id string) error {

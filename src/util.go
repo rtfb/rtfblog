@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GetHomeDir() (string, error) {
@@ -63,4 +65,10 @@ func Md5Hash(s string) string {
 func Capitalize(s string) string {
 	firstRune, width := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(firstRune)) + s[width:]
+}
+
+func EncryptBcrypt(passwd []byte) (hash string, err error) {
+	h, err := bcrypt.GenerateFromPassword(passwd, bcrypt.DefaultCost)
+	hash = string(h)
+	return
 }
