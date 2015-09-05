@@ -31,7 +31,7 @@ func init() {
 }
 
 func testExistingAuthor(t *testing.T) {
-	a, err := data.author("testuser")
+	a, err := data.author()
 	if err != nil {
 		t.Fatalf("Failed to query author: %s", err.Error())
 	}

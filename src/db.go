@@ -16,7 +16,7 @@ type Data interface {
 	titlesByTag(tag string, includeHidden bool) ([]EntryLink, error)
 	allComments() ([]*CommentWithPostTitle, error)
 	numPosts(includeHidden bool) (int, error)
-	author(username string) (*Author, error)
+	author() (*Author, error)
 	deleteComment(id string) error
 	deletePost(url string) error
 	updateComment(id, text string) error
@@ -225,9 +225,9 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 	return nil
 }
 
-func (dd *DbData) author(username string) (*Author, error) {
+func (dd *DbData) author() (*Author, error) {
 	var a Author
-	err := dd.db.Where("disp_name = ?", username).First(&a).Error
+	err := dd.db.First(&a).Error
 	return &a, err
 }
 

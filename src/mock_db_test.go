@@ -145,11 +145,8 @@ func (td *TestData) allComments() ([]*CommentWithPostTitle, error) {
 	return comments, nil
 }
 
-func (td *TestData) author(username string) (*Author, error) {
-	if username == testAuthor.UserName {
-		return testAuthor, nil
-	}
-	return nil, gorm.RecordNotFound
+func (td *TestData) author() (*Author, error) {
+	return testAuthor, nil
 }
 
 func (td *TestData) deleteComment(id string) error {

@@ -267,15 +267,19 @@ func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	// TODO: should not be logged in, add check
-	uname := req.FormValue("uname")
-	a, err := ctx.Db.author(uname)
+	// TODO: should not be already logged in, add check
+	a, err := ctx.Db.author() // Pick default author
 	if err == gorm.RecordNotFound {
 		ctx.Session.AddFlash(L10n("Login failed."))
 		return LoginForm(w, req, ctx)
 	}
 	if err != nil {
 		return logger.LogIf(err)
+	}
+	uname := req.FormValue("uname")
+	if uname != a.UserName {
+		ctx.Session.AddFlash(L10n("Login failed."))
+		return LoginForm(w, req, ctx)
 	}
 	passwd := req.FormValue("passwd")
 	req.Form["passwd"] = []string{"***"} // Avoid spilling password to log
