@@ -20,7 +20,7 @@ module.exports = function(grunt) {
                 command: function() {
                     var gitCmd = 'git rev-parse --short HEAD';
                     return 'go build -o build/rtfblog' +
-                        ' -ldflags "-X main.genVer $(' + gitCmd + ')"' +
+                        ' -ldflags "-X main.genVer=$(' + gitCmd + ')"' +
                         ' src/*.go';
                 },
                 options: {
