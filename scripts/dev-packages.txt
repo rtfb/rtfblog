@@ -3,3 +3,4 @@ golang
 golang-go.tools
 git
 mercurial
+libpq-dev
