@@ -89,17 +89,17 @@ func listOfPages(numPosts, currPage int) template.HTML {
 	return template.HTML(list)
 }
 
-func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
+func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ctx *Context) {
 	url := httputil.AddProtocol(httputil.GetHost(req), "http")
 	blogTitle := conf.Get("blog_title")
 	descr := conf.Get("blog_descr")
-	author := conf.Get("author")
-	authorEmail := conf.Get("email")
+	author, err := ctx.Db.author()
+	logger.LogIf(err)
 	feed := &feeds.Feed{
 		Title:       blogTitle,
 		Link:        &feeds.Link{Href: url},
 		Description: descr,
-		Author:      &feeds.Author{Name: author, Email: authorEmail},
+		Author:      &feeds.Author{Name: author.FullName, Email: author.Email},
 	}
 	for _, p := range posts {
 		pubDate, err := time.Parse("2006-01-02", p.Date)
@@ -110,7 +110,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry) {
 			Title:       p.Title,
 			Link:        &feeds.Link{Href: url + "/" + p.URL},
 			Description: string(p.Body),
-			Author:      &feeds.Author{Name: p.Author, Email: authorEmail},
+			Author:      &feeds.Author{Name: p.Author, Email: author.Email},
 			Created:     pubDate,
 		}
 		feed.Items = append(feed.Items, &item)
@@ -262,7 +262,7 @@ func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if err != nil {
 		return logger.LogIf(err)
 	}
-	produceFeedXML(w, req, posts)
+	produceFeedXML(w, req, posts, ctx)
 	return nil
 }
 
@@ -577,8 +577,6 @@ func obtainConfiguration(basedir string) SrvConfig {
 		"notif_send_email": "false",
 		"log":              "server.log",
 		"cookie_secret":    "dont-forget-to-change-me",
-		"author":           "Mr. Blog Author",
-		"email":            "blog_author@ema.il",
 		"language":         "en-US",
 	}
 	conf := hardcodedConf
