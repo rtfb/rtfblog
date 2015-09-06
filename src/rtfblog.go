@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
+	"github.com/howeyc/gopass"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"github.com/rtfb/bark"
@@ -42,6 +43,7 @@ const (
 
 Usage:
   rtfblog
+  rtfblog --adduser <username> <email> <web> <display name>
   rtfblog -h | --help
   rtfblog --version
 
@@ -646,9 +648,21 @@ func runForever(handlers *pat.Router) {
 	logger.LogIf(http.ListenAndServe(addr, handlers))
 }
 
+func promptPasswd(username string) (string, error) {
+	fmt.Printf(L10n("Type password for user %s: "), username)
+	passwd := gopass.GetPasswd()
+	fmt.Printf(L10n("Confirm password: "))
+	passwd2 := gopass.GetPasswd()
+	if string(passwd2) != string(passwd) {
+		return "", fmt.Errorf("passwords do not match")
+	}
+	crypt, err := EncryptBcrypt(passwd)
+	return string(crypt), err
+}
+
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
-	_, err := docopt.Parse(usage, nil, true, versionString(), false)
+	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")
 	}
@@ -660,6 +674,32 @@ func main() {
 	logger = bark.AppendFile(conf.Get("log"))
 	db := InitDB(getDBConnString())
 	defer db.db.Close()
+	if args["--adduser"].(bool) {
+		_, err = db.author()
+		if err != gorm.RecordNotFound {
+			fmt.Println(L10n("Author already added, can't add another, exiting"))
+			return
+		}
+		passwd, err := promptPasswd(args["<username>"].(string))
+		if err != nil {
+			fmt.Printf(L10n("Error: %s\n"), err.Error())
+			return
+		}
+		err = withTransaction(db, func(db Data) error {
+			_, err := db.insertAuthor(&Author{
+				UserName: args["<username>"].(string),
+				Passwd:   passwd,
+				FullName: args["<display name>"].(string),
+				Email:    args["<email>"].(string),
+				Www:      args["<web>"].(string),
+			})
+			return err
+		})
+		if err != nil {
+			fmt.Printf(L10n("Failed to add user: %s\n"), err.Error())
+		}
+		return
+	}
 	runForever(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     db,

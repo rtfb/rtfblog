@@ -223,5 +223,25 @@
   {
     "id": "Version",
     "translation": "Versija"
+  },
+  {
+    "id": "Type password for user %s: ",
+    "translation": "Įveskite slaptažodį vartotojui %s: "
+  },
+  {
+    "id": "Confirm password: ",
+    "translation": "Pakartokite slaptažodį: "
+  },
+  {
+    "id": "Author already added, can't add another, exiting",
+    "translation": "Autorius jau pridėtas, dar vieno negalima, išsijungiu."
+  },
+  {
+    "id": "Error: %s\n",
+    "translation": "Klaida: %s\n"
+  },
+  {
+    "id": "Failed to add author: %s\n",
+    "translation": "Nepavyko pridėti autoriaus: %s\n"
   }
 ]

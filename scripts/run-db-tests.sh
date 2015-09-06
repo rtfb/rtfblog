@@ -27,6 +27,7 @@ wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
 goose -env=development up
+#${PGSQL_PATH}/psql "$RTFBLOG_DB_TEST_URL" < testdata/testdb.sql
 
 echo "Running tests..."
 go test -covermode=count -coverprofile=profile.cov -v ./src/...

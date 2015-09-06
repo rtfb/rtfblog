@@ -221,5 +221,25 @@
   {
     "id": "Version",
     "translation": "Version"
+  },
+  {
+    "id": "Type password for user %s: ",
+    "translation": "Type password for user %s: "
+  },
+  {
+    "id": "Confirm password: ",
+    "translation": "Confirm password: "
+  },
+  {
+    "id": "Author already added, can't add another, exiting",
+    "translation": "Author already added, can't add another, exiting"
+  },
+  {
+    "id": "Error: %s\n",
+    "translation": "Error: %s\n"
+  },
+  {
+    "id": "Failed to add author: %s\n",
+    "translation": "Failed to add author: %s\n"
   }
 ]
