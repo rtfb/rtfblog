@@ -52,6 +52,29 @@ func testInsertAuthor(t *testing.T) {
 	data.commit()
 }
 
+func testUpdateAuthor(t *testing.T) {
+	data.begin()
+	defer data.rollback()
+	a, err := data.author()
+	if err != nil {
+		t.Fatalf("Failed to query author: %s", err.Error())
+	}
+	newName := "Zoe Vlogger"
+	a.FullName = newName
+	err = data.updateAuthor(a)
+	if err != nil {
+		t.Fatalf("Failed to updateAuthor: " + err.Error())
+	}
+	data.commit()
+	a, err = data.author()
+	if err != nil {
+		t.Fatalf("Failed to query author: %s", err.Error())
+	}
+	if a.FullName != newName {
+		t.Fatalf("a.FullName = %q, expected %q", a.FullName, newName)
+	}
+}
+
 func testDeleteAuthor(t *testing.T) {
 	data.begin()
 	defer data.rollback()
@@ -74,8 +97,8 @@ func testExistingAuthor(t *testing.T) {
 	if a == nil {
 		t.Fatal("Failed to query author: a == nil")
 	}
-	if a.FullName != "Joe Blogger" {
-		t.Fatalf(`a.FullName != "Joe Blogger"`)
+	if a.FullName != "Zoe Vlogger" {
+		t.Fatalf(`a.FullName != "Zoe Vlogger"`)
 	}
 }
 
@@ -381,6 +404,7 @@ func TestDB(t *testing.T) {
 		data = tempData
 	}()
 	testInsertAuthor(t)
+	testUpdateAuthor(t)
 	testExistingAuthor(t)
 	testInsertPost(t)
 	testPost(t)

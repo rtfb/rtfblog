@@ -18,6 +18,7 @@ type Data interface {
 	numPosts(includeHidden bool) (int, error)
 	author() (*Author, error)
 	insertAuthor(a *Author) (id int64, err error)
+	updateAuthor(a *Author) error
 	deleteAuthor(id int64) error
 	deleteComment(id string) error
 	deletePost(url string) error
@@ -239,6 +240,13 @@ func (dd *DbData) insertAuthor(a *Author) (id int64, err error) {
 	}
 	err = dd.tx.Save(a).Error
 	return a.Id, err
+}
+
+func (dd *DbData) updateAuthor(a *Author) error {
+	if dd.tx == nil {
+		return notInXactionErr()
+	}
+	return dd.tx.Save(a).Error
 }
 
 func (dd *DbData) deleteAuthor(id int64) error {
