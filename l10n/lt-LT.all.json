@@ -243,5 +243,9 @@
   {
     "id": "Failed to add author: %s\n",
     "translation": "Nepavyko pridėti autoriaus: %s\n"
+  },
+  {
+    "id": "Title:",
+    "translation": "Antraštė:"
   }
 ]

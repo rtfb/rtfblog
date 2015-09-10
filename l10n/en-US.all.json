@@ -241,5 +241,9 @@
   {
     "id": "Failed to add author: %s\n",
     "translation": "Failed to add author: %s\n"
+  },
+  {
+    "id": "Title:",
+    "translation": "Title:"
   }
 ]
