@@ -89,6 +89,14 @@
     "translation": "Nėra įrašų. Tai tikriausiai klaida."
   },
   {
+    "id": "No entries, yet. Welcome and start",
+    "translation": "Dar nėra įrašų. Pradėkite"
+  },
+  {
+    "id": "writing.",
+    "translation": "rašyti."
+  },
+  {
     "id": "My Nazi spam-filter presumes everybody is a bot.",
     "translation": "Mano nacis spam-filtras visus laiko botais."
   },

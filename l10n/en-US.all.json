@@ -83,8 +83,12 @@
     "translation": "You are about to delete this comment!\nThis cannot be undone!"
   },
   {
-    "id": "No entries. This is most likely an error.",
-    "translation": "No entries. This is most likely an error."
+    "id": "No entries, yet. Welcome and start",
+    "translation": "No entries, yet. Welcome and start"
+  },
+  {
+    "id": "writing.",
+    "translation": "writing."
   },
   {
     "id": "My Nazi spam-filter presumes everybody is a bot.",
