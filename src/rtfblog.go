@@ -158,20 +158,7 @@ func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	flashes := ctx.Session.Flashes()
-	html := ""
-	// TODO: extract that to separate flashes template
-	format := `<p><strong style="color: red">
-%s
-</strong></p>`
-	if len(flashes) > 0 {
-		for _, f := range flashes {
-			html = html + fmt.Sprintf(format, f)
-		}
-	}
-	return Tmpl(ctx, "login.html").Execute(w, TmplMap{
-		"Flashes": template.HTML(html),
-	})
+	return Tmpl(ctx, "login.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
 func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {

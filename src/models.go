@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -26,6 +27,19 @@ func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 	return ctx, err
 }
 
+func MkFlashes(ctx *Context) template.HTML {
+	flashes := ctx.Session.Flashes()
+	html := ""
+	// TODO: extract that to separate flashes template
+	format := `<p><strong style="color: red">
+%s
+</strong></p>`
+	for _, f := range flashes {
+		html = html + fmt.Sprintf(format, f)
+	}
+	return template.HTML(html)
+}
+
 func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	numTotalPosts, err := ctx.Db.numPosts(ctx.AdminLogin)
 	logger.LogIf(err)
@@ -43,6 +57,7 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 		"sidebar_entries": titles,
 		"AdminLogin":      ctx.AdminLogin,
 		"Version":         versionString(),
+		"Flashes":         MkFlashes(ctx),
 	}
 }
 
