@@ -199,6 +199,7 @@ func (dd *DbData) insertPost(e *EntryTable) (id int64, err error) {
 	if dd.tx == nil {
 		return -1, notInXactionErr()
 	}
+	e.UnixDate = time.Now().Unix()
 	err = dd.tx.Save(e).Error
 	return e.Id, err
 }
