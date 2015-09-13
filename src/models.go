@@ -105,7 +105,11 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 	postID, idErr := db.postID(post.URL)
 	if idErr != nil {
 		if idErr == gorm.RecordNotFound {
-			post.AuthorID = int64(1) // XXX: it's only me now
+			author, err := db.author()
+			if err != nil {
+				return -1, err
+			}
+			post.AuthorID = author.Id
 			newPostID, err := db.insertPost(post)
 			if err != nil {
 				return -1, err
