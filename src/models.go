@@ -127,3 +127,17 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 	}
 	return postID, nil
 }
+
+func InsertOrUpdateAuthor(db Data, newAuthor *Author) (id int64, err error) {
+	author, err := db.author() // Pick default author
+	id = author.Id
+	if err != nil {
+		if err == gorm.RecordNotFound {
+			id, err = db.insertAuthor(newAuthor)
+		}
+	} else {
+		newAuthor.Id = id
+		err = db.updateAuthor(newAuthor)
+	}
+	return id, logger.LogIff(err, "Failed to insert author")
+}

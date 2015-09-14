@@ -31,6 +31,15 @@ function validatePostForm() {
         && validateField('wmd-input', "Post content is mandatory.");
 }
 
+function validateAuthorForm() {
+    return validateField("author_username", "User name is mandatory.")
+        && validateField("author_displayname", "Display name is mandatory.")
+        // optional: && validateField("author_email", "Email is mandatory.")
+        // optional: && validateField("author_www", "Web site is mandatory.")
+        && validateField("author_password", "Password is mandatory.")
+        && validateField("author_confirm_password", "Password is mandatory.");
+}
+
 function mkXHR() {
     try {
         return new ActiveXObject('Msxml2.XMLHTTP');
@@ -152,3 +161,4 @@ window.uploadProgress = uploadProgress;
 window.forwardClickToFileid = forwardClickToFileid;
 window.submitComment = submitComment;
 window.validatePostForm = validatePostForm;
+window.validateAuthorForm = validateAuthorForm;

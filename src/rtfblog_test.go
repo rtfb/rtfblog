@@ -775,3 +775,24 @@ func TestMarkdown(t *testing.T) {
 func TestMd5(t *testing.T) {
 	T{t}.assertEqual("d3b07384d113edec49eaa6238ad5ff00", Md5Hash("foo\n"))
 }
+
+func TestAdminPageHasEditAuthorButton(t *testing.T) {
+	mustContain(t, curl("/admin"), "Edit Author Profile")
+}
+
+func TestMainPageShowsCreateAuthorPage(t *testing.T) {
+	tmp := testAuthor
+	testAuthor = nil
+	html := curl("/")
+	mustContain(t, html, "New Password")
+	mustContain(t, html, "Confirm Password")
+	mustNotContain(t, html, "Old Password")
+	testAuthor = tmp
+}
+
+func TestEditAuthor(t *testing.T) {
+	html := curl("/edit_author")
+	mustContain(t, html, "New Password")
+	mustContain(t, html, "Confirm Password")
+	mustContain(t, html, "Old Password")
+}

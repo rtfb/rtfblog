@@ -1,0 +1,114 @@
+{{define "title"}}{{L10n "Edit Author"}}{{end}}
+{{define "extrahead"}}
+    <script type="text/javascript" src="/static/js/bundle.js"></script>
+{{end}}
+{{define "content"}}
+
+    <hr />
+    {{if .EditExistingAuthor}}
+        <p>{{L10n "Update blog author information."}}</p>
+    {{else}}
+        <p>{{L10n "No author entry found. Please fill out some information about blog author."}}</p>
+    {{end}}
+    {{.Flashes}}
+    <form
+        id="add-author-form"
+        action="submit_author"
+        method="post"
+        onsubmit="return validateAuthorForm()"
+        >
+    <div class="twelve columns content" id="content">
+        {{with .author}}
+        <label for="author_username">{{L10n "User Name:"}}</label>
+        <input
+            id="author_username"
+            type="text"
+            class="text"
+            name="username"
+            value="{{.UserName}}"
+            />
+        <br />
+        <label for="author_displayname">{{L10n "Display Name:"}}</label>
+        <input
+            id="author_displayname"
+            type="text"
+            class="text"
+            name="display_name"
+            value="{{.FullName}}"
+            />
+        <br />
+        <label for="author_email">{{L10n "Email:"}}</label>
+        <input
+            id="author_email"
+            type="text"
+            class="text"
+            name="email"
+            value="{{.Email}}"
+            />
+        <br />
+        <label for="author_www">{{L10n "Web Site:"}}</label>
+        <input
+            id="author_www"
+            type="text"
+            class="text"
+            name="www"
+            value="{{.Www}}"
+            />
+        <br />
+        {{if .Passwd}}
+            <label for="author_old_password">{{L10n "Old Password:"}}</label>
+            <input
+                id="author_old_password"
+                type="password"
+                class="text"
+                name="old_password"
+                value=""
+                />
+            <br />
+        {{end}}
+        <label for="author_password">{{L10n "New Password:"}}</label>
+        <input
+            id="author_password"
+            type="password"
+            class="text"
+            name="password"
+            value=""
+            />
+        <br />
+        <label for="author_confirm_password">{{L10n "Confirm Password:"}}</label>
+        <input
+            id="author_confirm_password"
+            type="password"
+            class="text"
+            name="confirm_password"
+            value=""
+            />
+        <br />
+        <br />
+
+        <input
+            id="submit-author-edit"
+            type="submit"
+            value="{{L10n "Submit"}}"
+            />
+        {{if .Passwd}}
+            <input
+                id="cancel-author-edit"
+                type="button"
+                onclick="location.href = '/admin'"
+                value="{{L10n "Cancel"}}"
+                />
+        {{end}}
+        {{end}}
+    </div>
+    </form>
+
+    <hr />
+    <div id="footer">
+    </div>
+
+{{end}}
+{{define "extrascripts"}}
+        <script type="text/javascript">
+        </script>
+{{end}}

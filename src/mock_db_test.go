@@ -146,6 +146,9 @@ func (td *TestData) allComments() ([]*CommentWithPostTitle, error) {
 }
 
 func (td *TestData) author() (*Author, error) {
+	if testAuthor == nil {
+		return &Author{}, gorm.RecordNotFound
+	}
 	return testAuthor, nil
 }
 

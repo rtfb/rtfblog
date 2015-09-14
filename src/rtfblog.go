@@ -124,6 +124,13 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ct
 
 func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
+		_, err := ctx.Db.author() // Pick default author
+		if err == gorm.RecordNotFound {
+			// Author was not configured yet, so pretend this is an admin
+			// session and show the Edit Author form:
+			ctx.Session.Values["adminlogin"] = "yes"
+			return EditAuthorForm(w, req, ctx)
+		}
 		return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
 	post, err := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin)
@@ -508,6 +515,70 @@ func SendEmail(subj, body string) {
 	}
 }
 
+func EditAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	tmplData := MkBasicData(ctx, 0, 0)
+	author, err := ctx.Db.author()
+	if err != nil && err != gorm.RecordNotFound {
+		return err
+	}
+	if err == gorm.RecordNotFound {
+		author.UserName = req.FormValue("username")
+		author.FullName = req.FormValue("display_name")
+		author.Email = req.FormValue("email")
+		author.Www = req.FormValue("www")
+	}
+	tmplData["PageTitle"] = L10n("Edit Author")
+	tmplData["author"] = author
+	tmplData["EditExistingAuthor"] = err != gorm.RecordNotFound
+	return Tmpl(ctx, "edit_author.html").Execute(w, tmplData)
+}
+
+func SubmitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	username := req.FormValue("username")
+	displayname := req.FormValue("display_name")
+	email := req.FormValue("email")
+	www := req.FormValue("www")
+	a, err := ctx.Db.author()
+	if err != nil && err != gorm.RecordNotFound {
+		return err
+	}
+	if err != gorm.RecordNotFound {
+		oldPasswd := req.FormValue("old_password")
+		req.Form["old_password"] = []string{"***"} // Avoid spilling password to log
+		err = cryptoHelper.Decrypt([]byte(a.Passwd), []byte(oldPasswd))
+		if err != nil {
+			ctx.Session.AddFlash(L10n("Incorrect password."))
+			return EditAuthorForm(w, req, ctx)
+		}
+	}
+	passwd := req.FormValue("password")
+	passwd2 := req.FormValue("confirm_password")
+	req.Form["password"] = []string{"***"}         // Avoid spilling password to log
+	req.Form["confirm_password"] = []string{"***"} // Avoid spilling password to log
+	if passwd != passwd2 {
+		ctx.Session.AddFlash(L10n("Passwords should match."))
+		return EditAuthorForm(w, req, ctx)
+	}
+	crypt, err := EncryptBcrypt([]byte(passwd))
+	if err != nil {
+		return err
+	}
+	err = withTransaction(ctx.Db, func(db Data) error {
+		_, err := InsertOrUpdateAuthor(db, &Author{
+			UserName: username,
+			FullName: displayname,
+			Email:    email,
+			Www:      www,
+			Passwd:   crypt,
+		})
+		return err
+	})
+	if err == nil {
+		http.Redirect(w, req, "/", http.StatusSeeOther)
+	}
+	return err
+}
+
 func initRoutes(gctx *GlobalContext) *pat.Router {
 	const (
 		G = "GET"
@@ -548,9 +619,11 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 	r.Add(G, "/delete_comment", mkAdminHandler(DeleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(DeletePost)).Name("delete_post")
 	r.Add(G, "/robots.txt", mkHandler(ServeRobots))
+	r.Add(G, "/edit_author", mkAdminHandler(EditAuthorForm)).Name("edit_author")
 
 	r.Add(P, "/moderate_comment", mkAdminHandler(ModerateComment)).Name("moderate_comment")
 	r.Add(P, "/submit_post", mkAdminHandler(SubmitPost)).Name("submit_post")
+	r.Add(P, "/submit_author", mkAdminHandler(SubmitAuthor)).Name("submit_author")
 	r.Add(P, "/upload_images", mkAdminHandler(UploadImage)).Name("upload_image")
 
 	r.Add(G, "/", mkHandler(Home)).Name("home_page")
