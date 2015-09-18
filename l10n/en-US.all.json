@@ -249,5 +249,65 @@
   {
     "id": "Title:",
     "translation": "Title:"
+  },
+  {
+    "id": "Edit Author Profile",
+    "translation": "Edit Author Profile"
+  },
+  {
+    "id": "No entries. This is most likely an error.",
+    "translation": "No entries. This is most likely an error."
+  },
+  {
+    "id": "No author entry found. Please fill out some information about blog author.",
+    "translation": "No author entry found. Please fill out some information about blog author."
+  },
+  {
+    "id": "Update blog author information.",
+    "translation": "Update blog author information."
+  },
+  {
+    "id": "Edit Author",
+    "translation": "Edit Author"
+  },
+  {
+    "id": "User Name:",
+    "translation": "User Name:"
+  },
+  {
+    "id": "Display Name:",
+    "translation": "Display Name:"
+  },
+  {
+    "id": "Confirm Password:",
+    "translation": "Confirm Password:"
+  },
+  {
+    "id": "Incorrect password.",
+    "translation": "Incorrect password."
+  },
+  {
+    "id": "Passwords should match.",
+    "translation": "Passwords should match."
+  },
+  {
+    "id": "Failed to add user: %s\n",
+    "translation": "Failed to add user: %s\n"
+  },
+  {
+    "id": "Email:",
+    "translation": "Email:"
+  },
+  {
+    "id": "Web Site:",
+    "translation": "Web Site:"
+  },
+  {
+    "id": "Old Password:",
+    "translation": "Old Password:"
+  },
+  {
+    "id": "New Password:",
+    "translation": "New Password:"
   }
 ]
