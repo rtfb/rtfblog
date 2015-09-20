@@ -255,5 +255,61 @@
   {
     "id": "Title:",
     "translation": "Antraštė:"
+  },
+  {
+    "id": "Edit Author Profile",
+    "translation": "Taisyti autoriaus profilį"
+  },
+  {
+    "id": "No author entry found. Please fill out some information about blog author.",
+    "translation": "Autoriaus įrašo dar nėra. Surašykite šiek tiek informacijos apie blogo autorių."
+  },
+  {
+    "id": "Update blog author information.",
+    "translation": "Atnaujinkite informaciją apie blogo autorių."
+  },
+  {
+    "id": "Edit Author",
+    "translation": "Taisyti autorių"
+  },
+  {
+    "id": "User Name:",
+    "translation": "Vartotojo vardas:"
+  },
+  {
+    "id": "Display Name:",
+    "translation": "Rodomas vardas:"
+  },
+  {
+    "id": "Confirm Password:",
+    "translation": "Pakartokite slaptažodį:"
+  },
+  {
+    "id": "Incorrect password.",
+    "translation": "Neteisingas slaptažodis."
+  },
+  {
+    "id": "Passwords should match.",
+    "translation": "Slaptažodžiai privalo sutapti."
+  },
+  {
+    "id": "Failed to add user: %s\n",
+    "translation": "Nepavyko pridėti vartotojo: %s\n"
+  },
+  {
+    "id": "Email:",
+    "translation": "El. paštas:"
+  },
+  {
+    "id": "Web Site:",
+    "translation": "Interneto puslapis:"
+  },
+  {
+    "id": "Old Password:",
+    "translation": "Senasis slaptažodis:"
+  },
+  {
+    "id": "New Password:",
+    "translation": "Naujasis slaptažodis:"
   }
 ]
