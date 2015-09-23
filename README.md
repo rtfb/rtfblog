@@ -32,7 +32,7 @@ Build instructions on Ubuntu 14.04 (older versions might differ a bit):
   [these](https://github.com/joyent/node/wiki/installing-node.js-via-package-manager)
   instructions, it doesn't work with the one provided by the package manager)
   * Note: make sure `node/bin/` dir is in `PATH`, build scripts assume that
-* `$ sudo npm install -g grunt-cli bower browserify json`
+* `$ npm install -g grunt-cli bower browserify json`
 * `$ make`
   * Note: don't get surprised when make will take a lot of time and network
     activity on the first run, it's downloading dependencies.
