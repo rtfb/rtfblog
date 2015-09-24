@@ -52,6 +52,7 @@ Options:
   a config it finds in one of locations described in README).
   -h --help     Show this screen.
   --version     Show version.`
+	defaultCookieSecret = "dont-forget-to-change-me"
 )
 
 func (c *SrvConfig) Get(key string) string {
@@ -161,6 +162,9 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	if conf.Get("cookie_secret") == defaultCookieSecret {
+		ctx.Session.AddFlash(L10n("You are using default cookie secret, consider changing."))
+	}
 	return Tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
@@ -638,7 +642,7 @@ func obtainConfiguration(basedir string) SrvConfig {
 		"staticdir":        "static",
 		"notif_send_email": "false",
 		"log":              "server.log",
-		"cookie_secret":    "dont-forget-to-change-me",
+		"cookie_secret":    defaultCookieSecret,
 		"language":         "en-US",
 	}
 	conf := hardcodedConf

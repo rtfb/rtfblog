@@ -305,5 +305,9 @@
   {
     "id": "New Password:",
     "translation": "New Password:"
+  },
+  {
+    "id": "You are using default cookie secret, consider changing.",
+    "translation":  "You are using default cookie secret, consider changing."
   }
 ]
