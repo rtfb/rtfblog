@@ -18,13 +18,14 @@ type Context struct {
 
 func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
 	sess, err := gctx.Store.Get(req, "rtfblog")
+	logger.LogIf(err)
 	ctx := &Context{
 		GlobalContext: *gctx,
 		Session:       sess,
 		AdminLogin:    sess.Values["adminlogin"] == "yes",
 		Captcha:       deck,
 	}
-	return ctx, err
+	return ctx, nil
 }
 
 func MkFlashes(ctx *Context) template.HTML {
