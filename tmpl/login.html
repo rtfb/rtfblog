@@ -1,5 +1,23 @@
 {{define "title"}}{{L10n "Login"}}{{end}}
-{{define "extrahead"}}{{end}}
+{{define "extrahead"}}
+    <script type="text/javascript" src="/static/js/bundle.js"></script>
+    <style>
+    .flash-box {
+        background-color: #faafb4;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        border-radius: 5px;
+        padding: 0 4px;
+        text-align: center;
+        margin-bottom: 0.5em;
+    }
+    .flash-box p {
+        margin: 0;
+        padding-top: 4px;
+        font-weight: bold;
+    }
+    </style>
+{{end}}
 {{define "content"}}
 <div id="header">
     <br />
@@ -9,7 +27,7 @@
 
 <div id="content">
     {{.Flashes}}
-    <form action="login" method="post" id="login_form">
+    <form class="twelve columns" action="login" method="post" id="login_form">
         <div>
             <input
                 class="text"

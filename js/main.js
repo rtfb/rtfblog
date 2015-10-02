@@ -157,8 +157,16 @@ function uploadProgress() {
     uploadNo += 1;
 }
 
+function removeElt(id) {
+    var elem = document.getElementById(id);
+    if (elem) {
+        elem.parentNode.removeChild(elem);
+    }
+}
+
 window.uploadProgress = uploadProgress;
 window.forwardClickToFileid = forwardClickToFileid;
 window.submitComment = submitComment;
 window.validatePostForm = validatePostForm;
 window.validateAuthorForm = validateAuthorForm;
+window.removeElt = removeElt;

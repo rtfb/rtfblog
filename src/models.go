@@ -32,13 +32,13 @@ func MkFlashes(ctx *Context) template.HTML {
 	flashes := ctx.Session.Flashes()
 	html := ""
 	// TODO: extract that to separate flashes template
-	format := `<p><strong style="color: red">
-%s
-</strong></p>`
-	for _, f := range flashes {
-		html = html + fmt.Sprintf(format, f)
+	format := `<div id="flash-%d" class="flash-box" onclick="removeElt('flash-%d');">
+<p>%s</p>
+</div>`
+	for i, f := range flashes {
+		html = html + fmt.Sprintf(format, i, i, f)
 	}
-	return template.HTML(html)
+	return template.HTML(`<div class="six columns">` + html + "</div>")
 }
 
 func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
