@@ -23,3 +23,17 @@ input[type="button"].inline {
 .user-supplied-text * a {
     color: #11a;
 }
+.flash-box {
+    background-color: #faafb4;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 0 4px;
+    text-align: center;
+    margin-bottom: 0.5em;
+}
+.flash-box p {
+    margin: 0;
+    padding-top: 4px;
+    font-weight: bold;
+}
