@@ -32,11 +32,16 @@ func MkFlashes(ctx *Context) template.HTML {
 	flashes := ctx.Session.Flashes()
 	html := ""
 	// TODO: extract that to separate flashes template
-	format := `<div id="flash-%d" class="flash-box" onclick="removeElt('flash-%d');">
+	format := `<div id="flash-%d" class="flash-box">
 <p>%s</p>
+<svg onclick="removeElt('flash-%d');">
+<circle cx="12" cy="12" r="11" stroke-width="0" fill="white" fill-opacity="0" />
+<path stroke="black" stroke-width="4" fill="none" d="M6.25,6.25,17.75,17.75" />
+<path stroke="black" stroke-width="4" fill="none" d="M6.25,17.75,17.75,6.25" />
+</svg>
 </div>`
 	for i, f := range flashes {
-		html = html + fmt.Sprintf(format, i, i, f)
+		html = html + fmt.Sprintf(format, i, f, i)
 	}
 	return template.HTML(`<div class="six columns">` + html + "</div>")
 }
