@@ -1,11 +1,11 @@
 production:
-    driver: postgres
+    driver: $RTFBLOG_DB_DRIVER
     open: $RTFBLOG_DB_URL
 
 development:
-    driver: postgres
+    driver: $RTFBLOG_DB_DRIVER
     open: $RTFBLOG_DB_TEST_URL
 
 staging:
-    driver: postgres
+    driver: $RTFBLOG_DB_DRIVER
     open: $RTFBLOG_DB_STAGING_TEST_URL
