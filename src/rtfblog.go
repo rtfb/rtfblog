@@ -624,7 +624,7 @@ func getDBConnString() string {
 	if config != "" && config[0] == '$' {
 		envVar := os.ExpandEnv(config)
 		if envVar == "" {
-			logger.Log(fmt.Sprintf("Can't find env var %q", config))
+			logger.Println(fmt.Sprintf("Can't find env var %q", config))
 		}
 		return envVar
 	}
