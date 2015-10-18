@@ -35,6 +35,7 @@ TARGETS = \
 		  $(addprefix ${BUILDDIR}/tmpl/, $(TMPL_FILES)) \
 		  $(addprefix ${BUILDDIR}/l10n/, $(L10N_FILES)) \
 		  ${BUILDDIR}/static/robots.txt \
+		  ${BUILDDIR}/default.db \
 		  ${JSDIR}/bundle.js \
 		  ${JSDIR}/pagedown-bundle.js \
 		  ${JSDIR}/tag-it.min.js \
@@ -85,6 +86,9 @@ fmt:
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
 	cp $< $@
+
+${BUILDDIR}/default.db: db/dbconf.yml db/migrations/*.sql
+	RTFBLOG_DB_URL=$@ RTFBLOG_DB_DRIVER=sqlite3 goose -env=production up
 
 ${BUILDDIR}/static/%.png: static/%.png
 	cp $< $@
