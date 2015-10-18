@@ -25,6 +25,7 @@ import (
 	"github.com/howeyc/gopass"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/httputil"
 	email "github.com/ungerik/go-mail"
@@ -623,7 +624,7 @@ func getDBConnString() string {
 	if config != "" && config[0] == '$' {
 		envVar := os.ExpandEnv(config)
 		if envVar == "" {
-			panic(fmt.Sprintf("Can't find env var %s", config))
+			logger.Log(fmt.Sprintf("Can't find env var %q", config))
 		}
 		return envVar
 	}

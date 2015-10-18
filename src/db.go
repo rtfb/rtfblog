@@ -41,7 +41,12 @@ type DbData struct {
 }
 
 func InitDB(conn string) *DbData {
-	db, err := gorm.Open("postgres", conn)
+	dialect := "postgres"
+	if conn == "" {
+		dialect = "sqlite3"
+		conn = "default.db"
+	}
+	db, err := gorm.Open(dialect, conn)
 	err = db.DB().Ping()
 	if err != nil {
 		panic(err)
