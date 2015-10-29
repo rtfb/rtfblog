@@ -1,5 +1,5 @@
 -- +goose Up
-alter table post add column hidden boolean;
+alter table post add column hidden integer;
 
 update post set hidden=0;
 
@@ -12,7 +12,7 @@ create table post (
     date bigint,
     url text,
     body text,
-    hidden boolean not null
+    hidden integer not null
 );
 
 insert into post(id, author_id, title, date, url, body, hidden)
