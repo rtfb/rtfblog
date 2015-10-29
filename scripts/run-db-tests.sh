@@ -24,6 +24,7 @@ ${PGSQL_PATH}/postgres -F -k ${PGSQL_DATA} -D ${PGSQL_DATA} &> ${PGSQL_DATA}/out
 
 # Wait for PostgreSQL to start listening to connections
 wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
+export RTFBLOG_DB_DRIVER=postgres
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
 goose -env=development up
