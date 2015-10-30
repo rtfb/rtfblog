@@ -18,7 +18,8 @@ before_install:
 
 script:
     - make
-    - ./scripts/run-db-tests.sh
+    - ./scripts/run-pg-tests.sh
+    - ./scripts/run-sqlite-tests.sh
 
 after_script:
     - $HOME/gopath/bin/goveralls -coverprofile=profile.cov -service=travis-ci
