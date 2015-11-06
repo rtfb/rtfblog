@@ -12,7 +12,7 @@ was writing it with making it available to others in mind.
 This is my first sizeable piece of Go code, so I'm a [baby
 gopher](http://www.babygopher.org/):
 
-[![baby-gopher](https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png)](http://www.babygopher.org)
+[![baby-gopher][baby-gopher-image]](http://www.babygopher.org)
 
 ## Can I use it?
 
@@ -81,3 +81,4 @@ BSD Simplified, see [LICENSE.md](LICENSE.md).
 [coveralls-image]: https://coveralls.io/repos/rtfb/rtfblog/badge.png
 [coveralls-url]: https://coveralls.io/r/rtfb/rtfblog
 [deploy-sh-url]: https://github.com/rtfb/blog-rtfb-lt/blob/master/scripts/deploy.sh
+[baby-gopher-image]: https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png
