@@ -41,7 +41,7 @@ func MkFlashes(ctx *Context) template.HTML {
 </svg>
 </div>`
 	for i, f := range flashes {
-		html = html + fmt.Sprintf(format, i, f, i)
+		html += fmt.Sprintf(format, i, f, i)
 	}
 	return template.HTML(`<div class="six columns">` + html + "</div>")
 }
