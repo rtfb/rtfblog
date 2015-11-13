@@ -637,7 +637,6 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 func obtainConfiguration(basedir string) SrvConfig {
 	hardcodedConf := SrvConfig{
 		"database":         "$RTFBLOG_DB_TEST_URL",
-		"url":              "localhost",
 		"port":             ":8080",
 		"staticdir":        "static",
 		"notif_send_email": "false",
