@@ -55,8 +55,8 @@ func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
 	logger.LogIf(err)
 	return TmplMap{
 		"PageTitle":       L10n("Welcome"),
-		"BlogTitle":       conf.Get("blog_title"),
-		"BlogSubtitle":    conf.Get("blog_descr"),
+		"BlogTitle":       conf.Interface.BlogTitle,
+		"BlogSubtitle":    conf.Interface.BlogDescr,
 		"NeedPagination":  numTotalPosts > PostsPerPage,
 		"ListOfPages":     listOfPages(numTotalPosts, pageNo),
 		"entries":         posts,

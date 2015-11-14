@@ -57,12 +57,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	http.ServeFile(w, req, filepath.Join(conf.Get("staticdir"), "robots.txt"))
+	http.ServeFile(w, req, filepath.Join(conf.Server.StaticDir, "robots.txt"))
 	return nil
 }
 
 func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	http.ServeFile(w, req, conf.Get("favicon"))
+	http.ServeFile(w, req, conf.Server.Favicon)
 	return nil
 }
 

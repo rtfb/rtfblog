@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	conf2 *Config
+	conf *Config
 )
 
 type Config struct {
@@ -35,6 +35,7 @@ type Notifications struct {
 	SendEmail    bool   `yaml:"send_email"`
 	SenderAcct   string `yaml:"sender_acct"`
 	SenderPasswd string `yaml:"sender_passwd"`
+	AdminEmail   string `yaml:"admin_email"`
 }
 
 type Interface struct {

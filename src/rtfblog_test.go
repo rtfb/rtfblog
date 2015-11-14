@@ -111,8 +111,8 @@ func forgeTestUser(uname, passwd string) {
 
 func init() {
 	root := ".."
-	conf = obtainConfiguration("")
-	conf["staticdir"] = filepath.Join(root, "static")
+	conf = readConfigs("")
+	conf.Server.StaticDir = filepath.Join(root, "static")
 	InitL10n(root, "en-US")
 	logger = bark.CreateFile("tests.log")
 	forgeTestUser("testuser", "testpasswd")
@@ -695,20 +695,6 @@ func TestNewPostShowsEmptyForm(t *testing.T) {
 	assertElem(t, bodyTextArea, "textarea")
 }
 
-func TestGetUnknownKeyFromConfigReturnsEmptyString(t *testing.T) {
-	val := conf.Get("unknown-key")
-	if val != "" {
-		t.Fatalf("val should be empty: %+v", val)
-	}
-}
-
-func TestLoadUnexistantConfig(t *testing.T) {
-	c := loadConfig("unexistant-file")
-	if len(c) != 0 {
-		t.Fatalf("Config should be empty: %+v", c)
-	}
-}
-
 func TestPathToFullPath(t *testing.T) {
 	T{t}.assertEqual("/a/b/c", PathToFullPath("/a/b/c"))
 	cwd, err := os.Getwd()
@@ -725,15 +711,11 @@ func TestVersionString(t *testing.T) {
 	T{t}.assertEqual(expected, versionString())
 }
 
-func TestObtainConfiguration(t *testing.T) {
-	del := mkTempFile(t, ".rtfblogrc", `{"foo": "bar"}`)
+func TestReadConfigs(t *testing.T) {
+	del := mkTempFile(t, ".rtfblogrc", "server:\n    port: 666")
 	defer del()
-	config := obtainConfiguration(".")
-	foo, ok := config["foo"]
-	if !ok || foo == nil {
-		t.Fatal("No foo")
-	}
-	T{t}.assertEqual("bar", foo.(string))
+	config := readConfigs(".")
+	T{t}.assertEqual("666", config.Server.Port)
 }
 
 func TestMkNotifEmail(t *testing.T) {

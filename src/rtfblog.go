@@ -12,7 +12,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -31,10 +30,7 @@ import (
 	email "github.com/ungerik/go-mail"
 )
 
-type SrvConfig map[string]interface{}
-
 var (
-	conf   SrvConfig
 	logger *bark.Logger
 	genVer string = ""
 )
@@ -56,27 +52,6 @@ Options:
 	defaultCookieSecret = "dont-forget-to-change-me"
 )
 
-func (c *SrvConfig) Get(key string) string {
-	val, ok := (*c)[key].(string)
-	if !ok {
-		return ""
-	}
-	return val
-}
-
-func loadConfig(path string) (config SrvConfig) {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return SrvConfig{}
-	}
-	err = json.Unmarshal(b, &config)
-	if err != nil {
-		println(err.Error())
-		return SrvConfig{}
-	}
-	return
-}
-
 func listOfPages(numPosts, currPage int) template.HTML {
 	list := ""
 	numPages := numPosts / PostsPerPage
@@ -95,8 +70,8 @@ func listOfPages(numPosts, currPage int) template.HTML {
 
 func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ctx *Context) {
 	url := httputil.AddProtocol(httputil.GetHost(req), "http")
-	blogTitle := conf.Get("blog_title")
-	descr := conf.Get("blog_descr")
+	blogTitle := conf.Interface.BlogTitle
+	descr := conf.Interface.BlogDescr
 	author, err := ctx.Db.author()
 	logger.LogIf(err)
 	feed := &feeds.Feed{
@@ -163,7 +138,7 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	if conf.Get("cookie_secret") == defaultCookieSecret {
+	if conf.Server.CookieSecret == defaultCookieSecret {
 		ctx.Session.AddFlash(L10n("You are using default cookie secret, consider changing."))
 	}
 	return Tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
@@ -399,7 +374,7 @@ func handleUpload(r *http.Request, p *multipart.Part) {
 		}
 	}()
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
-	filename := filepath.Join(conf.Get("staticdir"), p.FileName())
+	filename := filepath.Join(conf.Server.StaticDir, p.FileName())
 	fo, err := os.Create(filename)
 	if err != nil {
 		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
@@ -468,7 +443,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 }
 
 func sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
-	if conf.Get("notif_send_email") != "true" {
+	if !conf.Notifications.SendEmail {
 		return
 	}
 	refURL := httputil.ExtractReferer(req)
@@ -504,9 +479,9 @@ URL: {{.URL}}
 }
 
 func SendEmail(subj, body string) {
-	gmailSenderAcct := conf.Get("notif_sender_acct")
-	gmailSenderPasswd := conf.Get("notif_sender_passwd")
-	notifee := conf.Get("email")
+	gmailSenderAcct := conf.Notifications.SenderAcct
+	gmailSenderPasswd := conf.Notifications.SenderPasswd
+	notifee := conf.Notifications.AdminEmail
 	err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
 	if err != nil {
 		logger.LogIff(err, "err initing gmail")
@@ -590,7 +565,7 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 		P = "POST"
 	)
 	r := gctx.Router
-	dir := filepath.Join(gctx.Root, conf.Get("staticdir"))
+	dir := filepath.Join(gctx.Root, conf.Server.StaticDir)
 	mkHandler := func(f HandlerFunc) *Handler {
 		return &Handler{h: f, c: gctx, logRq: true}
 	}
@@ -635,52 +610,6 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 	return r
 }
 
-func obtainConfiguration(basedir string) SrvConfig {
-	homeDir := ""
-	userName := "user"
-	usr, err := user.Current()
-	if err != nil {
-		fmt.Println("Error acquiring current user. That can't be good.")
-		fmt.Printf("Err = %q", err.Error())
-	} else {
-		homeDir = usr.HomeDir
-		userName = usr.Name
-	}
-	hardcodedConf := SrvConfig{
-		"database":         "$RTFBLOG_DB_TEST_URL",
-		"port":             ":8080",
-		"staticdir":        "static",
-		"notif_send_email": "false",
-		"log":              "server.log",
-		"cookie_secret":    defaultCookieSecret,
-		"language":         "en-US",
-		"blog_title":       fmt.Sprintf("%s's blog", userName),
-		"blog_descr":       "Blogity blog blog",
-	}
-	conf := hardcodedConf
-	// Read the most generic config first, then more specific, each latter will
-	// override the former values:
-	confPaths := []string{
-		"/etc/rtfblogrc",
-		filepath.Join(homeDir, ".rtfblogrc"),
-		filepath.Join(basedir, ".rtfblogrc"),
-		filepath.Join(basedir, "server.conf"),
-	}
-	for _, p := range confPaths {
-		exists, err := FileExists(p)
-		if err != nil {
-			fmt.Printf("Can't check %q for existence, skipping...", p)
-			continue
-		}
-		if exists {
-			for k, v := range loadConfig(p) {
-				conf[k] = v
-			}
-		}
-	}
-	return conf
-}
-
 func versionString() string {
 	ver, err := ioutil.ReadFile("VERSION")
 	if err != nil {
@@ -690,7 +619,7 @@ func versionString() string {
 }
 
 func getDBConnString() string {
-	config := conf.Get("database")
+	config := conf.Server.DBConn
 	if config != "" && config[0] == '$' {
 		envVar := os.ExpandEnv(config)
 		if envVar == "" {
@@ -708,10 +637,10 @@ func serveAndLogTLS(addr, cert, key string, h http.Handler) {
 func runForever(handlers *pat.Router) {
 	logger.Print("The server is listening...")
 	host := os.Getenv("HOST")
-	addr := httputil.JoinHostAndPort(host, conf.Get("port"))
-	tlsPort := conf.Get("tls_port")
-	cert := conf.Get("tls_cert")
-	key := conf.Get("tls_key")
+	addr := httputil.JoinHostAndPort(host, conf.Server.Port)
+	tlsPort := conf.Server.TLSPort
+	cert := conf.Server.TLSCert
+	key := conf.Server.TLSKey
 	if tlsPort != "" && FileExistsNoErr(cert) && FileExistsNoErr(key) {
 		tlsAddr := httputil.JoinHostAndPort(host, tlsPort)
 		go serveAndLogTLS(tlsAddr, cert, key, handlers)
@@ -740,9 +669,9 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	bindir := Bindir()
 	os.Chdir(bindir)
-	conf = obtainConfiguration(bindir)
-	InitL10n(bindir, conf.Get("language"))
-	logger = bark.AppendFile(conf.Get("log"))
+	conf = readConfigs(bindir)
+	InitL10n(bindir, conf.Interface.Language)
+	logger = bark.AppendFile(conf.Server.Log)
 	db := InitDB(getDBConnString())
 	defer db.db.Close()
 	if args["--adduser"].(bool) {
@@ -775,6 +704,6 @@ func main() {
 		Router: pat.New(),
 		Db:     db,
 		Root:   bindir,
-		Store:  sessions.NewCookieStore([]byte(conf.Get("cookie_secret"))),
+		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),
 	}))
 }

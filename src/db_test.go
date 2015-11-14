@@ -15,7 +15,7 @@ var (
 )
 
 func init() {
-	conf = obtainConfiguration("")
+	conf = readConfigs("")
 	config := "$RTFBLOG_DB_TEST_URL"
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {
@@ -24,7 +24,7 @@ func init() {
 	if !strings.HasPrefix(envVar, "host=/tmp/PGSQL-") {
 		return
 	}
-	conf["database"] = config
+	conf.Server.DBConn = config
 	realDB = InitDB(getDBConnString())
 }
 
