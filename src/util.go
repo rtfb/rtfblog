@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
 	"unicode"
@@ -12,14 +11,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-func GetHomeDir() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	return usr.HomeDir, nil
-}
 
 func FileExistsNoErr(path string) bool {
 	exists, err := FileExists(path)

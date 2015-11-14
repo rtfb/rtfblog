@@ -12,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -635,6 +636,16 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 }
 
 func obtainConfiguration(basedir string) SrvConfig {
+	homeDir := ""
+	userName := "user"
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Println("Error acquiring current user. That can't be good.")
+		fmt.Printf("Err = %q", err.Error())
+	} else {
+		homeDir = usr.HomeDir
+		userName = usr.Name
+	}
 	hardcodedConf := SrvConfig{
 		"database":         "$RTFBLOG_DB_TEST_URL",
 		"port":             ":8080",
@@ -643,18 +654,15 @@ func obtainConfiguration(basedir string) SrvConfig {
 		"log":              "server.log",
 		"cookie_secret":    defaultCookieSecret,
 		"language":         "en-US",
+		"blog_title":       fmt.Sprintf("%s's blog", userName),
+		"blog_descr":       "Blogity blog blog",
 	}
 	conf := hardcodedConf
-	home, err := GetHomeDir()
-	if err != nil {
-		fmt.Println("Error acquiring user home dir. That can't be good.")
-		fmt.Printf("Err = %q", err.Error())
-	}
 	// Read the most generic config first, then more specific, each latter will
 	// override the former values:
 	confPaths := []string{
 		"/etc/rtfblogrc",
-		filepath.Join(home, ".rtfblogrc"),
+		filepath.Join(homeDir, ".rtfblogrc"),
 		filepath.Join(basedir, ".rtfblogrc"),
 		filepath.Join(basedir, "server.conf"),
 	}
