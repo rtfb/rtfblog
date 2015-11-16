@@ -11,6 +11,7 @@
 
     <div class="twelve columns content" id="content">
     {{.Flashes}}
+    <div class="twelve columns" id="buttons-row">
     <input
         id="new-post-button"
         type="button"
@@ -29,7 +30,7 @@
         onclick="location.href = '/edit_author'"
         value="{{L10n "Edit Author Profile"}}"
         />
-    <br />
+    </div>
 
     <hr />
         <label for="post_dropdown">Post:</label>
