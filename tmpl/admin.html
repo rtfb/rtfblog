@@ -44,24 +44,6 @@
         <label for="comments_dropdown">Comments:</label>
         <select id="comments_dropdown">
         </select>
-        <br />
-        <label for="wmd-input">Post text:</label>
-        <div class="wmd-panel container">
-            <div class="row">
-                <div id="wmd-preview" class="wmd-preview twelve columns">
-                </div>
-            </div>
-            <div class="row">
-                <div id="wmd-button-bar">
-                </div>
-            </div>
-            <textarea
-                id="wmd-input"
-                class="wmd-input twelve columns"
-                name="text"
-                placeholder="{{L10n "Have a say"}}"
-                ></textarea>
-        </div>
     </div>
 
     {{template "sidebar" .}}
@@ -73,10 +55,6 @@
 {{end}}
 {{define "extrascripts"}}
         <script type="text/javascript">
-        (function () {
-             getPagedownEditor().run();
-             })();
-
         function makeCommentList(post) {
             var result = "";
             for (i in post.Comments) {
