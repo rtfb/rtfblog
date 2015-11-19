@@ -18,9 +18,8 @@ module.exports = function(grunt) {
         shell: {
             buildGo: {
                 command: function() {
-                    var gitCmd = 'git rev-parse --short HEAD';
                     return 'go build -o build/rtfblog' +
-                        ' -ldflags "-X main.genVer=$(' + gitCmd + ')"' +
+                        ' -ldflags "-X main.genVer=$(./scripts/version.sh)"' +
                         ' src/*.go';
                 },
                 options: {
