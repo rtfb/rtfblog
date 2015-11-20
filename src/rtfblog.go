@@ -32,7 +32,7 @@ import (
 
 var (
 	logger *bark.Logger
-	genVer string = ""
+	genVer string
 )
 
 const (
@@ -132,7 +132,7 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		pgNo = 1
 		err = nil
 	}
-	pgNo -= 1
+	pgNo--
 	offset := pgNo * PostsPerPage
 	return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
