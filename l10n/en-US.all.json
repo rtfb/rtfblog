@@ -309,5 +309,9 @@
   {
     "id": "You are using default cookie secret, consider changing.",
     "translation":  "You are using default cookie secret, consider changing."
+  },
+  {
+    "id": "by",
+    "translation": "by"
   }
 ]

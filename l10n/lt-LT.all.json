@@ -315,5 +315,9 @@
   {
     "id": "You are using default cookie secret, consider changing.",
     "translation":  "Jūs nepasikeitėte slaptažodžio slapukams, verta pasikeisti."
+  },
+  {
+    "id": "by",
+    "translation": " "
   }
 ]
