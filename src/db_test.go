@@ -7,6 +7,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	"github.com/rtfb/bark"
 )
 
 var (
@@ -25,6 +26,7 @@ func init() {
 		return
 	}
 	conf.Server.DBConn = config
+	logger = bark.CreateFile("tests.log")
 	realDB = InitDB(getDBConnString())
 }
 
