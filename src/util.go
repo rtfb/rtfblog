@@ -63,3 +63,16 @@ func EncryptBcrypt(passwd []byte) (hash string, err error) {
 	hash = string(h)
 	return
 }
+
+func CensorPostgresConnStr(conn string) string {
+	parts := strings.Split(conn, " ")
+	newParts := []string{}
+	for _, part := range parts {
+		if strings.HasPrefix(part, "password=") {
+			newParts = append(newParts, "password=***")
+		} else {
+			newParts = append(newParts, part)
+		}
+	}
+	return strings.Join(newParts, " ")
+}

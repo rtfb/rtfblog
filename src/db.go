@@ -46,6 +46,7 @@ func InitDB(conn string) *DbData {
 		dialect = "sqlite3"
 		conn = "default.db"
 	}
+	logDbConn(dialect, conn)
 	db, err := gorm.Open(dialect, conn)
 	err = db.DB().Ping()
 	if err != nil {
@@ -56,6 +57,13 @@ func InitDB(conn string) *DbData {
 		db: &db,
 		tx: nil,
 	}
+}
+
+func logDbConn(dialect, conn string) {
+	if dialect == "postgres" {
+		conn = CensorPostgresConnStr(conn)
+	}
+	logger.Printf("Connecting to %q DB via conn %q\n", dialect, conn)
 }
 
 func notInXactionErr() error {
