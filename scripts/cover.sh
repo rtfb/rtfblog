@@ -6,6 +6,6 @@ mkdir -p $dest
 tar xzvf build/git-arch-for-cover.tar.gz -C $dest
 rm build/git-arch-for-cover.tar.gz
 pushd $dest
-./scripts/run-db-tests.sh
+./scripts/run-pg-tests.sh
 go tool cover -html=profile.cov
 popd
