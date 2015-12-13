@@ -661,6 +661,33 @@ func promptPasswd(username string) (string, error) {
 	return string(crypt), err
 }
 
+func insertUser(db *DbData, args map[string]interface{}) {
+	_, err := db.author()
+	if err != gorm.RecordNotFound {
+		fmt.Println(L10n("Author already added, can't add another, exiting"))
+		return
+	}
+	passwd, err := promptPasswd(args["<username>"].(string))
+	if err != nil {
+		fmt.Printf(L10n("Error: %s\n"), err.Error())
+		return
+	}
+	err = withTransaction(db, func(db Data) error {
+		_, err := db.insertAuthor(&Author{
+			UserName: args["<username>"].(string),
+			Passwd:   passwd,
+			FullName: args["<display name>"].(string),
+			Email:    args["<email>"].(string),
+			Www:      args["<web>"].(string),
+		})
+		return err
+	})
+	if err != nil {
+		fmt.Printf(L10n("Failed to add user: %s\n"), err.Error())
+	}
+	return
+}
+
 func main() {
 	//runtime.GOMAXPROCS(runtime.NumCPU())
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
@@ -676,29 +703,7 @@ func main() {
 	db := InitDB(getDBConnString())
 	defer db.db.Close()
 	if args["--adduser"].(bool) {
-		_, err = db.author()
-		if err != gorm.RecordNotFound {
-			fmt.Println(L10n("Author already added, can't add another, exiting"))
-			return
-		}
-		passwd, err := promptPasswd(args["<username>"].(string))
-		if err != nil {
-			fmt.Printf(L10n("Error: %s\n"), err.Error())
-			return
-		}
-		err = withTransaction(db, func(db Data) error {
-			_, err := db.insertAuthor(&Author{
-				UserName: args["<username>"].(string),
-				Passwd:   passwd,
-				FullName: args["<display name>"].(string),
-				Email:    args["<email>"].(string),
-				Www:      args["<web>"].(string),
-			})
-			return err
-		})
-		if err != nil {
-			fmt.Printf(L10n("Failed to add user: %s\n"), err.Error())
-		}
+		insertUser(db, args)
 		return
 	}
 	runForever(initRoutes(&GlobalContext{
