@@ -30,15 +30,17 @@ func init() {
 	realDB = InitDB(getDBConnString())
 }
 
+func failIfErr(t *testing.T, err error, msg string) {
+	if err != nil {
+		t.Fatalf("%s, err = %s", msg, err.Error())
+	}
+}
+
 func testInsertAuthor(t *testing.T) {
 	passwd, err := EncryptBcrypt([]byte("testpasswd"))
-	if err != nil {
-		t.Fatalf("Failed to encrypt passwd: %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to encrypt passwd")
 	err = data.begin()
-	if err != nil {
-		t.Fatalf("Failed to start xaction: %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to start xaction")
 	defer data.rollback()
 	// XXX: panics when trying to insert a second copy. Investigate.
 	id, err := data.insertAuthor(&Author{
@@ -58,20 +60,14 @@ func testUpdateAuthor(t *testing.T) {
 	data.begin()
 	defer data.rollback()
 	a, err := data.author()
-	if err != nil {
-		t.Fatalf("Failed to query author: %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query author")
 	newName := "Zoe Vlogger"
 	a.FullName = newName
 	err = data.updateAuthor(a)
-	if err != nil {
-		t.Fatalf("Failed to updateAuthor: " + err.Error())
-	}
+	failIfErr(t, err, "Failed to updateAuthor")
 	data.commit()
 	a, err = data.author()
-	if err != nil {
-		t.Fatalf("Failed to query author: %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query author")
 	if a.FullName != newName {
 		t.Fatalf("a.FullName = %q, expected %q", a.FullName, newName)
 	}
@@ -81,9 +77,7 @@ func testDeleteAuthor(t *testing.T) {
 	data.begin()
 	defer data.rollback()
 	err := data.deleteAuthor(1)
-	if err != nil {
-		t.Fatalf("deleteAuthor failed: " + err.Error())
-	}
+	failIfErr(t, err, "deleteAuthor failed")
 	data.commit()
 	_, err = data.author()
 	if err != gorm.RecordNotFound {
@@ -93,9 +87,7 @@ func testDeleteAuthor(t *testing.T) {
 
 func testExistingAuthor(t *testing.T) {
 	a, err := data.author()
-	if err != nil {
-		t.Fatalf("Failed to query author: %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query author")
 	if a == nil {
 		t.Fatal("Failed to query author: a == nil")
 	}
@@ -106,9 +98,7 @@ func testExistingAuthor(t *testing.T) {
 
 func testPost(t *testing.T) {
 	post, err := data.post("url", true)
-	if err != nil {
-		t.Fatalf("Failed to query post, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query post")
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
@@ -123,9 +113,7 @@ func testPost(t *testing.T) {
 		t.Fatalf("Should not find this post")
 	}
 	id, err := data.postID("url")
-	if err != nil {
-		t.Fatalf("Failed to query post ID")
-	}
+	failIfErr(t, err, "Failed to query post ID")
 	if id != 1 {
 		t.Errorf("Wrong post ID, expected %d, got %d", 1, id)
 	}
@@ -163,9 +151,7 @@ func testUpdateTags(t *testing.T) {
 
 func testTags(t *testing.T) {
 	tags, err := data.queryAllTags()
-	if err != nil {
-		t.Fatalf("Failed to query tags")
-	}
+	failIfErr(t, err, "Failed to query tags")
 	if tags == nil {
 		t.Fatalf("Failed to query tags")
 	}
@@ -204,48 +190,36 @@ func testNumPosts(t *testing.T) {
 		Date:     "2014-12-30",
 		RawBody:  "*markdown 3*",
 	})
-	if err != nil || id != 3 {
-		t.Fatalf("Failed to insert post, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to insert post")
 	data.commit()
 
 	// Now test a few methods
 	numPosts, err := data.numPosts(true)
-	if err != nil {
-		t.Fatalf("Failed to get numPosts, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to get numPosts")
 	if numPosts != 3 {
 		t.Errorf("Wrong numPosts: expected %d, but got %d", 3, numPosts)
 	}
 
 	allPosts, err := data.posts(-1, 0, true)
-	if err != nil {
-		t.Fatalf("Failed to query posts, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query posts")
 	if len(allPosts) != 3 {
 		t.Errorf("Wrong len(allPosts): expected %d, but got %d", 3, len(allPosts))
 	}
 
 	secondPost, err := data.posts(1, 1, true)
-	if err != nil {
-		t.Fatalf("Failed to query posts, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query posts")
 	if len(secondPost) != 1 {
 		t.Errorf("Wrong len(secondPost): expected %d, but got %d", 1, len(secondPost))
 	}
 
 	titles, err := data.titles(-1, true)
-	if err != nil {
-		t.Fatalf("Failed to query titles, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query titles")
 	if len(titles) != 3 {
 		t.Errorf("Wrong len(titles): expected %d, but got %d", 3, len(titles))
 	}
 
 	firstTitle, err := data.titles(1, true)
-	if err != nil {
-		t.Fatalf("Failed to query titles, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query titles")
 	if len(firstTitle) != 1 {
 		t.Errorf("Wrong len(firstTitle): expected %d, but got %d", 1, len(firstTitle))
 	}
@@ -256,9 +230,7 @@ func testNumPosts(t *testing.T) {
 
 func testTitlesByTag(t *testing.T) {
 	titles, err := data.titlesByTag("tag1", true)
-	if err != nil {
-		t.Fatalf("Failed to query titles, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query titles")
 	if len(titles) != 1 {
 		t.Fatalf("Wrong len(titles), expected %d, but got %d", 1, len(titles))
 	}
@@ -281,14 +253,10 @@ func testUpdatePost(t *testing.T) {
 		Date:     "2014-12-28",
 		RawBody:  "*markdown*",
 	})
-	if err != nil {
-		t.Fatalf("Failed to updatePost: " + err.Error())
-	}
+	failIfErr(t, err, "Failed to updatePost")
 	data.commit()
 	post, err := data.post("url-three", true)
-	if err != nil {
-		t.Fatalf("Failed to query post, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query post")
 	if post == nil {
 		t.Fatalf("Failed to query post")
 	}
@@ -306,16 +274,12 @@ func testInsertComment(t *testing.T) {
 		Website: "cwebsite",
 		IP:      "cip",
 	})
-	if err != nil {
-		t.Fatalf("Failed to insert commenter: " + err.Error())
-	}
+	failIfErr(t, err, "Failed to insert commenter")
 	if commenterID != 1 {
 		t.Fatalf("Wrong commenterID = %d, expected %d", commenterID, 1)
 	}
 	commentID, err := data.insertComment(commenterID, 1, "comment body")
-	if err != nil {
-		t.Fatalf("Failed to insert comment: " + err.Error())
-	}
+	failIfErr(t, err, "Failed to insert comment")
 	if commentID != 1 {
 		t.Fatalf("Wrong commentID = %d, expected %d", commentID, 1)
 	}
@@ -328,9 +292,7 @@ func testQueryCommenterID(t *testing.T) {
 		Email:   "cemail",
 		Website: "cwebsite",
 	})
-	if err != nil {
-		t.Fatalf("Error querying commenter ID: %s", err.Error())
-	}
+	failIfErr(t, err, "Error querying commenter ID")
 	if id != 1 {
 		t.Fatalf("Wrong commenter id = %d, expected %d", id, 1)
 	}
@@ -338,9 +300,7 @@ func testQueryCommenterID(t *testing.T) {
 
 func testQueryAllComments(t *testing.T) {
 	comms, err := data.allComments()
-	if err != nil {
-		t.Fatalf("Error querying comments: %s", err.Error())
-	}
+	failIfErr(t, err, "Error querying comments")
 	if len(comms) != 1 {
 		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 1)
 	}
@@ -356,9 +316,7 @@ func testUpdateComment(t *testing.T) {
 	data.begin()
 	defer data.rollback()
 	err := data.updateComment("1", "new body")
-	if err != nil {
-		t.Fatalf("updateComment failed: " + err.Error())
-	}
+	failIfErr(t, err, "updateComment failed")
 	data.commit()
 }
 
@@ -366,14 +324,10 @@ func testDeleteComment(t *testing.T) {
 	data.begin()
 	defer data.rollback()
 	err := data.deleteComment("1")
-	if err != nil {
-		t.Fatalf("deleteComment failed: " + err.Error())
-	}
+	failIfErr(t, err, "deleteComment failed")
 	data.commit()
 	comms, err := data.allComments()
-	if err != nil {
-		t.Fatalf("Error querying comments: %s", err.Error())
-	}
+	failIfErr(t, err, "Error querying comments")
 	if len(comms) != 0 {
 		t.Fatalf("Wrong len(comms) = %d, expected %d", len(comms), 0)
 	}
@@ -383,14 +337,10 @@ func testDeletePost(t *testing.T) {
 	data.begin()
 	defer data.rollback()
 	err := data.deletePost("url-three")
-	if err != nil {
-		t.Fatalf("deletePost failed: " + err.Error())
-	}
+	failIfErr(t, err, "deletePost failed")
 	data.commit()
 	posts, err := data.posts(-1, 0, true)
-	if err != nil {
-		t.Fatalf("Failed to query posts, err = %s", err.Error())
-	}
+	failIfErr(t, err, "Failed to query posts")
 	if len(posts) != 2 {
 		t.Fatalf("Wrong len(posts) = %d, expected %d", len(posts), 2)
 	}
