@@ -186,3 +186,11 @@ func mkTempFile(t *testing.T, name, content string) func() {
 		}
 	}
 }
+
+func mkQueryURL(qry string, params map[string]string) string {
+	bits := []string{}
+	for k, v := range params {
+		bits = append(bits, k+"="+v)
+	}
+	return qry + "?" + strings.Join(bits, "&")
+}

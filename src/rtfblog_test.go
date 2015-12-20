@@ -614,13 +614,24 @@ func TestDeleteCommentCallsDbFunc(t *testing.T) {
 }
 
 func TestShowCaptcha(t *testing.T) {
-	url := "comment_submit?name=joe&captcha=&email=snailmail&text=cmmnt%20txt"
+	url := mkQueryURL("comment_submit", map[string]string{
+		"name":    "joe",
+		"captcha": "",
+		"email":   "snailmail",
+		"text":    "cmmnt%20txt",
+	})
 	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
 func TestReturningCommenterSkipsCaptcha(t *testing.T) {
-	url := "comment_submit?name=N&captcha=&email=@&website=w&text=cmmnt%20txt"
+	url := mkQueryURL("comment_submit", map[string]string{
+		"name":    "N",
+		"captcha": "",
+		"email":   "@",
+		"website": "w",
+		"text":    "cmmnt%20txt",
+	})
 	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
@@ -632,7 +643,13 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 		langDetector = temp
 	}()
 	langDetector = LTLangDetector{}
-	url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt"
+	url := mkQueryURL("comment_submit", map[string]string{
+		"name":    "UnknownCommenter",
+		"captcha": "",
+		"email":   "@",
+		"website": "w",
+		"text":    "cmmnt%20txt",
+	})
 	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
@@ -643,7 +660,14 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 
 func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 	defer testData.reset()
-	url := "comment_submit?name=UnknownCommenter&captcha=&email=@&website=w&text=cmmnt%20txt&captcha-id=666"
+	url := mkQueryURL("comment_submit", map[string]string{
+		"name":       "UnknownCommenter",
+		"captcha":    "",
+		"email":      "@",
+		"website":    "w",
+		"text":       "cmmnt%20txt",
+		"captcha-id": "666",
+	})
 	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
 	testData.expect(t, (*TestData).postID, "")
@@ -654,8 +678,14 @@ func TestCorrectCaptchaReply(t *testing.T) {
 	deck := NewDeck()
 	deck.SetNextTask(0)
 	task := deck.NextTask()
-	captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.ID, task.Answer)
-	url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
+	url := mkQueryURL("comment_submit", map[string]string{
+		"name":       "UnknownCommenter",
+		"captcha":    task.Answer,
+		"email":      "@",
+		"website":    "w",
+		"text":       "cmmnt%20txt",
+		"captcha-id": task.ID,
+	})
 	resp := mustUnmarshal(t, curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
