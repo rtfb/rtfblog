@@ -401,6 +401,27 @@ func prepareCommenter(req *http.Request) *Commenter {
 	}
 }
 
+func captchaNewCommenter(w http.ResponseWriter, req *http.Request, ctx *Context) bool {
+	body := req.FormValue("text")
+	captchaID := req.FormValue("captcha-id")
+	if captchaID == "" {
+		lang := DetectLanguageWithTimeout(body)
+		log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
+		logger.Println(log)
+		if lang != `"lt"` {
+			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
+			return false
+		}
+	} else {
+		captchaTask := ctx.Captcha.GetTaskByID(captchaID)
+		if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
+			WrongCaptchaReply(w, req, "rejected", captchaTask)
+			return false
+		}
+	}
+	return true
+}
+
 func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	refURL := httputil.ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
@@ -416,19 +437,8 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		// This is a returning commenter, pass his comment through:
 		commentURL, err = PublishComment(ctx.Db, postID, commenterID, body)
 	case gorm.RecordNotFound:
-		captchaID := req.FormValue("captcha-id")
-		if captchaID == "" {
-			lang := DetectLanguageWithTimeout(body)
-			log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
-			logger.Println(log)
-			if lang != "\"lt\"" {
-				return WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
-			}
-		} else {
-			captchaTask := ctx.Captcha.GetTaskByID(captchaID)
-			if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
-				return WrongCaptchaReply(w, req, "rejected", captchaTask)
-			}
+		if !captchaNewCommenter(w, req, ctx) {
+			return nil
 		}
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	default:
