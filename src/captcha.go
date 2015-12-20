@@ -76,7 +76,7 @@ func CheckCaptcha(task *CaptchaTask, input string) bool {
 }
 
 func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask) error {
-	var response = map[string]interface{}{
+	b, err := json.Marshal(map[string]interface{}{
 		"status":       status,
 		"captcha-id":   task.ID,
 		"captcha-task": task.Task,
@@ -84,8 +84,7 @@ func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, 
 		"email":        req.FormValue("email"),
 		"website":      req.FormValue("website"),
 		"body":         req.FormValue("text"),
-	}
-	b, err := json.Marshal(response)
+	})
 	if logger.LogIf(err) == nil {
 		w.Write(b)
 	}
@@ -93,11 +92,10 @@ func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, 
 }
 
 func RightCaptchaReply(w http.ResponseWriter, redir string) error {
-	var response = map[string]interface{}{
+	b, err := json.Marshal(map[string]interface{}{
 		"status": "accepted",
 		"redir":  redir,
-	}
-	b, err := json.Marshal(response)
+	})
 	if logger.LogIf(err) == nil {
 		w.Write(b)
 	}
