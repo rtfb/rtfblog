@@ -51,11 +51,11 @@ func init() {
 	deck = NewDeck()
 }
 
-func (d *Deck) GetTask() *CaptchaTask {
+func (d *Deck) NextTask() *CaptchaTask {
 	return &d.tasks[d.nextTask]
 }
 
-func (d *Deck) GetTaskByID(id string) *CaptchaTask {
+func (d *Deck) GetTask(id string) *CaptchaTask {
 	for _, t := range d.tasks {
 		if t.ID == id {
 			return &t

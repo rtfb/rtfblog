@@ -653,7 +653,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
 	defer testData.reset()
 	deck := NewDeck()
 	deck.SetNextTask(0)
-	task := deck.GetTask()
+	task := deck.NextTask()
 	captchaURL := fmt.Sprintf("&captcha-id=%s&captcha=%s", task.ID, task.Answer)
 	url := "comment_submit?name=UnknownCommenter&email=@&website=w&text=cmmnt%20txt" + captchaURL
 	resp := mustUnmarshal(t, curl(url))

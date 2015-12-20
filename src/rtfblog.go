@@ -117,7 +117,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		tmplData := MkBasicData(ctx, 0, 0)
 		tmplData["PageTitle"] = post.Title
 		tmplData["entry"] = post
-		task := *ctx.Captcha.GetTask()
+		task := *ctx.Captcha.NextTask()
 		// Initial task id has to be empty, gets filled by AJAX upon first time
 		// it gets shown
 		task.ID = ""
@@ -409,11 +409,11 @@ func captchaNewCommenter(w http.ResponseWriter, req *http.Request, ctx *Context)
 		log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 		logger.Println(log)
 		if lang != `"lt"` {
-			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.GetTask())
+			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.NextTask())
 			return false
 		}
 	} else {
-		captchaTask := ctx.Captcha.GetTaskByID(captchaID)
+		captchaTask := ctx.Captcha.GetTask(captchaID)
 		if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
 			WrongCaptchaReply(w, req, "rejected", captchaTask)
 			return false
@@ -443,7 +443,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	default:
 		logger.LogIf(err)
-		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.GetTask())
+		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.NextTask())
 	}
 	if err != nil {
 		return err
