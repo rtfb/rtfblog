@@ -343,7 +343,7 @@ func explodeTags(tagsStr string) []*Tag {
 		if t == "" {
 			continue
 		}
-		tags = append(tags, &Tag{Id: 0, Name: strings.ToLower(t)})
+		tags = append(tags, &Tag{ID: 0, Name: strings.ToLower(t)})
 	}
 	return tags
 }

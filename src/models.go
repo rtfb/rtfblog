@@ -115,7 +115,7 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 			if err != nil {
 				return -1, err
 			}
-			post.AuthorID = author.Id
+			post.AuthorID = author.ID
 			newPostID, err := db.insertPost(post)
 			if err != nil {
 				return -1, err
@@ -125,7 +125,7 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 			return -1, logger.LogIff(idErr, "db.postID() failed")
 		}
 	} else {
-		post.Id = postID
+		post.ID = postID
 		updErr := db.updatePost(post)
 		if updErr != nil {
 			return -1, updErr
@@ -136,13 +136,13 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 
 func InsertOrUpdateAuthor(db Data, newAuthor *Author) (id int64, err error) {
 	author, err := db.author() // Pick default author
-	id = author.Id
+	id = author.ID
 	if err != nil {
 		if err == gorm.RecordNotFound {
 			id, err = db.insertAuthor(newAuthor)
 		}
 	} else {
-		newAuthor.Id = id
+		newAuthor.ID = id
 		err = db.updateAuthor(newAuthor)
 	}
 	return id, logger.LogIff(err, "Failed to insert author")

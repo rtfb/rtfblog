@@ -112,7 +112,7 @@ func (dd *DbData) postID(url string) (int64, error) {
 	var post Entry
 	rows := dd.db.Table("post").Where("url = ?", url).Select("id")
 	err := rows.First(&post).Error
-	return post.Id, err
+	return post.ID, err
 }
 
 func (dd *DbData) posts(limit, offset int, includeHidden bool) ([]*Entry, error) {
@@ -181,7 +181,7 @@ func (dd *DbData) commenterID(c *Commenter) (id int64, err error) {
 	where := "name = ? and email = ? and www = ?"
 	rows := dd.db.Table("commenter").Select("id")
 	err = rows.Where(where, c.Name, c.Email, c.Website).Scan(&result).Error
-	id = result.Id
+	id = result.ID
 	return
 }
 
@@ -189,9 +189,9 @@ func (dd *DbData) insertCommenter(c *Commenter) (id int64, err error) {
 	if dd.tx == nil {
 		return -1, notInXactionErr()
 	}
-	entry := CommenterTable{Id: 0, Commenter: *c}
+	entry := CommenterTable{ID: 0, Commenter: *c}
 	err = dd.tx.Save(&entry).Error
-	return entry.Id, err
+	return entry.ID, err
 }
 
 func (dd *DbData) insertComment(commenterID, postID int64, body string) (id int64, err error) {
@@ -214,7 +214,7 @@ func (dd *DbData) insertPost(e *EntryTable) (id int64, err error) {
 	}
 	e.UnixDate = time.Now().Unix()
 	err = dd.tx.Save(e).Error
-	return e.Id, err
+	return e.ID, err
 }
 
 func (dd *DbData) updatePost(e *EntryTable) error {
@@ -253,7 +253,7 @@ func (dd *DbData) insertAuthor(a *Author) (id int64, err error) {
 		return -1, notInXactionErr()
 	}
 	err = dd.tx.Save(a).Error
-	return a.Id, err
+	return a.ID, err
 }
 
 func (dd *DbData) updateAuthor(a *Author) error {
@@ -297,8 +297,8 @@ func queryPosts(dd *DbData, limit, offset int, url string,
 	for _, p := range results {
 		p.Body = sanitizeTrustedHTML(mdToHTML(p.RawBody))
 		p.Date = time.Unix(p.UnixDate, 0).Format("2006-01-02")
-		p.Tags = queryTags(dd.db, p.Id)
-		p.Comments = queryComments(dd.db, p.Id)
+		p.Tags = queryTags(dd.db, p.ID)
+		p.Comments = queryComments(dd.db, p.ID)
 	}
 	return results, err
 }
@@ -339,10 +339,10 @@ func insertOrGetTagID(db *gorm.DB, tag *Tag) (tagID int64, err error) {
 	err = db.Where("tag = ?", tag.Name).First(&result).Error
 	switch err {
 	case nil:
-		return result.Id, nil
+		return result.ID, nil
 	case gorm.RecordNotFound:
 		err = db.Save(tag).Error
-		return tag.Id, err
+		return tag.ID, err
 	default:
 		logger.Log(err)
 		return -1, err

@@ -249,7 +249,7 @@ func testUpdatePost(t *testing.T) {
 			Hidden: false,
 		},
 		AuthorID: 1,
-		Id:       3,
+		ID:       3,
 		Date:     "2014-12-28",
 		RawBody:  "*markdown*",
 	})

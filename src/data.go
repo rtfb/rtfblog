@@ -14,18 +14,18 @@ const (
 )
 
 type Tag struct {
-	Id   int64
+	ID   int64
 	Name string `gorm:"column:tag"`
 }
 
 type TagMap struct {
-	Id      int64
+	ID      int64
 	TagID   int64 `gorm:"column:tag_id"`
 	EntryID int64 `gorm:"column:post_id"`
 }
 
 type Author struct {
-	Id       int64
+	ID       int64
 	UserName string `gorm:"column:disp_name"`
 	Passwd   string `gorm:"column:passwd"`
 	FullName string `gorm:"column:full_name"`
@@ -36,7 +36,7 @@ type Author struct {
 // Commenter and Comment tables have been split up a bit to avoid a couple of
 // problems:
 // 1. If Comment contains Commenter substruct, gorm complains about duplicate
-// 'id' columns and rightfully so. Thus, Commenter's Id is moved to
+// 'id' columns and rightfully so. Thus, Commenter's ID is moved to
 // CommenterTable.
 // 2. If Comment contains Commenter and I try to insert it into a table, gorm
 // tries to map Commenter's fields to 'comment' table and fails. Thus,
@@ -51,7 +51,7 @@ type Commenter struct {
 }
 
 type CommenterTable struct {
-	Id int64
+	ID int64
 	Commenter
 }
 
@@ -93,7 +93,7 @@ type EntryLink struct {
 
 type EntryTable struct {
 	EntryLink
-	Id       int64
+	ID       int64
 	AuthorID int64         `gorm:"column:author_id"`
 	Date     string        `sql:"-"`
 	UnixDate int64         `gorm:"column:date"`
