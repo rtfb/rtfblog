@@ -28,7 +28,6 @@ export RTFBLOG_DB_DRIVER=postgres
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
 goose -path=db/pg/ -env=development up
-#${PGSQL_PATH}/psql "$RTFBLOG_DB_TEST_URL" < testdata/testdb.sql
 
 echo "Running tests on $RTFBLOG_DB_DRIVER..."
 go test -covermode=count -coverprofile=profile.cov -v ./src/...
