@@ -3,36 +3,15 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"net/http"
-	"net/http/cookiejar"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/rtfb/go-html-transform/h5"
+	"github.com/rtfb/htmltest"
 	"golang.org/x/net/html"
 )
-
-var (
-	tclient *http.Client
-	tserver *httptest.Server
-)
-
-func initTestClient() {
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		panic(err)
-	}
-	tclient = &http.Client{
-		Jar: jar,
-	}
-}
-
-func initTestServer(router http.Handler) {
-	tserver = httptest.NewServer(router)
-}
 
 func mustUnmarshal(t *testing.T, jsonObj string) map[string]interface{} {
 	var obj map[string]interface{}
@@ -53,46 +32,6 @@ func mustNotContain(t *testing.T, page string, what string) {
 	if strings.Contains(page, what) {
 		t.Fatalf("Test page incorrectly contained %q", what)
 	}
-}
-
-func curlParam(url string, method func(string) (*http.Response, error)) string {
-	if r, err := method(url); err == nil {
-		b, err := ioutil.ReadAll(r.Body)
-		r.Body.Close()
-		if err == nil {
-			return string(b)
-		}
-		println(err.Error())
-	} else {
-		println(err.Error())
-	}
-	return ""
-}
-
-func curl(url string) string {
-	return curlParam(url, tclientGet)
-}
-
-func curlPost(url string) string {
-	return curlParam(url, tclientPostForm)
-}
-
-func localhostURL(u string) string {
-	if u == "" {
-		return tserver.URL
-	} else if u[0] == '/' {
-		return tserver.URL + u
-	} else {
-		return tserver.URL + "/" + u
-	}
-}
-
-func tclientGet(rqURL string) (*http.Response, error) {
-	return tclient.Get(localhostURL(rqURL))
-}
-
-func tclientPostForm(rqURL string) (*http.Response, error) {
-	return tclient.PostForm(localhostURL(rqURL), url.Values{})
 }
 
 func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {
