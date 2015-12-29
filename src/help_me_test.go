@@ -37,20 +37,15 @@ func mustNotContain(t *testing.T, page string, what string) {
 func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {
 	defer testData.reset()
 	login()
-	if r, err := tclient.PostForm(localhostURL(path), *values); err == nil {
-		defer r.Body.Close()
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Error(err)
-		}
-		testFunc(string(body))
-	} else {
+	body, err := htmltest.PostForm(path, values)
+	if err != nil {
 		t.Error(err)
 	}
+	testFunc(body)
 }
 
 func loginWithCred(username, passwd string) string {
-	resp, err := tclient.PostForm(localhostURL("login"), url.Values{
+	body, err := htmltest.PostForm("login", &url.Values{
 		"uname":  {username},
 		"passwd": {passwd},
 	})
@@ -58,13 +53,7 @@ func loginWithCred(username, passwd string) string {
 		println(err.Error())
 		return ""
 	}
-	b, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		println(err.Error())
-		return ""
-	}
-	return string(b)
+	return body
 }
 
 func login() {
@@ -72,7 +61,7 @@ func login() {
 }
 
 func logout() {
-	curl("logout")
+	htmltest.Curl("logout")
 }
 
 func query(t *testing.T, url, query string) []*html.Node {
@@ -84,7 +73,7 @@ func query(t *testing.T, url, query string) []*html.Node {
 }
 
 func query0(t *testing.T, url, query string) []*html.Node {
-	html := curl(url)
+	html := htmltest.Curl(url)
 	doctree, err := h5.NewFromString(html)
 	if err != nil {
 		t.Fatalf("h5.NewFromString(%s) = err %q", html, err.Error())

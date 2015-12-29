@@ -23,6 +23,7 @@ import (
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/css/selector"
 	"github.com/rtfb/go-html-transform/h5"
+	"github.com/rtfb/htmltest"
 	"golang.org/x/net/html"
 )
 
@@ -125,8 +126,7 @@ func init() {
 	langDetector = TestLangDetector{}
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
-	initTestClient()
-	initTestServer(initRoutes(&GlobalContext{
+	htmltest.Init(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     &testData,
 		Root:   root,
@@ -151,7 +151,7 @@ func TestMainPage(t *testing.T) {
 		{"", "vim_created.png"},
 	}
 	for _, test := range simpleTests {
-		mustContain(t, curl(test.url), test.out)
+		mustContain(t, htmltest.Curl(test.url), test.out)
 	}
 }
 
@@ -168,14 +168,14 @@ func TestBasicStructure(t *testing.T) {
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 	tmpPosts := testPosts
 	testPosts = nil
-	html := curl("")
+	html := htmltest.Curl("")
 	mustContain(t, html, "No entries")
 	testPosts = tmpPosts
 }
 
 func TestLogin(t *testing.T) {
 	login()
-	html := curl(testPosts[0].URL)
+	html := htmltest.Curl(testPosts[0].URL)
 	mustContain(t, html, "Logout")
 }
 
@@ -188,7 +188,7 @@ func TestBadLogin(t *testing.T) {
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
 	what := "No entries"
-	if strings.Contains(curl(""), what) {
+	if strings.Contains(htmltest.Curl(""), what) {
 		t.Errorf("Test page should not contain %q", what)
 	}
 }
@@ -243,7 +243,7 @@ func checkAuthorSection(t T, node *html.Node) {
 
 func TestEveryEntryHasAuthor(t *testing.T) {
 	for _, e := range testPosts {
-		mustContain(t, curl(e.URL), "captcha-id")
+		mustContain(t, htmltest.Curl(e.URL), "captcha-id")
 	}
 }
 
@@ -341,12 +341,12 @@ func TestArchiveContainsAllEntries(t *testing.T) {
 }
 
 func TestPostPager(t *testing.T) {
-	mustContain(t, curl(""), "/page/2")
+	mustContain(t, htmltest.Curl(""), "/page/2")
 }
 
 func TestInvalidPageDefaultsToPageOne(t *testing.T) {
-	page1 := curl("/page/1")
-	pageFoo := curl("/page/foo")
+	page1 := htmltest.Curl("/page/1")
+	pageFoo := htmltest.Curl("/page/foo")
 	T{t}.failIf(page1 != pageFoo, "Invalid page did not produce /page/1")
 }
 
@@ -361,7 +361,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 		"delete_post",
 	}
 	for _, u := range urls {
-		html := curl(u)
+		html := htmltest.Curl(u)
 		mustContain(t, html, "Verboten")
 	}
 	postUrls := []string{
@@ -370,7 +370,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 		"upload_images",
 	}
 	for _, u := range postUrls {
-		html := curlPost(u)
+		html := htmltest.CurlPost(u)
 		mustContain(t, html, "Verboten")
 	}
 }
@@ -398,7 +398,7 @@ func TestModerateCommentIgnoresWrongAction(t *testing.T) {
 
 func TestLoadComments(t *testing.T) {
 	login()
-	json := curl("/load_comments?post=hello1")
+	json := htmltest.Curl("/load_comments?post=hello1")
 	mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
 }
 
@@ -440,7 +440,7 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", localhostURL(uri), body)
+	req, err := http.NewRequest("POST", htmltest.PathToURL(uri), body)
 	if err != nil {
 		return nil, err
 	}
@@ -466,7 +466,7 @@ func TestUploadImage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, err := tclient.Do(request)
+	resp, err := htmltest.Client().Do(request)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -543,12 +543,12 @@ func TestHiddenPosts(t *testing.T) {
 	}
 	login()
 	for _, i := range positiveTests {
-		html := curl(i.url)
+		html := htmltest.Curl(i.url)
 		mustContain(t, html, i.content)
 	}
 	logout()
 	for _, i := range negativeTests {
-		html := curl(i.url)
+		html := htmltest.Curl(i.url)
 		mustNotContain(t, html, i.content)
 	}
 }
@@ -560,31 +560,31 @@ func TestHiddenPostDoesNotAppearInRss(t *testing.T) {
 	testPosts = append(testPosts, mkTestEntry(1000, true))
 	testPosts = append(testPosts, mkTestEntry(2, false))
 	login()
-	xml := curl("feeds/rss.xml")
+	xml := htmltest.Curl("feeds/rss.xml")
 	mustNotContain(t, xml, "hello1000")
 	testPosts = bak
 }
 
 func TestHiddenPostAccess(t *testing.T) {
 	login()
-	html := curl("hello1001")
+	html := htmltest.Curl("hello1001")
 	mustContain(t, html, "Body")
 	logout()
-	html = curl("hello1001")
+	html = htmltest.Curl("hello1001")
 	mustContain(t, html, "Page Not Found")
 }
 
 func TestEditPost(t *testing.T) {
 	login()
 	// test with non-hidden post
-	html := curl("edit_post?post=hello3")
+	html := htmltest.Curl("edit_post?post=hello3")
 	mustContain(t, html, "Body3")
 	mustContain(t, html, "Hi3")
 	mustContain(t, html, "u3")
 	mustContain(t, html, "Delete!")
 	mustNotContain(t, html, "checked")
 	// now test with hidden post
-	html = curl("edit_post?post=hello1002")
+	html = htmltest.Curl("edit_post?post=hello1002")
 	mustContain(t, html, "Body1002")
 	mustContain(t, html, "Hi1002")
 	mustContain(t, html, "u1002")
@@ -595,7 +595,7 @@ func TestEditPost(t *testing.T) {
 func TestTitleByTagGetsCalled(t *testing.T) {
 	defer testData.reset()
 	tag := "taaag"
-	html := curl("/tag/" + tag)
+	html := htmltest.Curl("/tag/" + tag)
 	testData.expect(t, (*TestData).titlesByTag, tag)
 	mustContain(t, html, "Posts tagged ")
 	mustContain(t, html, tag)
@@ -603,13 +603,13 @@ func TestTitleByTagGetsCalled(t *testing.T) {
 
 func TestDeletePostCallsDbFunc(t *testing.T) {
 	defer testData.reset()
-	curl("delete_post?id=hello1001")
+	htmltest.Curl("delete_post?id=hello1001")
 	testData.expect(t, (*TestData).deletePost, "hello1001")
 }
 
 func TestDeleteCommentCallsDbFunc(t *testing.T) {
 	defer testData.reset()
-	curl("delete_comment?id=1&action=delete")
+	htmltest.Curl("delete_comment?id=1&action=delete")
 	testData.expect(t, (*TestData).deleteComment, "1")
 }
 
@@ -620,7 +620,7 @@ func TestShowCaptcha(t *testing.T) {
 		"email":   "snailmail",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, curl(url))
+	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
@@ -632,7 +632,7 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
 		"website": "w",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, curl(url))
+	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
@@ -650,7 +650,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 		"website": "w",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, curl(url))
+	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
@@ -668,7 +668,7 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 		"text":       "cmmnt%20txt",
 		"captcha-id": "666",
 	})
-	resp := mustUnmarshal(t, curl(url))
+	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
 	testData.expect(t, (*TestData).postID, "")
 }
@@ -686,22 +686,22 @@ func TestCorrectCaptchaReply(t *testing.T) {
 		"text":       "cmmnt%20txt",
 		"captcha-id": task.ID,
 	})
-	resp := mustUnmarshal(t, curl(url))
+	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
 	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 
 func TestRssFeed(t *testing.T) {
-	xml := curl("feeds/rss.xml")
-	url := localhostURL("")
+	xml := htmltest.Curl("feeds/rss.xml")
+	url := htmltest.PathToURL("")
 	mustContain(t, xml, fmt.Sprintf("<link>%s</link>", url))
 	mustContain(t, xml, "<title>Hi3</title>")
 	mustContain(t, xml, fmt.Sprintf("<link>%s/%s</link>", url, "hello3"))
 }
 
 func TestRobotsTxtGetsServed(t *testing.T) {
-	robots := curl("robots.txt")
+	robots := htmltest.Curl("robots.txt")
 	mustContain(t, robots, "Disallow")
 }
 
@@ -714,7 +714,7 @@ func TestPagination(t *testing.T) {
 	if nodes[4].Attr[1].Val != "/hello10" {
 		t.Fatalf("Wrong post!")
 	}
-	html := curl("page/2")
+	html := htmltest.Curl("page/2")
 	mustContain(t, html, "<a href=\"/page/1\">1</a>\n2\n<a href=\"/page/3\">3</a>\n")
 }
 
@@ -789,13 +789,13 @@ func TestMd5(t *testing.T) {
 }
 
 func TestAdminPageHasEditAuthorButton(t *testing.T) {
-	mustContain(t, curl("/admin"), "Edit Author Profile")
+	mustContain(t, htmltest.Curl("/admin"), "Edit Author Profile")
 }
 
 func TestMainPageShowsCreateAuthorPage(t *testing.T) {
 	tmp := testAuthor
 	testAuthor = nil
-	html := curl("/")
+	html := htmltest.Curl("/")
 	mustContain(t, html, "New Password")
 	mustContain(t, html, "Confirm Password")
 	mustNotContain(t, html, "Old Password")
@@ -803,7 +803,7 @@ func TestMainPageShowsCreateAuthorPage(t *testing.T) {
 }
 
 func TestEditAuthor(t *testing.T) {
-	html := curl("/edit_author")
+	html := htmltest.Curl("/edit_author")
 	mustContain(t, html, "New Password")
 	mustContain(t, html, "Confirm Password")
 	mustContain(t, html, "Old Password")
