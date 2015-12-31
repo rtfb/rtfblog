@@ -21,7 +21,6 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/bark"
-	"github.com/rtfb/go-html-transform/css/selector"
 	"github.com/rtfb/go-html-transform/h5"
 	"github.com/rtfb/htmltest"
 	"golang.org/x/net/html"
@@ -215,19 +214,11 @@ func TestEntriesHaveTagsInList(t *testing.T) {
 	}
 }
 
-func cssSelect(t T, node *html.Node, query string) []*html.Node {
-	chain, err := selector.Selector(query)
-	if err != nil {
-		t.Fatalf("WTF? query=%q, Err=%s", query, err.Error())
-	}
-	return chain.Find(node)
-}
-
 func checkTagsSection(t T, node *html.Node) {
 	if strings.Contains(h5.NewTree(node).String(), "&nbsp;") {
 		return
 	}
-	n2 := cssSelect(t, node, "a")
+	n2 := htmltest.CssSelect(t.T, node, "a")
 	t.failIf(len(n2) == 0, "Tags node not found in section: %q", h5.NewTree(node).String())
 }
 
@@ -236,7 +227,7 @@ func checkAuthorSection(t T, node *html.Node) {
 	dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
 	m := dateRe.FindString(date)
 	t.failIf(m == "", "No date found in author section!")
-	n2 := cssSelect(t, node, "strong")
+	n2 := htmltest.CssSelect(t.T, node, "strong")
 	t.failIf(len(n2) != 1, "Author node not found in section: %q", h5.NewTree(node).String())
 	t.failIf(h5.Children(n2[0]) == nil, "Author node not found in section: %q", h5.NewTree(node).String())
 }
@@ -275,15 +266,15 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
 }
 
 func checkCommentsSection(t T, node *html.Node) {
-	noComments := cssSelect(t, node, "p")
-	comments := cssSelect(t, node, "strong")
+	noComments := htmltest.CssSelect(t.T, node, "p")
+	comments := htmltest.CssSelect(t.T, node, "strong")
 	t.failIf(len(noComments) == 0 && len(comments) == 0,
 		"Comments node not found in section: %q", h5.NewTree(node).String())
 	if len(comments) > 0 {
-		headers := cssSelect(t, node, ".comment-container")
+		headers := htmltest.CssSelect(t.T, node, ".comment-container")
 		t.failIf(len(headers) == 0,
 			"Comment header not found in section: %q", h5.NewTree(node).String())
-		bodies := cssSelect(t, node, ".bubble-container")
+		bodies := htmltest.CssSelect(t.T, node, ".bubble-container")
 		t.failIf(len(bodies) == 0,
 			"Comment body not found in section: %q", h5.NewTree(node).String())
 	}

@@ -78,7 +78,7 @@ func query0(t *testing.T, url, query string) []*html.Node {
 	if err != nil {
 		t.Fatalf("h5.NewFromString(%s) = err %q", html, err.Error())
 	}
-	return cssSelect(T{t}, doctree.Top(), query)
+	return htmltest.CssSelect(t, doctree.Top(), query)
 }
 
 func query1(t *testing.T, url, q string) *html.Node {
