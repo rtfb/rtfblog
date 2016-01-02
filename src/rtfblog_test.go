@@ -159,7 +159,7 @@ func TestBasicStructure(t *testing.T) {
 		"#header", "#subheader", "#content", "#footer", "#sidebar",
 	}
 	for _, block := range blocks {
-		node := query1(t, "", block)
+		node := htmltest.QueryOne(t, "", block)
 		assertElem(t, node, "div")
 	}
 }
@@ -193,7 +193,7 @@ func TestNonEmptyDatasetHasEntries(t *testing.T) {
 }
 
 func TestEntryListHasAuthor(t *testing.T) {
-	nodes := query(t, "", ".author")
+	nodes := htmltest.Query(t, "", "+", ".author")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
 		if len(h5.Children(node)) == 0 {
@@ -204,7 +204,7 @@ func TestEntryListHasAuthor(t *testing.T) {
 }
 
 func TestEntriesHaveTagsInList(t *testing.T) {
-	nodes := query(t, "", ".tags")
+	nodes := htmltest.Query(t, "", "+", ".tags")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
 		if len(h5.Children(node)) == 0 {
@@ -240,7 +240,7 @@ func TestEveryEntryHasAuthor(t *testing.T) {
 
 func TestEveryEntryHasCaptchaSection(t *testing.T) {
 	for _, e := range testPosts {
-		node := query1(t, e.URL, ".author")
+		node := htmltest.QueryOne(t, e.URL, ".author")
 		assertElem(t, node, "div")
 		if len(h5.Children(node)) == 0 {
 			t.Fatalf("No author specified in author div!")
@@ -251,7 +251,7 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
 	for _, p := range testPosts {
-		nodes := query0(t, p.URL, "#comments")
+		nodes := htmltest.Query(t, p.URL, "*", "#comments")
 		if len(nodes) != 1 {
 			t.Fatal("There should be only one comments section!")
 		}
@@ -293,7 +293,7 @@ func emptyChildren(node *html.Node) bool {
 
 func TestTagFormattingInPostPage(t *testing.T) {
 	for _, e := range testPosts {
-		nodes := query0(t, e.URL, ".tags")
+		nodes := htmltest.Query(t, e.URL, "*", ".tags")
 		if len(nodes) > 0 {
 			for _, node := range nodes {
 				assertElem(t, node, "div")
@@ -308,18 +308,18 @@ func TestTagFormattingInPostPage(t *testing.T) {
 
 func TestPostPageHasCommentEditor(t *testing.T) {
 	for _, p := range testPosts {
-		node := query1(t, p.URL, "#comment")
+		node := htmltest.QueryOne(t, p.URL, "#comment")
 		assertElem(t, node, "form")
 	}
 }
 
 func TestLoginPage(t *testing.T) {
-	node := query1(t, "login", "#login_form")
+	node := htmltest.QueryOne(t, "login", "#login_form")
 	assertElem(t, node, "form")
 }
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
-	nodes := query0(t, "", ".post-title")
+	nodes := htmltest.Query(t, "", "*", ".post-title")
 	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
 }
 
@@ -327,7 +327,7 @@ func TestArchiveContainsAllEntries(t *testing.T) {
 	if len(testPosts) <= NumRecentPosts {
 		t.Fatalf("This test only makes sense if len(testPosts) > NUM_RECENT_POSTS")
 	}
-	nodes := query0(t, "archive", ".post-title")
+	nodes := htmltest.Query(t, "archive", "*", ".post-title")
 	T{t}.failIf(len(nodes) != len(testPosts), "Not all posts rendered in archive!")
 }
 
@@ -492,26 +492,26 @@ func TestExplodeTags(t *testing.T) {
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
 	login()
-	nodes := query(t, "", ".edit-post-button")
+	nodes := htmltest.Query(t, "", "+", ".edit-post-button")
 	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
 	login()
-	node := query1(t, testPosts[0].URL, "#edit-comment-form")
+	node := htmltest.QueryOne(t, testPosts[0].URL, "#edit-comment-form")
 	assertElem(t, node, "form")
 }
 
 func TestAdminPageHasAllCommentsButton(t *testing.T) {
 	login()
-	node := query1(t, "/admin", "#display-all-comments")
+	node := htmltest.QueryOne(t, "/admin", "#display-all-comments")
 	assertElem(t, node, "input")
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
 	defer testData.reset()
 	login()
-	nodes := query(t, "/all_comments", "#comment")
+	nodes := htmltest.Query(t, "/all_comments", "+", "#comment")
 	if len(nodes) != len(testComm) {
 		t.Fatalf("Not all comments in /all_comments!")
 	}
@@ -697,7 +697,7 @@ func TestRobotsTxtGetsServed(t *testing.T) {
 }
 
 func TestPagination(t *testing.T) {
-	nodes := query0(t, "page/2", ".post-title")
+	nodes := htmltest.Query(t, "page/2", "*", ".post-title")
 	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
 	if nodes[0].Attr[1].Val != "/hello6" {
 		t.Fatalf("Wrong post!")
@@ -710,9 +710,9 @@ func TestPagination(t *testing.T) {
 }
 
 func TestNewPostShowsEmptyForm(t *testing.T) {
-	titleInput := query1(t, "edit_post", "#post_title")
+	titleInput := htmltest.QueryOne(t, "edit_post", "#post_title")
 	assertElem(t, titleInput, "input")
-	bodyTextArea := query1(t, "edit_post", "#wmd-input")
+	bodyTextArea := htmltest.QueryOne(t, "edit_post", "#wmd-input")
 	assertElem(t, bodyTextArea, "textarea")
 }
 

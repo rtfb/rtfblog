@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rtfb/go-html-transform/h5"
 	"github.com/rtfb/htmltest"
 	"golang.org/x/net/html"
 )
@@ -62,31 +61,6 @@ func login() {
 
 func logout() {
 	htmltest.Curl("logout")
-}
-
-func query(t *testing.T, url, query string) []*html.Node {
-	nodes := query0(t, url, query)
-	if len(nodes) == 0 {
-		t.Fatalf("No nodes found: %q", query)
-	}
-	return nodes
-}
-
-func query0(t *testing.T, url, query string) []*html.Node {
-	html := htmltest.Curl(url)
-	doctree, err := h5.NewFromString(html)
-	if err != nil {
-		t.Fatalf("h5.NewFromString(%s) = err %q", html, err.Error())
-	}
-	return htmltest.CssSelect(t, doctree.Top(), query)
-}
-
-func query1(t *testing.T, url, q string) *html.Node {
-	nodes := query(t, url, q)
-	if len(nodes) > 1 {
-		t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
-	}
-	return nodes[0]
 }
 
 func assertElem(t *testing.T, node *html.Node, elem string) {
