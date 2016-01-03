@@ -45,11 +45,14 @@ server, you would need to do essentially the same.
 
 ## Configuration
 
-### DB (postgres)
+### DB
 
-Currently rtfblog only supports [PostgreSQL](http://www.postgresql.org/).
-[Here](http://stackoverflow.com/questions/1471571/how-to-configure-postgresql-for-the-first-time)
-is a useful quick start primer on how to configure postgres for the first time.
+Currently rtfblog supports [PostgreSQL](http://www.postgresql.org/) and
+[SQLite](https://www.sqlite.org/). It ships with an empty `default.db` SQLite
+database for immediate use.
+
+[Here][postgres-config] is a useful quick start primer on how to configure
+postgres for the first time.
 
 ### Config file
 
@@ -82,3 +85,4 @@ BSD Simplified, see [LICENSE.md](LICENSE.md).
 [coveralls-url]: https://coveralls.io/r/rtfb/rtfblog
 [deploy-sh-url]: https://github.com/rtfb/blog-rtfb-lt/blob/master/scripts/deploy.sh
 [baby-gopher-image]: https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png
+[postgres-config]: http://stackoverflow.com/questions/1471571/how-to-configure-postgresql-for-the-first-time
