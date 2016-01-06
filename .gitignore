@@ -1,10 +1,7 @@
 build
 tests.log
-server.conf
 vim-session
-stuff/
 priv_key
 node_modules
 bower_components
-src/version.go
 profile.cov
