@@ -59,7 +59,7 @@ BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 all: ${BUILDDIR}/rtfblog
 
 ${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
-                     $(GOFILES) $(TARGETS)
+                     $(GOFILES) $(TARGETS) ./src/resources.go
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
 	grunt
@@ -86,6 +86,9 @@ fmt:
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
 	cp $< $@
+
+./src/resources.go:
+	go-bindata -o $@ ./${BUILDDIR}/...
 
 ${BUILDDIR}/default.db: db/sqlite/dbconf.yml db/sqlite/migrations/*.sql
 	RTFBLOG_DB_URL=$@ RTFBLOG_DB_DRIVER=sqlite3 goose -path=db/sqlite/ -env=production up

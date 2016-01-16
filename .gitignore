@@ -1,4 +1,5 @@
 build
+src/resources.go
 tests.log
 vim-session
 priv_key

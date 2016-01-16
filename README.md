@@ -43,6 +43,11 @@ You will need [goose](https://bitbucket.org/liamstask/goose/) for DB migration.
 Read [deploy.sh][deploy-sh-url] to get an overview of how I install it on my
 server, you would need to do essentially the same.
 
+You will need [go-bindata](https://github.com/jteeuwen/go-bindata) to build
+embedded resources. Get it at:
+
+    go get -u github.com/jteeuwen/go-bindata/...
+
 ## Configuration
 
 ### DB
