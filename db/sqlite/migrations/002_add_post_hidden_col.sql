@@ -6,7 +6,7 @@ update post set hidden=0;
 alter table post rename to tmp_post;
 
 create table post (
-    id serial primary key,
+    id integer primary key not null,
     author_id integer not null references author(id) on delete cascade on update cascade,
     title text,
     date bigint,
@@ -25,7 +25,7 @@ drop table tmp_post;
 alter table post rename to tmp_post;
 
 create table post (
-    id serial primary key,
+    id integer primary key not null,
     author_id integer not null references author(id) on delete cascade on update cascade,
     title text,
     date bigint,

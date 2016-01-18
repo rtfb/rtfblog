@@ -2,7 +2,7 @@
 alter table tag rename to tmp_tag;
 
 create table tag (
-    id serial primary key,
+    id integer primary key not null,
     tag text
 );
 
@@ -16,7 +16,7 @@ drop table tmp_tag;
 alter table tag rename to tmp_tag;
 
 create table tag (
-    id serial primary key,
+    id integer primary key not null,
     name text,
     url text
 );

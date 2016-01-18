@@ -1,11 +1,11 @@
 -- +goose Up
 create table tag (
-    id serial primary key,
+    id integer primary key not null,
     name text,
     url text
 );
 create table author (
-    id serial primary key,
+    id integer primary key not null,
     disp_name text,
     salt text,
     passwd text,
@@ -14,7 +14,7 @@ create table author (
     www text
 );
 create table post (
-    id serial primary key,
+    id integer primary key not null,
     author_id integer not null references author(id) on delete cascade on update cascade,
     title text,
     date bigint,
@@ -22,19 +22,19 @@ create table post (
     body text
 );
 create table tagmap (
-    id serial primary key,
+    id integer primary key not null,
     tag_id integer not null references tag(id) on delete cascade on update cascade,
     post_id integer not null references post(id) on delete cascade on update cascade
 );
 create table commenter (
-    id serial primary key,
+    id integer primary key not null,
     name text,
     email text,
     www text,
     ip text
 );
 create table comment (
-    id serial primary key,
+    id integer primary key not null,
     commenter_id integer not null references commenter(id) on delete cascade on update cascade,
     post_id integer not null references post(id) on delete cascade on update cascade,
     timestamp bigint,

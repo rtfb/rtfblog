@@ -2,7 +2,7 @@
 alter table author rename to tmp_author;
 
 create table author (
-    id serial primary key,
+    id integer primary key not null,
     disp_name text,
     passwd text,
     full_name text,
