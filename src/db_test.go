@@ -27,7 +27,7 @@ func init() {
 	}
 	conf.Server.DBConn = config
 	logger = bark.CreateFile("tests.log")
-	realDB = InitDB(getDBConnString())
+	realDB = InitDB(getDBConnString(), Bindir())
 }
 
 func failIfErr(t *testing.T, err error, msg string) {

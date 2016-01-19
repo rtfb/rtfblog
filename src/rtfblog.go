@@ -706,11 +706,10 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 	bindir := Bindir()
-	os.Chdir(bindir)
 	conf = readConfigs(bindir)
 	InitL10n(bindir, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)
-	db := InitDB(getDBConnString())
+	db := InitDB(getDBConnString(), bindir)
 	defer db.db.Close()
 	if args["--adduser"].(bool) {
 		insertUser(db, args)

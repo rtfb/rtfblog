@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -40,11 +41,11 @@ type DbData struct {
 	tx *gorm.DB
 }
 
-func InitDB(conn string) *DbData {
+func InitDB(conn, root string) *DbData {
 	dialect := "postgres"
 	if conn == "" {
 		dialect = "sqlite3"
-		conn = "default.db"
+		conn = filepath.Join(root, "default.db")
 	}
 	logDbConn(dialect, conn)
 	db, err := gorm.Open(dialect, conn)
