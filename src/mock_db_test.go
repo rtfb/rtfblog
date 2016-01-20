@@ -83,7 +83,7 @@ func (td *TestData) post(url string, includeHidden bool) (*Entry, error) {
 }
 
 func (td *TestData) postID(url string) (id int64, err error) {
-	td.pushCall(fmt.Sprintf("%s", url))
+	td.pushCall(url)
 	id = 0
 	return
 }
