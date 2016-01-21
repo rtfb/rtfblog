@@ -62,7 +62,7 @@ func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
 	}
 }
 
-func (td *TestData) expectSeries(t *testing.T, series []CallSpec) {
+func (td *TestData) expectChain(t *testing.T, series []CallSpec) {
 	var seriesWithPackage []string
 	for _, call := range series {
 		seriesWithPackage = append(seriesWithPackage, getCallSig(call))

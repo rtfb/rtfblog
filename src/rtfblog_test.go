@@ -401,7 +401,7 @@ func TestSubmitPost(t *testing.T) {
 		"hidden": {"off"},
 		"text":   {"contentzorz"},
 	}, func(html string) {
-		testData.expectSeries(t, []CallSpec{{(*TestData).postID, "shiny-url"},
+		testData.expectChain(t, []CallSpec{{(*TestData).postID, "shiny-url"},
 			{(*TestData).updatePost, "0"},
 			{(*TestData).updateTags, "0: {ID:0 Name:tagzorz}"}})
 	})
@@ -643,7 +643,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 	})
 	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
-	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
+	testData.expectChain(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
@@ -679,7 +679,7 @@ func TestCorrectCaptchaReply(t *testing.T) {
 	})
 	resp := mustUnmarshal(t, htmltest.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
-	testData.expectSeries(t, []CallSpec{{(*TestData).postID, ""},
+	testData.expectChain(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 
