@@ -20,6 +20,7 @@ import (
 
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
+	"github.com/jinzhu/gorm"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/h5"
 	"github.com/rtfb/htmltest"
@@ -393,7 +394,33 @@ func TestLoadComments(t *testing.T) {
 	mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
 }
 
+func TestSubmitNewPost(t *testing.T) {
+	defer testData.reset()
+	testData.pPostID = func(url string) (int64, error) {
+		return -1, gorm.RecordNotFound
+	}
+	postForm(t, "submit_post", &url.Values{
+		"title":  {"T1tlE"},
+		"url":    {"shiny-url"},
+		"tags":   {"tagzorz"},
+		"hidden": {"off"},
+		"text":   {"contentzorz"},
+	}, func(html string) {
+		testData.expectChain(t, []CallSpec{{(*TestData).postID, "shiny-url"},
+			{(*TestData).insertPost, fmt.Sprintf("%+v", &EntryTable{
+				EntryLink: EntryLink{
+					Title:  "T1tlE",
+					URL:    "shiny-url",
+					Hidden: false,
+				},
+				RawBody: "contentzorz",
+			})},
+			{(*TestData).updateTags, "0: {ID:0 Name:tagzorz}"}})
+	})
+}
+
 func TestSubmitPost(t *testing.T) {
+	defer testData.reset()
 	postForm(t, "submit_post", &url.Values{
 		"title":  {"T1tlE"},
 		"url":    {"shiny-url"},

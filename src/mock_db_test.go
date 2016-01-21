@@ -26,6 +26,7 @@ type TestData struct {
 	Data
 	TestDataI
 	lastCalls []string
+	pPostID   func(url string) (int64, error)
 }
 
 var (
@@ -34,6 +35,7 @@ var (
 
 func (td *TestData) reset() {
 	td.lastCalls = nil
+	td.pPostID = nil
 }
 
 func (td *TestData) calls() string {
@@ -84,8 +86,10 @@ func (td *TestData) post(url string, includeHidden bool) (*Entry, error) {
 
 func (td *TestData) postID(url string) (id int64, err error) {
 	td.pushCall(url)
-	id = 0
-	return
+	if td.pPostID != nil {
+		return td.pPostID(url)
+	}
+	return 0, nil
 }
 
 func (td *TestData) testPosts(includeHidden bool) []*Entry {
@@ -199,6 +203,7 @@ func (td *TestData) insertComment(commenterID, postID int64, body string) (id in
 }
 
 func (td *TestData) insertPost(e *EntryTable) (id int64, err error) {
+	td.pushCall(fmt.Sprintf("%+v", e))
 	return
 }
 

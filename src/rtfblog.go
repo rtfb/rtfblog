@@ -323,7 +323,7 @@ func SubmitPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 				URL:    url,
 				Hidden: req.FormValue("hidden") == "on",
 			},
-			Body: template.HTML(req.FormValue("text")),
+			RawBody: req.FormValue("text"),
 		})
 		if err != nil {
 			return err
