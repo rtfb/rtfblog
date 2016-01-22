@@ -661,9 +661,15 @@ func runForever(handlers *pat.Router) {
 
 func promptPasswd(username string) (string, error) {
 	fmt.Printf(L10n("Type password for user %s: "), username)
-	passwd := gopass.GetPasswd()
+	passwd, err := gopass.GetPasswd()
+	if err != nil {
+		return "", err
+	}
 	fmt.Printf(L10n("Confirm password: "))
-	passwd2 := gopass.GetPasswd()
+	passwd2, err := gopass.GetPasswd()
+	if err != nil {
+		return "", err
+	}
 	if string(passwd2) != string(passwd) {
 		return "", fmt.Errorf("passwords do not match")
 	}
