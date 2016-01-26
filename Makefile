@@ -55,11 +55,12 @@ GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, $(GO_UNIQUE_DEPS))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
+ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir/rtfb/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog
 
 ${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
-                     $(GOFILES) $(TARGETS) ./src/resources.go
+                     $(GOFILES) $(TARGETS) $(ASSETS_PKG)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
 	grunt
@@ -74,6 +75,10 @@ $(NODE_DEPS):
 $(BOWER_DEPS):
 	bower install --config.interactive=false
 
+$(ASSETS_PKG):
+	mkdir -p $(ASSETS_PKG)
+	go-bindata -pkg rtfblog_resources -o $@/res.go ./${BUILDDIR}/...
+
 run: all
 	./${BUILDDIR}/rtfblog
 
@@ -86,9 +91,6 @@ fmt:
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
 	cp $< $@
-
-./src/resources.go:
-	go-bindata -o $@ ./${BUILDDIR}/...
 
 ${BUILDDIR}/default.db: db/sqlite/dbconf.yml db/sqlite/migrations/*.sql
 	RTFBLOG_DB_URL=$@ RTFBLOG_DB_DRIVER=sqlite3 goose -path=db/sqlite/ -env=production up
@@ -143,6 +145,7 @@ ${CSSDIR}/tagit.ui-zendesk.css: bower_components/tag-it/css/tagit.ui-zendesk.css
 	cp $< $@
 
 clean:
+	rm -r $(ASSETS_PKG)
 	rm -r ${BUILDDIR}
 
 .PHONY: all clean run vet fmt

@@ -3,6 +3,8 @@ package main
 import (
 	"io/ioutil"
 	"path/filepath"
+
+	"generated_res_dir/rtfb/rtfblog_resources"
 )
 
 type AssetBin struct {
@@ -25,5 +27,5 @@ func (a *AssetBin) Load(path string) ([]byte, error) {
 		return ioutil.ReadFile(path)
 	}
 	// Fall back to baked asset
-	return Asset(path)
+	return rtfblog_resources.Asset(path)
 }
