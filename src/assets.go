@@ -4,7 +4,8 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"generated_res_dir/rtfb/rtfblog_resources"
+	// This is a generated package that's being put under $GOPATH by Makefile
+	"generated_res_dir.com/rtfb/rtfblog_resources"
 )
 
 type AssetBin struct {

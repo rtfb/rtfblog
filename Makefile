@@ -55,7 +55,7 @@ GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, $(GO_UNIQUE_DEPS))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
-ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir/rtfb/rtfblog_resources
+ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir.com/rtfb/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog
 
