@@ -1,3 +1,5 @@
+// +build !go_get
+
 package main
 
 import (

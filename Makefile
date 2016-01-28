@@ -67,7 +67,7 @@ ${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
 
 $(GO_DEPS):
 	@echo "Running 'go get', this will take a few minutes..."
-	@go get -t ./...
+	@go get -tags go_get -t ./...
 
 $(NODE_DEPS):
 	npm install
