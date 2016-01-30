@@ -21,13 +21,14 @@ func NewAssetBin(binaryDir string) *AssetBin {
 }
 
 func (a *AssetBin) Load(path string) ([]byte, error) {
-	exists, err := FileExists(filepath.Join(a.root, path))
+	fullPath := filepath.Join(a.root, path)
+	exists, err := FileExists(fullPath)
 	if err != nil {
 		return nil, err
 	}
 	// Physical file takes precedence
 	if exists {
-		return ioutil.ReadFile(path)
+		return ioutil.ReadFile(fullPath)
 	}
 	// Fall back to baked asset
 	return rtfblog_resources.Asset(path)

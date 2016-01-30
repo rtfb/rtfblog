@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	conf = readConfigs("")
+	conf = readConfigs(NewAssetBin(""))
 	config := "$RTFBLOG_DB_TEST_URL"
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {

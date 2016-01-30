@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os/user"
 	"path/filepath"
 
@@ -72,7 +71,7 @@ func hardcodedConf() *Config {
 	}
 }
 
-func readConfigs(basedir string) *Config {
+func readConfigs(assets *AssetBin) *Config {
 	homeDir := ""
 	usr, err := user.Current()
 	if err != nil {
@@ -87,26 +86,19 @@ func readConfigs(basedir string) *Config {
 	confPaths := []string{
 		"/etc/rtfblogrc",
 		filepath.Join(homeDir, ".rtfblogrc"),
-		filepath.Join(basedir, ".rtfblogrc"),
-		filepath.Join(basedir, "server.conf"),
+		".rtfblogrc",
+		"server.conf",
 	}
 	for _, p := range confPaths {
-		exists, err := FileExists(p)
+		yml, err := assets.Load(p)
 		if err != nil {
-			fmt.Printf("Can't check %q for existence, skipping...\n", p)
+			fmt.Println(err.Error())
 			continue
 		}
-		if exists {
-			yml, err := ioutil.ReadFile(p)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
-			err = yaml.Unmarshal([]byte(yml), conf)
-			if err != nil {
-				fmt.Println(err.Error())
-				continue
-			}
+		err = yaml.Unmarshal([]byte(yml), conf)
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
 		}
 	}
 	return conf

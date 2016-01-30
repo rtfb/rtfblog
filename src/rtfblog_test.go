@@ -112,7 +112,7 @@ func forgeTestUser(uname, passwd string) {
 
 func init() {
 	root := ".."
-	conf = readConfigs("")
+	conf = readConfigs(NewAssetBin(""))
 	conf.Server.StaticDir = filepath.Join(root, "static")
 	InitL10n(root, "en-US")
 	logger = bark.CreateFile("tests.log")
@@ -762,7 +762,7 @@ func TestVersionString(t *testing.T) {
 func TestReadConfigs(t *testing.T) {
 	del := mkTempFile(t, ".rtfblogrc", "server:\n    port: 666")
 	defer del()
-	config := readConfigs(".")
+	config := readConfigs(NewAssetBin("."))
 	T{t}.assertEqual("666", config.Server.Port)
 }
 
