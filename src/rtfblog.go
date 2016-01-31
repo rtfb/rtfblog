@@ -714,7 +714,7 @@ func main() {
 	bindir := Bindir()
 	assets := NewAssetBin(bindir)
 	conf = readConfigs(assets)
-	InitL10n(bindir, conf.Interface.Language)
+	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)
 	db := InitDB(getDBConnString(), bindir)
 	defer db.db.Close()

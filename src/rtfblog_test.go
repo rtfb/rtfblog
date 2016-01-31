@@ -111,10 +111,11 @@ func forgeTestUser(uname, passwd string) {
 }
 
 func init() {
-	root := ".."
-	conf = readConfigs(NewAssetBin(""))
+	root := "../build"
+	assets := NewAssetBin(root)
+	conf = readConfigs(assets)
 	conf.Server.StaticDir = filepath.Join(root, "static")
-	InitL10n(root, "en-US")
+	InitL10n(assets, "en-US")
 	logger = bark.CreateFile("tests.log")
 	forgeTestUser("testuser", "testpasswd")
 	for i := 1; i <= 11; i++ {
@@ -467,7 +468,7 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 }
 
 func TestUploadImage(t *testing.T) {
-	uploadedFile := "../static/testupload.md"
+	uploadedFile := filepath.Join(conf.Server.StaticDir, "testupload.md")
 	testContent := "Foobarbaz"
 	defer func() {
 		err := os.Remove(uploadedFile)

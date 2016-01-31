@@ -33,3 +33,11 @@ func (a *AssetBin) Load(path string) ([]byte, error) {
 	// Fall back to baked asset
 	return rtfblog_resources.Asset(path)
 }
+
+func (a *AssetBin) MustLoad(path string) []byte {
+	b, err := a.Load(path)
+	if err != nil {
+		panic("Failed to read asset '" + path + "'; " + err.Error())
+	}
+	return b
+}
