@@ -20,7 +20,7 @@ module.exports = function(grunt) {
                 command: function() {
                     return 'go build -o build/rtfblog' +
                         ' -ldflags "-X main.genVer=$(./scripts/version.sh)"' +
-                        ' src/*.go';
+                        ' ./src/...';
                 },
                 options: {
                     stdout: true,
