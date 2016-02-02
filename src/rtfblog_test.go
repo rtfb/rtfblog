@@ -130,7 +130,7 @@ func init() {
 	htmltest.Init(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     &testData,
-		Root:   root,
+		assets: assets,
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
 	}))
 }

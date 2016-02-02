@@ -14,7 +14,6 @@ import (
 type GlobalContext struct {
 	Router *pat.Router
 	Db     Data
-	Root   string // Root directory where the binary and all our data subdirectories reside
 	assets *AssetBin
 	Store  sessions.Store
 }

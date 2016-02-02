@@ -576,7 +576,7 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 		P = "POST"
 	)
 	r := gctx.Router
-	dir := filepath.Join(gctx.Root, conf.Server.StaticDir)
+	dir := filepath.Join(gctx.assets.root, conf.Server.StaticDir)
 	mkHandler := func(f HandlerFunc) *Handler {
 		return &Handler{h: f, c: gctx, logRq: true}
 	}
@@ -725,7 +725,7 @@ func main() {
 	runForever(initRoutes(&GlobalContext{
 		Router: pat.New(),
 		Db:     db,
-		Root:   bindir,
+		assets: assets,
 		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),
 	}))
 }
