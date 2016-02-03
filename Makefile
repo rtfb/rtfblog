@@ -77,7 +77,7 @@ $(BOWER_DEPS):
 
 $(ASSETS_PKG):
 	mkdir -p $(ASSETS_PKG)
-	go-bindata -pkg rtfblog_resources -o $@/res.go ./${BUILDDIR}/...
+	go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ./${BUILDDIR}/ ./${BUILDDIR}/...
 
 run: all
 	./${BUILDDIR}/rtfblog
