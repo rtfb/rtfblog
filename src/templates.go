@@ -46,17 +46,18 @@ func Tmpl(c *Context, name string) *template.Template {
 	if t, ok := cachedTemplates[name]; ok {
 		return t
 	}
-	tmplPath := filepath.Join(c.assets.root, tmpl)
 	t := template.New("base.html").Funcs(funcs)
-	t = template.Must(t.ParseFiles(
-		filepath.Join(tmplPath, "base.html"),
-		filepath.Join(tmplPath, "sidebar.html"),
-		filepath.Join(tmplPath, "post-title.html"),
-		filepath.Join(tmplPath, "header.html"),
-		filepath.Join(tmplPath, "author.html"),
-		filepath.Join(tmplPath, "captcha.html"),
-		filepath.Join(tmplPath, name),
-	))
+	for _, s := range []string{
+		"base.html",
+		"sidebar.html",
+		"post-title.html",
+		"header.html",
+		"author.html",
+		"captcha.html",
+		name,
+	} {
+		t = template.Must(t.Parse(string(c.assets.MustLoad(filepath.Join(tmpl, s)))))
+	}
 	cachedTemplates[name] = t
 	return t
 }
