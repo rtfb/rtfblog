@@ -41,11 +41,18 @@ type DbData struct {
 	tx *gorm.DB
 }
 
+func prepareDefaultDB(root string) (dialect, conn string) {
+	dbFile := filepath.Join(root, "default.db")
+	if FileExistsNoErr(dbFile) {
+		return "sqlite3", dbFile
+	}
+	return "sqlite3", MustExtractDBAsset("default.db")
+}
+
 func InitDB(conn, root string) *DbData {
 	dialect := "postgres"
 	if conn == "" {
-		dialect = "sqlite3"
-		conn = filepath.Join(root, "default.db")
+		dialect, conn = prepareDefaultDB(root)
 	}
 	logDbConn(dialect, conn)
 	db, err := gorm.Open(dialect, conn)

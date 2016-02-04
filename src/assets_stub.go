@@ -21,3 +21,7 @@ func (a *AssetBin) Load(path string) ([]byte, error) {
 func (a *AssetBin) MustLoad(path string) []byte {
 	return nil
 }
+
+func MustExtractDBAsset(defaultDB string) string {
+	return defaultDB
+}

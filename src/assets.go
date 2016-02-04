@@ -3,7 +3,9 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os/user"
 	"path/filepath"
 
 	// This is a generated package that's being put under $GOPATH by Makefile
@@ -40,4 +42,21 @@ func (a *AssetBin) MustLoad(path string) []byte {
 		panic("Failed to read asset '" + path + "'; " + err.Error())
 	}
 	return b
+}
+
+func MustExtractDBAsset(defaultDB string) string {
+	usr, err := user.Current()
+	if err != nil {
+		panic("Failed to get user.Current()")
+	}
+	path := filepath.Join(usr.HomeDir, ".rtfblog")
+	dbPath := filepath.Join(path, defaultDB)
+	// Extract it only in case there isn't one already from the last time
+	if !FileExistsNoErr(dbPath) {
+		err = rtfblog_resources.RestoreAsset(path, defaultDB)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to RestoreAsset(%q, %q)", path, defaultDB))
+		}
+	}
+	return dbPath
 }
