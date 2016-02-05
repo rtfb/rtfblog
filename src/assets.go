@@ -5,11 +5,12 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"os/user"
 	"path/filepath"
 
 	// This is a generated package that's being put under $GOPATH by Makefile
 	"generated_res_dir.com/rtfb/rtfblog_resources"
+
+	"github.com/rtfb/cachedir"
 )
 
 type AssetBin struct {
@@ -45,11 +46,10 @@ func (a *AssetBin) MustLoad(path string) []byte {
 }
 
 func MustExtractDBAsset(defaultDB string) string {
-	usr, err := user.Current()
+	path, err := cachedir.Get("rtfblog")
 	if err != nil {
-		panic("Failed to get user.Current()")
+		panic("Failed to cachedir.Get()")
 	}
-	path := filepath.Join(usr.HomeDir, ".rtfblog")
 	dbPath := filepath.Join(path, defaultDB)
 	// Extract it only in case there isn't one already from the last time
 	if !FileExistsNoErr(dbPath) {
