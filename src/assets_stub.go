@@ -14,6 +14,10 @@ type AssetBin struct {
 	root string // root path of physical assets in filesystem
 }
 
+func init() {
+	cachedir.Get("") // no-op to fix unused import
+}
+
 func NewAssetBin(binaryDir string) *AssetBin {
 	return nil
 }
