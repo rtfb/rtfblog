@@ -6,6 +6,10 @@
 
 package main
 
+import (
+	"github.com/rtfb/cachedir"
+)
+
 type AssetBin struct {
 	root string // root path of physical assets in filesystem
 }
