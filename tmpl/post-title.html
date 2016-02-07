@@ -2,9 +2,8 @@
 <a class="post-title" href="/{{.EntryLink.URL}}">{{.EntryLink.Title}}</a>
 {{if .AdminLogin}}
 <input
-    class="edit-post-button"
+    class="edit-post-button inline"
     type="button"
-    class="inline"
     onclick="location.href = '/edit_post?post={{.EntryLink.URL}}'"
     value="{{L10n "Edit"}}"
     />
