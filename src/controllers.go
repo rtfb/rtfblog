@@ -62,6 +62,9 @@ func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 }
 
 func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	if conf.Server.Favicon == "" {
+		return PerformSimpleStatus(w, http.StatusNotFound)
+	}
 	http.ServeFile(w, req, conf.Server.Favicon)
 	return nil
 }
