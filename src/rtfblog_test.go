@@ -439,7 +439,7 @@ func TestUploadImageHandlesWrongRequest(t *testing.T) {
 	postForm(t, "upload_images", &url.Values{
 		"foo": {"bar"},
 	}, func(html string) {
-		T{t}.assertEqual("HTTP Error 500", html)
+		T{t}.assertEqual("HTTP Error 500\n", html)
 	})
 }
 

@@ -1,7 +1,7 @@
 [
   {
-    "id": "HTTP Error %d",
-    "translation": "HTTP Error %d"
+    "id": "HTTP Error %d\n",
+    "translation": "HTTP Error %d\n"
   },
   {
     "id": "Login failed.",
