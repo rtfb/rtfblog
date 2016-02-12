@@ -576,7 +576,6 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 		P = "POST"
 	)
 	r := gctx.Router
-	dir := filepath.Join(gctx.assets.root, conf.Server.StaticDir)
 	mkHandler := func(f HandlerFunc) *Handler {
 		return &Handler{h: f, c: gctx, logRq: true}
 	}
@@ -593,7 +592,7 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 			logRq: true,
 		}
 	}
-	r.Add(G, "/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(dir)))).Name("static")
+	r.Add(G, "/static/", http.FileServer(gctx.assets)).Name("static")
 	r.Add(G, "/login", mkHandler(LoginForm)).Name("login")
 	r.Add(P, "/login", mkHandler(Login))
 	r.Add(G, "/logout", mkHandler(Logout)).Name("logout")

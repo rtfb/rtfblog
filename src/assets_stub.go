@@ -33,3 +33,31 @@ func (a *AssetBin) MustLoad(path string) []byte {
 func MustExtractDBAsset(defaultDB string) string {
 	return defaultDB
 }
+
+func (a *AssetBin) Open(name string) (http.File, error) {
+	return nil, nil
+}
+
+// Implements http.File
+type AssetFile struct {
+}
+
+func (af *AssetFile) Close() error {
+	return nil
+}
+
+func (af *AssetFile) Read(p []byte) (n int, err error) {
+	return 0, nil
+}
+
+func (af *AssetFile) Seek(offset int64, whence int) (int64, error) {
+	return offset, nil
+}
+
+func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
+	return nil, err
+}
+
+func (af *AssetFile) Stat() (os.FileInfo, error) {
+	return nil, err
+}
