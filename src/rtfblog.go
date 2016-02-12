@@ -22,13 +22,13 @@ import (
 	"github.com/gorilla/feeds"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
-	"github.com/howeyc/gopass"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rtfb/bark"
+	email "github.com/rtfb/go-mail"
+	"github.com/rtfb/gopass"
 	"github.com/rtfb/httputil"
-	email "github.com/ungerik/go-mail"
 )
 
 var (
