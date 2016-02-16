@@ -7,6 +7,9 @@
 package main
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/rtfb/cachedir"
 )
 
@@ -55,9 +58,9 @@ func (af *AssetFile) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
-	return nil, err
+	return nil, nil
 }
 
 func (af *AssetFile) Stat() (os.FileInfo, error) {
-	return nil, err
+	return nil, nil
 }
