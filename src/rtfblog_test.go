@@ -169,9 +169,11 @@ func TestBasicStructure(t *testing.T) {
 func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 	tmpPosts := testPosts
 	testPosts = nil
+	defer func() {
+		testPosts = tmpPosts
+	}()
 	html := htmltest.Curl("")
 	mustContain(t, html, "No entries")
-	testPosts = tmpPosts
 }
 
 func TestLogin(t *testing.T) {
