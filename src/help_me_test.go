@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/rtfb/htmltest"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
 
@@ -21,16 +22,12 @@ func mustUnmarshal(t *testing.T, jsonObj string) map[string]interface{} {
 	return obj
 }
 
-func mustContain(t *testing.T, page string, what string) {
-	if !strings.Contains(page, what) {
-		t.Fatalf("Test page did not contain %q\npage:\n%s", what, page)
-	}
+func mustContain(t *testing.T, page, what string) {
+	require.Contains(t, page, what)
 }
 
-func mustNotContain(t *testing.T, page string, what string) {
-	if strings.Contains(page, what) {
-		t.Fatalf("Test page incorrectly contained %q", what)
-	}
+func mustNotContain(t *testing.T, page, what string) {
+	require.NotContains(t, page, what)
 }
 
 func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {

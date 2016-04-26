@@ -24,6 +24,7 @@ import (
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/h5"
 	"github.com/rtfb/htmltest"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
 
@@ -190,19 +191,14 @@ func TestBadLogin(t *testing.T) {
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
-	what := "No entries"
-	if strings.Contains(htmltest.Curl(""), what) {
-		t.Errorf("Test page should not contain %q", what)
-	}
+	mustNotContain(t, htmltest.Curl(""), "No entries")
 }
 
 func TestEntryListHasAuthor(t *testing.T) {
 	nodes := htmltest.Query(t, "", "+", ".author")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
-		if len(h5.Children(node)) == 0 {
-			t.Fatalf("No author specified in author div!")
-		}
+		require.NotEmpty(t, h5.Children(node), "Empty author div!")
 		checkAuthorSection(T{t}, node)
 	}
 }
@@ -211,9 +207,7 @@ func TestEntriesHaveTagsInList(t *testing.T) {
 	nodes := htmltest.Query(t, "", "+", ".tags")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
-		if len(h5.Children(node)) == 0 {
-			t.Fatalf("Empty tags div found!")
-		}
+		require.NotEmpty(t, h5.Children(node), "Empty tags div!")
 		checkTagsSection(T{t}, node)
 	}
 }
@@ -246,9 +240,7 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 	for _, e := range testPosts {
 		node := htmltest.QueryOne(t, e.URL, ".author")
 		assertElem(t, node, "div")
-		if len(h5.Children(node)) == 0 {
-			t.Fatalf("No author specified in author div!")
-		}
+		require.NotEmpty(t, h5.Children(node), "Empty author div!")
 		checkAuthorSection(T{t}, node)
 	}
 }
@@ -256,14 +248,10 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 func TestCommentsFormattingInPostPage(t *testing.T) {
 	for _, p := range testPosts {
 		nodes := htmltest.Query(t, p.URL, "*", "#comments")
-		if len(nodes) != 1 {
-			t.Fatal("There should be only one comments section!")
-		}
+		require.Len(t, nodes, 1, "There should be only one comments section!")
 		for _, node := range nodes {
 			assertElem(t, node, "div")
-			if emptyChildren(node) {
-				t.Fatalf("Empty comments div found!")
-			}
+			require.False(t, emptyChildren(node), "Empty comments div found!")
 			checkCommentsSection(T{t}, node)
 		}
 	}
@@ -301,9 +289,7 @@ func TestTagFormattingInPostPage(t *testing.T) {
 		if len(nodes) > 0 {
 			for _, node := range nodes {
 				assertElem(t, node, "div")
-				if len(h5.Children(node)) == 0 {
-					t.Fatalf("Empty tags div found!")
-				}
+				require.NotEmpty(t, h5.Children(node), "Empty tags div!")
 				checkTagsSection(T{t}, node)
 			}
 		}
