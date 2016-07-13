@@ -75,7 +75,7 @@ func testDeleteAuthor(t *testing.T) {
 	require.NoError(t, err, "deleteAuthor failed")
 	data.commit()
 	_, err = data.author()
-	if err != gorm.RecordNotFound {
+	if err != gorm.ErrRecordNotFound {
 		t.Fatalf("Unexpected error querying author: %s", err.Error())
 	}
 }

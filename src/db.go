@@ -62,7 +62,7 @@ func InitDB(conn, root string) *DbData {
 	}
 	db.SingularTable(true)
 	return &DbData{
-		db: &db,
+		db: db,
 		tx: nil,
 	}
 }
@@ -348,7 +348,7 @@ func insertOrGetTagID(db *gorm.DB, tag *Tag) (tagID int64, err error) {
 	switch err {
 	case nil:
 		return result.ID, nil
-	case gorm.RecordNotFound:
+	case gorm.ErrRecordNotFound:
 		err = db.Save(tag).Error
 		return tag.ID, err
 	default:

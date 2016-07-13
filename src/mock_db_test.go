@@ -151,7 +151,7 @@ func (td *TestData) allComments() ([]*CommentWithPostTitle, error) {
 
 func (td *TestData) author() (*Author, error) {
 	if testAuthor == nil {
-		return &Author{}, gorm.RecordNotFound
+		return &Author{}, gorm.ErrRecordNotFound
 	}
 	return testAuthor, nil
 }
@@ -195,7 +195,7 @@ func (td *TestData) commenterID(c *Commenter) (id int64, err error) {
 	if c.Name == tc.Name && c.Email == tc.Email && c.Website == tc.Website {
 		return 1, nil
 	}
-	return -1, gorm.RecordNotFound
+	return -1, gorm.ErrRecordNotFound
 }
 
 func (td *TestData) insertComment(commenterID, postID int64, body string) (id int64, err error) {

@@ -110,7 +110,7 @@ func PublishComment(db Data, postID, commenterID int64, body string) (string, er
 func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 	postID, idErr := db.postID(post.URL)
 	if idErr != nil {
-		if idErr == gorm.RecordNotFound {
+		if idErr == gorm.ErrRecordNotFound {
 			author, err := db.author()
 			if err != nil {
 				return -1, err
@@ -138,7 +138,7 @@ func InsertOrUpdateAuthor(db Data, newAuthor *Author) (id int64, err error) {
 	author, err := db.author() // Pick default author
 	id = author.ID
 	if err != nil {
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			id, err = db.insertAuthor(newAuthor)
 		}
 	} else {

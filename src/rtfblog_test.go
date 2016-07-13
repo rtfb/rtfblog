@@ -386,7 +386,7 @@ func TestLoadComments(t *testing.T) {
 func TestSubmitNewPost(t *testing.T) {
 	defer testData.reset()
 	testData.pPostID = func(url string) (int64, error) {
-		return -1, gorm.RecordNotFound
+		return -1, gorm.ErrRecordNotFound
 	}
 	postForm(t, "submit_post", &url.Values{
 		"title":  {"T1tlE"},

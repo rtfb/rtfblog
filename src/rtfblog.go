@@ -103,7 +103,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ct
 func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		_, err := ctx.Db.author() // Pick default author
-		if err == gorm.RecordNotFound {
+		if err == gorm.ErrRecordNotFound {
 			// Author was not configured yet, so pretend this is an admin
 			// session and show the Edit Author form:
 			ctx.Session.Values["adminlogin"] = "yes"
@@ -245,7 +245,7 @@ func RssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	// TODO: should not be already logged in, add check
 	a, err := ctx.Db.author() // Pick default author
-	if err == gorm.RecordNotFound {
+	if err == gorm.ErrRecordNotFound {
 		ctx.Session.AddFlash(L10n("Login failed."))
 		return LoginForm(w, req, ctx)
 	}
@@ -435,7 +435,7 @@ func CommentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	case nil:
 		// This is a returning commenter, pass his comment through:
 		commentURL, err = PublishComment(ctx.Db, postID, commenterID, body)
-	case gorm.RecordNotFound:
+	case gorm.ErrRecordNotFound:
 		if !captchaNewCommenter(w, req, ctx) {
 			return nil
 		}
@@ -508,10 +508,10 @@ func SendEmail(subj, body string) {
 func EditAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tmplData := MkBasicData(ctx, 0, 0)
 	author, err := ctx.Db.author()
-	if err != nil && err != gorm.RecordNotFound {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
-	if err == gorm.RecordNotFound {
+	if err == gorm.ErrRecordNotFound {
 		author.UserName = req.FormValue("username")
 		author.FullName = req.FormValue("display_name")
 		author.Email = req.FormValue("email")
@@ -519,7 +519,7 @@ func EditAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	}
 	tmplData["PageTitle"] = L10n("Edit Author")
 	tmplData["author"] = author
-	tmplData["EditExistingAuthor"] = err != gorm.RecordNotFound
+	tmplData["EditExistingAuthor"] = err != gorm.ErrRecordNotFound
 	return Tmpl(ctx, "edit_author.html").Execute(w, tmplData)
 }
 
@@ -529,10 +529,10 @@ func SubmitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	email := req.FormValue("email")
 	www := req.FormValue("www")
 	a, err := ctx.Db.author()
-	if err != nil && err != gorm.RecordNotFound {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
-	if err != gorm.RecordNotFound {
+	if err != gorm.ErrRecordNotFound {
 		oldPasswd := req.FormValue("old_password")
 		req.Form["old_password"] = []string{"***"} // Avoid spilling password to log
 		err = cryptoHelper.Decrypt([]byte(a.Passwd), []byte(oldPasswd))
@@ -677,7 +677,7 @@ func promptPasswd(username string) (string, error) {
 
 func insertUser(db *DbData, args map[string]interface{}) {
 	_, err := db.author()
-	if err != gorm.RecordNotFound {
+	if err != gorm.ErrRecordNotFound {
 		fmt.Println(L10n("Author already added, can't add another, exiting"))
 		return
 	}
