@@ -131,7 +131,6 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	pgNo, err := strconv.Atoi(req.URL.Query().Get(":pageNo"))
 	if err != nil {
 		pgNo = 1
-		err = nil
 	}
 	pgNo--
 	offset := pgNo * PostsPerPage
@@ -704,7 +703,6 @@ func insertUser(db *DbData, args map[string]interface{}) {
 }
 
 func main() {
-	//runtime.GOMAXPROCS(runtime.NumCPU())
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")

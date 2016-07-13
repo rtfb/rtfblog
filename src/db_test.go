@@ -175,7 +175,7 @@ func testNumPosts(t *testing.T) {
 	if err != nil || id != 2 {
 		t.Fatalf("Failed to insert post, err = %s", err.Error())
 	}
-	id, err = data.insertPost(&EntryTable{
+	_, err = data.insertPost(&EntryTable{
 		EntryLink: EntryLink{
 			Title:  "title3",
 			URL:    "url3",
