@@ -89,7 +89,7 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ct
 		item := feeds.Item{
 			Title:       p.Title,
 			Link:        &feeds.Link{Href: url + "/" + p.URL},
-			Description: string(p.Body),
+			Description: string(p.HTML),
 			Author:      &feeds.Author{Name: p.Author, Email: author.Email},
 			Created:     pubDate,
 		}

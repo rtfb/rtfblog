@@ -62,7 +62,7 @@ func (t CommenterTable) TableName() string {
 type CommentTable struct {
 	CommenterID int64         `gorm:"column:commenter_id"`
 	PostID      int64         `gorm:"column:post_id"`
-	Body        template.HTML `sql:"-"`
+	HTML        template.HTML `sql:"-"`
 	RawBody     string        `gorm:"column:body"`
 	Time        string        `sql:"-"`
 	Timestamp   int64         `gorm:"column:timestamp"`
@@ -97,7 +97,7 @@ type EntryTable struct {
 	AuthorID int64         `gorm:"column:author_id"`
 	Date     string        `sql:"-"`
 	UnixDate int64         `gorm:"column:date"`
-	Body     template.HTML `sql:"-"`
+	HTML     template.HTML `sql:"-"`
 	RawBody  string        `gorm:"column:body"`
 }
 

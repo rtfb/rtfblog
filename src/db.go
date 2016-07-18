@@ -179,7 +179,7 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 	for _, c := range results {
 		c.EmailHash = Md5Hash(c.Email)
 		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
-		c.Body = sanitizeHTML(mdToHTML(c.RawBody))
+		c.HTML = sanitizeHTML(mdToHTML(c.RawBody))
 	}
 	return results, err
 }
@@ -303,7 +303,7 @@ func queryPosts(dd *DbData, limit, offset int, url string,
 	rows := posts.Order("date desc").Limit(limit).Offset(offset)
 	err := rows.Scan(&results).Error
 	for _, p := range results {
-		p.Body = sanitizeTrustedHTML(mdToHTML(p.RawBody))
+		p.HTML = sanitizeTrustedHTML(mdToHTML(p.RawBody))
 		p.Date = time.Unix(p.UnixDate, 0).Format("2006-01-02")
 		p.Tags = queryTags(dd.db, p.ID)
 		p.Comments = queryComments(dd.db, p.ID)
@@ -337,7 +337,7 @@ func queryComments(db *gorm.DB, postID int64) []*Comment {
 	for _, c := range comments {
 		c.EmailHash = Md5Hash(c.Email)
 		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
-		c.Body = sanitizeHTML(mdToHTML(c.RawBody))
+		c.HTML = sanitizeHTML(mdToHTML(c.RawBody))
 	}
 	return comments
 }

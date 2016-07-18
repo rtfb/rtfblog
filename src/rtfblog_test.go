@@ -68,7 +68,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 				Hidden: hidden,
 			},
 			Date:    date,
-			Body:    template.HTML(fmt.Sprintf("Body%d", i)),
+			HTML:    template.HTML(fmt.Sprintf("Body%d", i)),
 			RawBody: fmt.Sprintf("RawBody%d", i),
 		},
 		Author:   auth,

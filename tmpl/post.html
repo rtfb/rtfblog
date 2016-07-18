@@ -18,7 +18,7 @@
         </h3>
         {{template "author" .}}
         <hr />
-        <div class="post-body user-supplied-text nine columns container">{{.Body}}</div>
+        <div class="post-body user-supplied-text nine columns container">{{.HTML}}</div>
         <div class="three columns container">&nbsp;</div>
         <div class="twelve columns container">
         {{if .HasTags}}
@@ -84,7 +84,7 @@
                             </p>
                         </div>
                         <div class="user-supplied-text">
-                            {{.Body}}
+                            {{.HTML}}
                         </div>
                     </div>
                 </div>
