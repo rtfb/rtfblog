@@ -313,7 +313,7 @@ func TestLoginPage(t *testing.T) {
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
 	nodes := htmltest.Query(t, "", "*", ".post-title")
-	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
+	require.Len(t, nodes, PostsPerPage, "Not all posts have been rendered!")
 }
 
 func TestArchiveContainsAllEntries(t *testing.T) {
@@ -321,7 +321,7 @@ func TestArchiveContainsAllEntries(t *testing.T) {
 		t.Fatalf("This test only makes sense if len(testPosts) > NUM_RECENT_POSTS")
 	}
 	nodes := htmltest.Query(t, "archive", "*", ".post-title")
-	T{t}.failIf(len(nodes) != len(testPosts), "Not all posts rendered in archive!")
+	require.Len(t, nodes, len(testPosts), "Not all posts rendered in archive!")
 }
 
 func TestPostPager(t *testing.T) {
@@ -512,7 +512,7 @@ func TestExplodeTags(t *testing.T) {
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
 	login()
 	nodes := htmltest.Query(t, "", "+", ".edit-post-button")
-	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have Edit button!")
+	require.Len(t, nodes, PostsPerPage, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
