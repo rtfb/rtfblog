@@ -59,6 +59,7 @@ func hardcodedConf() *Config {
 			Port:         ":8080",
 			CookieSecret: defaultCookieSecret,
 			Log:          "server.log",
+			Favicon:      "rtfb.png",
 		},
 		Notifications{
 			SendEmail: false,
