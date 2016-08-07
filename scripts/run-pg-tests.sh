@@ -30,7 +30,7 @@ export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 goose -path=db/pg/ -env=development up
 
 echo "Running tests on $RTFBLOG_DB_DRIVER..."
-go test -covermode=count -coverprofile=profile.cov -v ./src/... -run TestDB
+go test -covermode=count -coverprofile=profile.cov -v ./src/...
 exit_status=$?
 
 killall postgres
