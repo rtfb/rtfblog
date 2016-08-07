@@ -358,7 +358,7 @@ func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		if name := part.FormName(); name != "" {
 			if part.FileName() != "" {
 				files += fmt.Sprintf("[foo]: /%s", part.FileName())
-				handleUpload(req, part)
+				handleUpload(req, part, ctx.assets.root)
 			}
 		}
 		part, err = mr.NextPart()
@@ -367,14 +367,14 @@ func UploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-func handleUpload(r *http.Request, p *multipart.Part) {
+func handleUpload(r *http.Request, p *multipart.Part, root string) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			logger.Println(rec)
 		}
 	}()
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
-	filename := filepath.Join(conf.Server.StaticDir, p.FileName())
+	filename := filepath.Join(root, conf.Server.StaticDir, p.FileName())
 	fo, err := os.Create(filename)
 	if err != nil {
 		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())

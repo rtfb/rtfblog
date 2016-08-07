@@ -32,6 +32,10 @@ type T struct {
 	*testing.T
 }
 
+const (
+	buildRoot = "../build"
+)
+
 var (
 	testComm = []*Comment{{Commenter{"N", "@", "@h", "http://w", "IP"},
 		CommentTable{0, 0, "Body", "Raw", "time", time.Now().Unix(), 0}}}
@@ -112,10 +116,9 @@ func forgeTestUser(uname, passwd string) {
 }
 
 func init() {
-	root := "../build"
-	assets := NewAssetBin(root)
+	assets := NewAssetBin(buildRoot)
 	conf = readConfigs(assets)
-	conf.Server.StaticDir = filepath.Join(root, "static")
+	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
 	logger = bark.CreateFile("tests.log")
 	forgeTestUser("testuser", "testpasswd")
@@ -456,7 +459,7 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 }
 
 func TestUploadImage(t *testing.T) {
-	uploadedFile := filepath.Join(conf.Server.StaticDir, "testupload.md")
+	uploadedFile := filepath.Join(buildRoot, conf.Server.StaticDir, "testupload.md")
 	testContent := "Foobarbaz"
 	defer func() {
 		err := os.Remove(uploadedFile)
