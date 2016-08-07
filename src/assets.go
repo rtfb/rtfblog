@@ -72,7 +72,11 @@ func (a *AssetBin) Open(name string) (http.File, error) {
 	if name[0] == '/' {
 		name = name[1:]
 	}
-	return &AssetFile{name: name}, nil
+	data, err := rtfblog_resources.Asset(name)
+	return &AssetFile{
+		name: name,
+		data: data,
+	}, err
 }
 
 // Implements http.File
@@ -95,19 +99,35 @@ func min(a, b int64) int64 {
 	return b
 }
 
+func len64(b []byte) int64 {
+	return int64(len(b))
+}
+
 func (af *AssetFile) Read(p []byte) (n int, err error) {
 	if af.data == nil {
 		af.data, err = rtfblog_resources.Asset(af.name)
 	}
-	n64 := min(int64(len(p)), int64(len(af.data))-af.seekIndex)
+	n64 := min(len64(p), len64(af.data)-af.seekIndex)
 	copy(p, af.data[af.seekIndex:af.seekIndex+n64])
 	return int(n64), err
 }
 
 func (af *AssetFile) Seek(offset int64, whence int) (int64, error) {
-	// TODO: respect whence and check what should be returned
-	af.seekIndex = offset
-	return offset, nil
+	switch whence {
+	case os.SEEK_SET:
+		af.seekIndex = offset
+	case os.SEEK_CUR:
+		af.seekIndex += offset
+	case os.SEEK_END:
+		af.seekIndex = len64(af.data) - offset
+	default:
+		return 0, fmt.Errorf("Unknown seek mode %d", whence)
+	}
+	af.seekIndex = min(af.seekIndex, len64(af.data))
+	if af.seekIndex < 0 {
+		af.seekIndex = 0
+	}
+	return af.seekIndex, nil
 }
 
 func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
