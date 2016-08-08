@@ -11,22 +11,22 @@ import (
 	"github.com/rtfb/httpbuf"
 )
 
-type GlobalContext struct {
+type globalContext struct {
 	Router *pat.Router
 	Db     Data
 	assets *AssetBin
 	Store  sessions.Store
 }
 
-type HandlerFunc func(http.ResponseWriter, *http.Request, *Context) error
+type handlerFunc func(http.ResponseWriter, *http.Request, *Context) error
 
-type Handler struct {
-	h     HandlerFunc
-	c     *GlobalContext
+type handler struct {
+	h     handlerFunc
+	c     *globalContext
 	logRq bool
 }
 
-func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now().UTC()
 	if h.logRq {
 		defer logger.LogRq(req, startTime)
@@ -34,7 +34,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//create the context
 	ctx, err := NewContext(req, h.c)
 	if err != nil {
-		InternalError(ctx, w, req, err, "New context err")
+		internalError(ctx, w, req, err, "New context err")
 		return
 	}
 	//defer ctx.Close()
@@ -45,12 +45,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf := new(httpbuf.Buffer)
 	err = h.h(buf, req, ctx)
 	if err != nil {
-		InternalError(ctx, w, req, err, "Error in handler")
+		internalError(ctx, w, req, err, "Error in handler")
 		return
 	}
 	//save the session
 	if err = sessions.Save(req, w); err != nil {
-		InternalError(ctx, w, req, err, "Session save err")
+		internalError(ctx, w, req, err, "Session save err")
 		return
 	}
 	buf.Apply(w)
@@ -68,32 +68,32 @@ func serveStaticFile(w http.ResponseWriter, req *http.Request, ctx *Context, fil
 	return nil
 }
 
-func ServeRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func serveRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return serveStaticFile(w, req, ctx, "robots.txt")
 }
 
-func ServeFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func serveFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if conf.Server.Favicon == "" {
-		return PerformSimpleStatus(w, http.StatusNotFound)
+		return performSimpleStatus(w, http.StatusNotFound)
 	}
 	return serveStaticFile(w, req, ctx, conf.Server.Favicon)
 }
 
-func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
+func internalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
 	logger.Printf("%s: %s", prefix, err.Error())
-	return PerformStatus(c, w, req, http.StatusInternalServerError)
+	return performStatus(c, w, req, http.StatusInternalServerError)
 }
 
 //PerformStatus runs the passed in status on the request and calls the appropriate block
-func PerformStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
+func performStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
 	if status == 404 || status == 403 {
 		html := fmt.Sprintf("%d.html", status)
 		return tmpl(c, html).Execute(w, nil)
 	}
-	return PerformSimpleStatus(w, status)
+	return performSimpleStatus(w, status)
 }
 
-func PerformSimpleStatus(w http.ResponseWriter, status int) error {
+func performSimpleStatus(w http.ResponseWriter, status int) error {
 	w.Write([]byte(fmt.Sprintf(L10n("HTTP Error %d\n"), status)))
 	return nil
 }

@@ -124,7 +124,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		tmplData["CaptchaHtml"] = task
 		return tmpl(ctx, "post.html").Execute(w, tmplData)
 	}
-	return PerformStatus(ctx, w, req, http.StatusNotFound)
+	return performStatus(ctx, w, req, http.StatusNotFound)
 }
 
 func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -569,20 +569,20 @@ func SubmitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	return err
 }
 
-func initRoutes(gctx *GlobalContext) *pat.Router {
+func initRoutes(gctx *globalContext) *pat.Router {
 	const (
 		G = "GET"
 		P = "POST"
 	)
 	r := gctx.Router
-	mkHandler := func(f HandlerFunc) *Handler {
-		return &Handler{h: f, c: gctx, logRq: true}
+	mkHandler := func(f handlerFunc) *handler {
+		return &handler{h: f, c: gctx, logRq: true}
 	}
-	mkAdminHandler := func(f HandlerFunc) *Handler {
-		return &Handler{
+	mkAdminHandler := func(f handlerFunc) *handler {
+		return &handler{
 			h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 				if !ctx.AdminLogin {
-					PerformStatus(ctx, w, req, http.StatusForbidden)
+					performStatus(ctx, w, req, http.StatusForbidden)
 					return nil
 				}
 				return f(w, req, ctx)
@@ -603,11 +603,11 @@ func initRoutes(gctx *GlobalContext) *pat.Router {
 	r.Add(G, "/edit_post", mkAdminHandler(EditPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(LoadComments)).Name("load_comments")
 	r.Add(G, "/feeds/rss.xml", mkHandler(RssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &Handler{ServeFavicon, gctx, false}).Name("favicon")
+	r.Add(G, "/favicon.ico", &handler{serveFavicon, gctx, false}).Name("favicon")
 	r.Add(G, "/comment_submit", mkHandler(CommentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(DeleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(DeletePost)).Name("delete_post")
-	r.Add(G, "/robots.txt", mkHandler(ServeRobots))
+	r.Add(G, "/robots.txt", mkHandler(serveRobots))
 	r.Add(G, "/edit_author", mkAdminHandler(EditAuthorForm)).Name("edit_author")
 
 	r.Add(P, "/moderate_comment", mkAdminHandler(ModerateComment)).Name("moderate_comment")
@@ -719,7 +719,7 @@ func main() {
 		insertUser(db, args)
 		return
 	}
-	runForever(initRoutes(&GlobalContext{
+	runForever(initRoutes(&globalContext{
 		Router: pat.New(),
 		Db:     db,
 		assets: assets,

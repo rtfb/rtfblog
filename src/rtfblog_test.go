@@ -131,7 +131,7 @@ func init() {
 	langDetector = TestLangDetector{}
 	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
-	htmltest.Init(initRoutes(&GlobalContext{
+	htmltest.Init(initRoutes(&globalContext{
 		Router: pat.New(),
 		Db:     &testData,
 		assets: assets,

@@ -10,17 +10,17 @@ import (
 )
 
 type Context struct {
-	GlobalContext
+	globalContext
 	Session    *sessions.Session
 	AdminLogin bool
 	Captcha    *Deck
 }
 
-func NewContext(req *http.Request, gctx *GlobalContext) (*Context, error) {
+func NewContext(req *http.Request, gctx *globalContext) (*Context, error) {
 	sess, err := gctx.Store.Get(req, "rtfblog")
 	logger.LogIf(err)
 	ctx := &Context{
-		GlobalContext: *gctx,
+		globalContext: *gctx,
 		Session:       sess,
 		AdminLogin:    sess.Values["adminlogin"] == "yes",
 		Captcha:       deck,
