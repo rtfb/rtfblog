@@ -109,7 +109,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 			ctx.Session.Values["adminlogin"] = "yes"
 			return EditAuthorForm(w, req, ctx)
 		}
-		return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
+		return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
 	}
 	post, err := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin)
 	if err == nil && post != nil {
@@ -122,7 +122,7 @@ func Home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		// it gets shown
 		task.ID = ""
 		tmplData["CaptchaHtml"] = task
-		return Tmpl(ctx, "post.html").Execute(w, tmplData)
+		return tmpl(ctx, "post.html").Execute(w, tmplData)
 	}
 	return PerformStatus(ctx, w, req, http.StatusNotFound)
 }
@@ -134,18 +134,18 @@ func PageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	}
 	pgNo--
 	offset := pgNo * PostsPerPage
-	return Tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
+	return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
 }
 
 func Admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if conf.Server.CookieSecret == defaultCookieSecret {
 		ctx.Session.AddFlash(L10n("You are using default cookie secret, consider changing."))
 	}
-	return Tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
+	return tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
 func LoginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	return Tmpl(ctx, "login.html").Execute(w, MkBasicData(ctx, 0, 0))
+	return tmpl(ctx, "login.html").Execute(w, MkBasicData(ctx, 0, 0))
 }
 
 func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -165,7 +165,7 @@ func PostsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 		return err
 	}
 	tmplData["all_entries"] = titles
-	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
+	return tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
 func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -177,7 +177,7 @@ func Archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return err
 	}
 	tmplData["all_entries"] = titles
-	return Tmpl(ctx, "archive.html").Execute(w, tmplData)
+	return tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
 func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -187,7 +187,7 @@ func AllComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return err
 	}
 	tmplData["all_comments"] = comm
-	return Tmpl(ctx, "all_comments.html").Execute(w, tmplData)
+	return tmpl(ctx, "all_comments.html").Execute(w, tmplData)
 }
 
 func makeTagList(tags []*Tag) []string {
@@ -217,7 +217,7 @@ func EditPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	} else {
 		tmplData["post"] = Entry{}
 	}
-	return Tmpl(ctx, "edit_post.html").Execute(w, tmplData)
+	return tmpl(ctx, "edit_post.html").Execute(w, tmplData)
 }
 
 func LoadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -520,7 +520,7 @@ func EditAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	tmplData["PageTitle"] = L10n("Edit Author")
 	tmplData["author"] = author
 	tmplData["EditExistingAuthor"] = err != gorm.ErrRecordNotFound
-	return Tmpl(ctx, "edit_author.html").Execute(w, tmplData)
+	return tmpl(ctx, "edit_author.html").Execute(w, tmplData)
 }
 
 func SubmitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error {

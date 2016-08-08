@@ -46,14 +46,14 @@ func MkFlashes(ctx *Context) template.HTML {
 	return template.HTML(`<div class="six columns">` + html + "</div>")
 }
 
-func MkBasicData(ctx *Context, pageNo, offset int) TmplMap {
+func MkBasicData(ctx *Context, pageNo, offset int) tmplMap {
 	numTotalPosts, err := ctx.Db.numPosts(ctx.AdminLogin)
 	logger.LogIf(err)
 	titles, err := ctx.Db.titles(NumRecentPosts, ctx.AdminLogin)
 	logger.LogIf(err)
 	posts, err := ctx.Db.posts(PostsPerPage, offset, ctx.AdminLogin)
 	logger.LogIf(err)
-	return TmplMap{
+	return tmplMap{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Interface.BlogTitle,
 		"BlogSubtitle":    conf.Interface.BlogDescr,

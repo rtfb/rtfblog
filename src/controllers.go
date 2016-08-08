@@ -88,7 +88,7 @@ func InternalError(c *Context, w http.ResponseWriter, req *http.Request, err err
 func PerformStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
 	if status == 404 || status == 403 {
 		html := fmt.Sprintf("%d.html", status)
-		return Tmpl(c, html).Execute(w, TmplMap{})
+		return tmpl(c, html).Execute(w, nil)
 	}
 	return PerformSimpleStatus(w, status)
 }

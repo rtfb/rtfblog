@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	tmpl = "tmpl"
+	tmplDir = "tmpl"
 )
 
-type TmplMap map[string]interface{}
+type tmplMap map[string]interface{}
 
 var (
 	cachedTemplates = map[string]*template.Template{}
@@ -21,11 +21,11 @@ var (
 	}
 )
 
-func dict(values ...interface{}) (TmplMap, error) {
+func dict(values ...interface{}) (tmplMap, error) {
 	if len(values)%2 != 0 {
 		return nil, errors.New("invalid dict call")
 	}
-	dict := make(TmplMap, len(values)/2)
+	dict := make(tmplMap, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
@@ -36,11 +36,11 @@ func dict(values ...interface{}) (TmplMap, error) {
 	return dict, nil
 }
 
-func AddTemplateFunc(name string, f interface{}) {
+func addTemplateFunc(name string, f interface{}) {
 	funcs[name] = f
 }
 
-func Tmpl(c *Context, name string) *template.Template {
+func tmpl(c *Context, name string) *template.Template {
 	cachedMutex.Lock()
 	defer cachedMutex.Unlock()
 	if t, ok := cachedTemplates[name]; ok {
@@ -56,7 +56,7 @@ func Tmpl(c *Context, name string) *template.Template {
 		"captcha.html",
 		name,
 	} {
-		t = template.Must(t.Parse(string(c.assets.MustLoad(filepath.Join(tmpl, s)))))
+		t = template.Must(t.Parse(string(c.assets.MustLoad(filepath.Join(tmplDir, s)))))
 	}
 	cachedTemplates[name] = t
 	return t

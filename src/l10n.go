@@ -30,5 +30,5 @@ func InitL10n(assets *AssetBin, userLocale string) {
 	loadLanguage(assets, "lt-LT.all.json")
 	defaultLocale := "en-US" // known valid locale
 	L10n = i18n.MustTfunc(userLocale, defaultLocale)
-	AddTemplateFunc("L10n", L10n)
+	addTemplateFunc("L10n", L10n)
 }
