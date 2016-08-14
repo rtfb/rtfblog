@@ -1,11 +1,11 @@
 production:
     driver: $RTFBLOG_DB_DRIVER
-    open: $RTFBLOG_DB_URL
+    dsn: $RTFBLOG_DB_URL
 
 development:
     driver: $RTFBLOG_DB_DRIVER
-    open: $RTFBLOG_DB_TEST_URL
+    dsn: $RTFBLOG_DB_TEST_URL
 
 staging:
     driver: $RTFBLOG_DB_DRIVER
-    open: $RTFBLOG_DB_STAGING_TEST_URL
+    dsn: $RTFBLOG_DB_STAGING_TEST_URL
