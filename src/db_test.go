@@ -28,11 +28,11 @@ func init() {
 	}
 	conf.Server.DBConn = config
 	logger = bark.CreateFile("tests.log")
-	realDB = InitDB(getDBConnString(), Bindir())
+	realDB = InitDB(getDBConnString(), bindir())
 }
 
 func testInsertAuthor(t *testing.T) {
-	passwd, err := EncryptBcrypt([]byte("testpasswd"))
+	passwd, err := encryptBcrypt([]byte("testpasswd"))
 	require.NoError(t, err, "Failed to encrypt passwd")
 	err = data.begin()
 	require.NoError(t, err, "Failed to start xaction")

@@ -129,7 +129,7 @@ func (e Entry) TagsStr() template.HTML {
 	for _, t := range e.Tags {
 		format := `<a href="/tag/%s">%s</a>`
 		url := t.Name
-		title := Capitalize(t.Name)
+		title := capitalize(t.Name)
 		part := fmt.Sprintf(format, url, title)
 		parts = append(parts, part)
 	}

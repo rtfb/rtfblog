@@ -32,7 +32,7 @@ func mustNotContain(t *testing.T, page, what string) {
 
 func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {
 	defer testData.reset()
-	login()
+	ensureLogin()
 	body, err := htmltest.PostForm(path, values)
 	if err != nil {
 		t.Error(err)
@@ -52,11 +52,11 @@ func loginWithCred(username, passwd string) string {
 	return body
 }
 
-func login() {
+func ensureLogin() {
 	loginWithCred("testuser", "testpasswd")
 }
 
-func logout() {
+func doLogout() {
 	htmltest.Curl("logout")
 }
 
@@ -67,7 +67,7 @@ func assertElem(t *testing.T, node *html.Node, elem string) {
 }
 
 func mkTempFile(t *testing.T, name, content string) func() {
-	exists, err := FileExists(name)
+	exists, err := fileExists(name)
 	if err != nil {
 		t.Fatal(err)
 	}

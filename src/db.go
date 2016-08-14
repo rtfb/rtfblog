@@ -43,7 +43,7 @@ type DbData struct {
 
 func prepareDefaultDB(root string) (dialect, conn string) {
 	dbFile := filepath.Join(root, "default.db")
-	if FileExistsNoErr(dbFile) {
+	if fileExistsNoErr(dbFile) {
 		return "sqlite3", dbFile
 	}
 	return "sqlite3", MustExtractDBAsset("default.db")
@@ -69,7 +69,7 @@ func InitDB(conn, root string) *DbData {
 
 func logDbConn(dialect, conn string) {
 	if dialect == "postgres" {
-		conn = CensorPostgresConnStr(conn)
+		conn = censorPostgresConnStr(conn)
 	}
 	logger.Printf("Connecting to %q DB via conn %q\n", dialect, conn)
 }
@@ -177,7 +177,7 @@ func (dd *DbData) allComments() ([]*CommentWithPostTitle, error) {
 	// TODO: there's an identical loop in queryComments, but it loops over
 	// []Comment instead of []CommentWithPostTitle. Would be nice to unify.
 	for _, c := range results {
-		c.EmailHash = Md5Hash(c.Email)
+		c.EmailHash = md5Hash(c.Email)
 		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
 		c.HTML = sanitizeHTML(mdToHTML(c.RawBody))
 	}
@@ -335,7 +335,7 @@ func queryComments(db *gorm.DB, postID int64) []*Comment {
 	err := rows.Scan(&comments).Error
 	logger.LogIff(err, "error querying comments")
 	for _, c := range comments {
-		c.EmailHash = Md5Hash(c.Email)
+		c.EmailHash = md5Hash(c.Email)
 		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
 		c.HTML = sanitizeHTML(mdToHTML(c.RawBody))
 	}

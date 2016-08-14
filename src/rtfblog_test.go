@@ -181,7 +181,7 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	login()
+	ensureLogin()
 	html := htmltest.Curl(testPosts[0].URL)
 	mustContain(t, html, "Logout")
 }
@@ -335,7 +335,7 @@ func TestInvalidPageDefaultsToPageOne(t *testing.T) {
 }
 
 func TestNonAdminCantAccessAdminPages(t *testing.T) {
-	logout()
+	doLogout()
 	urls := []string{
 		"all_comments",
 		"admin",
@@ -381,7 +381,7 @@ func TestModerateCommentIgnoresWrongAction(t *testing.T) {
 }
 
 func TestLoadComments(t *testing.T) {
-	login()
+	ensureLogin()
 	json := htmltest.Curl("/load_comments?post=hello1")
 	mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
 }
@@ -510,26 +510,26 @@ func TestExplodeTags(t *testing.T) {
 }
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
-	login()
+	ensureLogin()
 	nodes := htmltest.Query(t, "", "+", ".edit-post-button")
 	require.Len(t, nodes, PostsPerPage, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
-	login()
+	ensureLogin()
 	node := htmltest.QueryOne(t, testPosts[0].URL, "#edit-comment-form")
 	assertElem(t, node, "form")
 }
 
 func TestAdminPageHasAllCommentsButton(t *testing.T) {
-	login()
+	ensureLogin()
 	node := htmltest.QueryOne(t, "/admin", "#display-all-comments")
 	assertElem(t, node, "input")
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
 	defer testData.reset()
-	login()
+	ensureLogin()
 	nodes := htmltest.Query(t, "/all_comments", "+", "#comment")
 	if len(nodes) != len(testComm) {
 		t.Fatalf("Not all comments in /all_comments!")
@@ -551,12 +551,12 @@ func TestHiddenPosts(t *testing.T) {
 		{"", "hello1001"},
 		{"archive", "hello1001"},
 	}
-	login()
+	ensureLogin()
 	for _, i := range positiveTests {
 		html := htmltest.Curl(i.url)
 		mustContain(t, html, i.content)
 	}
-	logout()
+	doLogout()
 	for _, i := range negativeTests {
 		html := htmltest.Curl(i.url)
 		mustNotContain(t, html, i.content)
@@ -569,23 +569,23 @@ func TestHiddenPostDoesNotAppearInRss(t *testing.T) {
 	testPosts = append(testPosts, mkTestEntry(1, false))
 	testPosts = append(testPosts, mkTestEntry(1000, true))
 	testPosts = append(testPosts, mkTestEntry(2, false))
-	login()
+	ensureLogin()
 	xml := htmltest.Curl("feeds/rss.xml")
 	mustNotContain(t, xml, "hello1000")
 	testPosts = bak
 }
 
 func TestHiddenPostAccess(t *testing.T) {
-	login()
+	ensureLogin()
 	html := htmltest.Curl("hello1001")
 	mustContain(t, html, "Body")
-	logout()
+	doLogout()
 	html = htmltest.Curl("hello1001")
 	mustContain(t, html, "Page Not Found")
 }
 
 func TestEditPost(t *testing.T) {
-	login()
+	ensureLogin()
 	// test with non-hidden post
 	html := htmltest.Curl("edit_post?post=hello3")
 	mustContain(t, html, "Body3")
@@ -736,12 +736,12 @@ func TestNewPostShowsEmptyForm(t *testing.T) {
 }
 
 func TestPathToFullPath(t *testing.T) {
-	T{t}.assertEqual("/a/b/c", PathToFullPath("/a/b/c"))
+	T{t}.assertEqual("/a/b/c", pathToFullPath("/a/b/c"))
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	T{t}.assertEqual(filepath.Join(cwd, "b/c"), PathToFullPath("./b/c"))
+	T{t}.assertEqual(filepath.Join(cwd, "b/c"), pathToFullPath("./b/c"))
 }
 
 func TestVersionString(t *testing.T) {
@@ -795,7 +795,7 @@ func TestMarkdown(t *testing.T) {
 }
 
 func TestMd5(t *testing.T) {
-	T{t}.assertEqual("d3b07384d113edec49eaa6238ad5ff00", Md5Hash("foo\n"))
+	T{t}.assertEqual("d3b07384d113edec49eaa6238ad5ff00", md5Hash("foo\n"))
 }
 
 func TestAdminPageHasEditAuthorButton(t *testing.T) {

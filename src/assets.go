@@ -27,7 +27,7 @@ func NewAssetBin(binaryDir string) *AssetBin {
 
 func (a *AssetBin) Load(path string) ([]byte, error) {
 	fullPath := filepath.Join(a.root, path)
-	exists, err := FileExists(fullPath)
+	exists, err := fileExists(fullPath)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func MustExtractDBAsset(defaultDB string) string {
 	}
 	dbPath := filepath.Join(path, defaultDB)
 	// Extract it only in case there isn't one already from the last time
-	if !FileExistsNoErr(dbPath) {
+	if !fileExistsNoErr(dbPath) {
 		err = rtfblog_resources.RestoreAsset(path, defaultDB)
 		if err != nil {
 			panic(fmt.Sprintf("Failed to RestoreAsset(%q, %q)", path, defaultDB))

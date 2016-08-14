@@ -12,15 +12,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func FileExistsNoErr(path string) bool {
-	exists, err := FileExists(path)
+func fileExistsNoErr(path string) bool {
+	exists, err := fileExists(path)
 	if err != nil {
 		return false
 	}
 	return exists
 }
 
-func FileExists(path string) (bool, error) {
+func fileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -31,7 +31,7 @@ func FileExists(path string) (bool, error) {
 	return false, err
 }
 
-func PathToFullPath(path string) string {
+func pathToFullPath(path string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
@@ -42,29 +42,29 @@ func PathToFullPath(path string) string {
 	return abs
 }
 
-func Bindir() string {
-	basedir, _ := filepath.Split(PathToFullPath(os.Args[0]))
+func bindir() string {
+	basedir, _ := filepath.Split(pathToFullPath(os.Args[0]))
 	return basedir
 }
 
-func Md5Hash(s string) string {
+func md5Hash(s string) string {
 	hash := md5.New()
 	hash.Write([]byte(strings.ToLower(s)))
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
 
-func Capitalize(s string) string {
+func capitalize(s string) string {
 	firstRune, width := utf8.DecodeRuneInString(s)
 	return string(unicode.ToUpper(firstRune)) + s[width:]
 }
 
-func EncryptBcrypt(passwd []byte) (hash string, err error) {
+func encryptBcrypt(passwd []byte) (hash string, err error) {
 	h, err := bcrypt.GenerateFromPassword(passwd, bcrypt.DefaultCost)
 	hash = string(h)
 	return
 }
 
-func CensorPostgresConnStr(conn string) string {
+func censorPostgresConnStr(conn string) string {
 	parts := strings.Split(conn, " ")
 	newParts := []string{}
 	for _, part := range parts {
