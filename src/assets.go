@@ -26,7 +26,10 @@ func NewAssetBin(binaryDir string) *AssetBin {
 }
 
 func (a *AssetBin) Load(path string) ([]byte, error) {
-	fullPath := filepath.Join(a.root, path)
+	fullPath := path
+	if fullPath[0] != '/' {
+		fullPath = filepath.Join(a.root, path)
+	}
 	exists, err := fileExists(fullPath)
 	if err != nil {
 		return nil, err
