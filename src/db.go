@@ -60,6 +60,7 @@ func InitDB(conn, root string) *DbData {
 	if err != nil {
 		panic(err)
 	}
+	db.LogMode(conf.LogSQL)
 	db.SingularTable(true)
 	return &DbData{
 		db: db,

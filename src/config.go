@@ -28,6 +28,7 @@ type Server struct {
 	TLSKey       string `yaml:"tls_key"`
 	CookieSecret string `yaml:"cookie_secret"`
 	Log          string
+	LogSQL       bool `yaml:"log_sql"`
 }
 
 type Notifications struct {
