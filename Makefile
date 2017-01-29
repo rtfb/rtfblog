@@ -57,13 +57,20 @@ NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir.com/rtfb/rtfblog_resources
 
-all: ${BUILDDIR}/rtfblog
+all: ${BUILDDIR}/rtfblog gobuild gotest
 
 ${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
                      $(GOFILES) $(TARGETS) $(ASSETS_PKG)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
 	grunt
+
+gobuild:
+	go build -o ${BUILDDIR}/rtfblog \
+		-ldflags "-X main.genVer=$(./scripts/version.sh)" ./src/...
+
+gotest:
+	go test ./src/...
 
 $(GO_DEPS):
 	@echo "Running 'go get', this will take a few minutes..."
@@ -148,4 +155,4 @@ clean:
 	rm -r $(ASSETS_PKG)
 	rm -r ${BUILDDIR}
 
-.PHONY: all clean run vet fmt
+.PHONY: all clean run vet fmt gobuild gotest

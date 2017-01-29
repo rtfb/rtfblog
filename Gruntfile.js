@@ -17,22 +17,12 @@ module.exports = function(grunt) {
         },
         shell: {
             buildGo: {
-                command: function() {
-                    return 'go build -o build/rtfblog' +
-                        ' -ldflags "-X main.genVer=$(./scripts/version.sh)"' +
-                        ' ./src/...';
-                },
-                options: {
-                    stdout: true,
-                    stderr: true
-                }
+                command: 'make gobuild',
+                options: {stdout: true, stderr: true}
             },
             testGo: {
-                command: 'go test ./src/...',
-                options: {
-                    stdout: true,
-                    stderr: true
-                }
+                command: 'make gotest',
+                options: {stdout: true, stderr: true}
             }
         }
     });
@@ -41,5 +31,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-shell');
     // register one or more task lists (you should ALWAYS have a "default" task list)
-    grunt.registerTask('default', ['qunit', 'shell:buildGo', 'shell:testGo']);
+    grunt.registerTask('default', ['qunit']);
 };
