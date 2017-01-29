@@ -1,0 +1,42 @@
+package: .
+ignore:
+- generated_res_dir.com/rtfb/rtfblog_resources
+import:
+- package: github.com/docopt/docopt-go
+- package: github.com/gopherjs/gopherjs
+  subpackages:
+  - js
+- package: github.com/gopherjs/jsbuiltin
+- package: github.com/gorilla/feeds
+- package: github.com/gorilla/pat
+- package: github.com/gorilla/sessions
+- package: github.com/jinzhu/gorm
+- package: github.com/lib/pq
+- package: github.com/mattn/go-sqlite3
+- package: github.com/microcosm-cc/bluemonday
+- package: github.com/nicksnyder/go-i18n
+  subpackages:
+  - i18n
+- package: github.com/rtfb/bark
+- package: github.com/rtfb/cachedir
+- package: github.com/rtfb/go-mail
+- package: github.com/rtfb/gopass
+- package: github.com/rtfb/httpbuf
+- package: github.com/rtfb/httputil
+- package: github.com/russross/blackfriday
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: gopkg.in/yaml.v2
+- package: honnef.co/go/js/dom
+testImport:
+- package: github.com/rtfb/go-html-transform
+  subpackages:
+  - h5
+- package: github.com/rtfb/htmltest
+- package: github.com/stretchr/testify
+  subpackages:
+  - require
+- package: golang.org/x/net
+  subpackages:
+  - html
