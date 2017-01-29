@@ -1,11 +1,14 @@
 production:
     driver: $RTFBLOG_DB_DRIVER
     dsn: $RTFBLOG_DB_URL
+    migrationsDir: pg
 
 development:
     driver: $RTFBLOG_DB_DRIVER
     dsn: $RTFBLOG_DB_TEST_URL
+    migrationsDir: pg
 
 staging:
     driver: $RTFBLOG_DB_DRIVER
     dsn: $RTFBLOG_DB_STAGING_TEST_URL
+    migrationsDir: pg
