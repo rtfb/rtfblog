@@ -1,16 +1,5 @@
 GOFMT=gofmt -l -w -s
 
-GO_DEPS_CMD=\
-	go list -f '{{ join .Deps  "\n"}}' ./src
-GO_TEST_DEPS_CMD=\
-	go list -f '{{ join .TestImports  "\n"}}' ./src
-GO_UNFILTERED_DEPS=\
-	${shell ${GO_DEPS_CMD}} \
-	${shell ${GO_TEST_DEPS_CMD}}
-THIRD_PARTY_PKGS=github% golang.org/x/%
-GO_UNIQUE_DEPS=\
-	$(sort $(filter $(THIRD_PARTY_PKGS),${GO_UNFILTERED_DEPS}))
-
 NODE_DEPS_CMD=\
 	cat package.json | json devDependencies | json -ka | xargs
 
@@ -52,14 +41,13 @@ ifneq ($(wildcard server.conf),)
 endif
 
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
-GO_DEPS = $(addprefix $(GOPATH_HEAD)/src/, $(GO_UNIQUE_DEPS))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir.com/rtfb/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog gobuild gotest
 
-${BUILDDIR}/rtfblog: $(GO_DEPS) $(NODE_DEPS) $(BOWER_DEPS) \
+${BUILDDIR}/rtfblog: vendor $(NODE_DEPS) $(BOWER_DEPS) \
                      $(GOFILES) $(TARGETS) $(ASSETS_PKG)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
@@ -72,9 +60,9 @@ gobuild:
 gotest:
 	go test ./src/...
 
-$(GO_DEPS):
-	@echo "Running 'go get', this will take a few minutes..."
-	@go get -tags go_get -t ./...
+vendor:
+	@echo "Running 'glide install', this will take a few minutes..."
+	@glide install
 
 $(NODE_DEPS):
 	npm install
