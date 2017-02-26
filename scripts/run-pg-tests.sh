@@ -27,6 +27,7 @@ wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_DRIVER=postgres
 export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
 
+echo "Running goose up..."
 goose -path=db/pg/ -env=development up
 
 echo "Running tests on $RTFBLOG_DB_DRIVER..."
