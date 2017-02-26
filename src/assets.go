@@ -27,8 +27,10 @@ func NewAssetBin(binaryDir string) *AssetBin {
 }
 
 func (a *AssetBin) FSOnly() *AssetBin {
-	a.fsOnly = true
-	return a
+	return &AssetBin{
+		root:   a.root,
+		fsOnly: true,
+	}
 }
 
 func (a *AssetBin) Load(path string) ([]byte, error) {
