@@ -16,13 +16,19 @@ import (
 )
 
 type AssetBin struct {
-	root string // root path of physical assets in filesystem
+	root   string // root path of physical assets in filesystem
+	fsOnly bool   // only consider FS files, don't fallback to baked
 }
 
 func NewAssetBin(binaryDir string) *AssetBin {
 	return &AssetBin{
 		root: binaryDir,
 	}
+}
+
+func (a *AssetBin) FSOnly() *AssetBin {
+	a.fsOnly = true
+	return a
 }
 
 func (a *AssetBin) Load(path string) ([]byte, error) {
@@ -35,7 +41,7 @@ func (a *AssetBin) Load(path string) ([]byte, error) {
 		return nil, err
 	}
 	// Physical file takes precedence
-	if exists {
+	if exists || a.fsOnly {
 		return ioutil.ReadFile(fullPath)
 	}
 	// Fall back to baked asset

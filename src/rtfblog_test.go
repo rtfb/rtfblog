@@ -754,7 +754,7 @@ func TestVersionString(t *testing.T) {
 func TestReadConfigs(t *testing.T) {
 	del := mkTempFile(t, ".rtfblogrc", "server:\n    port: 666")
 	defer del()
-	config := readConfigs(NewAssetBin("."))
+	config := readConfigs(NewAssetBin(".").FSOnly())
 	T{t}.assertEqual("666", config.Server.Port)
 }
 
