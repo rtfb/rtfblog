@@ -9,7 +9,8 @@ Rtfblog is a blog software that powers [my blog](http://blog.rtfb.lt), written
 in [Go](http://golang.org). Its primary purpose is to serve my own needs, but I
 was writing it with making it available to others in mind.
 
-This is my first sizeable piece of Go code, so I'm a [baby
+When I started it, this was my first sizeable piece of Go code (you can
+certainly tell that if you look at early commits!), so I was a [baby
 gopher](http://www.babygopher.org/):
 
 [![baby-gopher][baby-gopher-image]](http://www.babygopher.org)
