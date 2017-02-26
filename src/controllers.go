@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"runtime/debug"
 	"time"
 
 	"github.com/gorilla/pat"
@@ -37,6 +39,22 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		internalError(ctx, w, req, err, "New context err")
 		return
 	}
+	defer func() {
+		r := recover()
+		if r != nil {
+			var err error
+			switch t := r.(type) {
+			case string:
+				err = errors.New(t)
+			case error:
+				err = t
+			default:
+				err = errors.New("Unknown error")
+			}
+			logger.Printf("%s: %s\n", err, debug.Stack())
+			internalError(ctx, w, req, err, "Panic in handler")
+		}
+	}()
 	//defer ctx.Close()
 	// We're using httpbuf here to satisfy an unobvious requirement:
 	// sessions.Save() *must* be called before anything is written to
