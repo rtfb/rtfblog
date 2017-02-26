@@ -709,7 +709,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 	assets := NewAssetBin(bindir())
-	conf = readConfigs(assets)
+	conf = readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)
 	db := InitDB(getDBConnString(), bindir())
