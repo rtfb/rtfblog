@@ -54,7 +54,7 @@ ${BUILDDIR}/rtfblog: vendor $(NODE_DEPS) $(BOWER_DEPS) \
 	grunt
 
 gobuild:
-	go build -o ${BUILDDIR}/rtfblog \
+	go build -i -o ${BUILDDIR}/rtfblog \
 		-ldflags "-X main.genVer=$(shell scripts/version.sh)" ./src/...
 
 gotest:
