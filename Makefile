@@ -45,19 +45,15 @@ NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir.com/rtfb/rtfblog_resources
 
-all: ${BUILDDIR}/rtfblog gobuild gotest
+all: ${BUILDDIR}/rtfblog
 
 ${BUILDDIR}/rtfblog: vendor $(NODE_DEPS) $(BOWER_DEPS) \
                      $(GOFILES) $(TARGETS) $(ASSETS_PKG)
 	go vet ${GOFILES}
 	${GOFMT} ${GOFILES}
 	grunt
-
-gobuild:
 	go build -i -o ${BUILDDIR}/rtfblog \
 		-ldflags "-X main.genVer=$(shell scripts/version.sh)" ./src/...
-
-gotest:
 	go test ./src/...
 
 vendor:
