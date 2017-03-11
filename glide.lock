@@ -1,5 +1,5 @@
-hash: f55f26f3940a73354b64d9e4b602ed4888efafab7b96130f8fc5e54977a60dfb
-updated: 2017-01-29T12:03:44.70304523+02:00
+hash: 0773cc34373f23559478332ca2ee80a0fe0938ce8c13625255385c9bced9e683
+updated: 2017-03-11T18:12:28.160784212+02:00
 imports:
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
@@ -22,7 +22,7 @@ imports:
 - name: github.com/gorilla/sessions
   version: 52389059572b4736b2b7d899b0242ecc449c8779
 - name: github.com/jinzhu/gorm
-  version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
+  version: 5409931a1bb87e484d68d649af9367c207713ea2
 - name: github.com/jinzhu/inflection
   version: 74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff
 - name: github.com/lib/pq

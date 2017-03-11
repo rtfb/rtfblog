@@ -11,6 +11,7 @@ import:
 - package: github.com/gorilla/pat
 - package: github.com/gorilla/sessions
 - package: github.com/jinzhu/gorm
+  version: 5409931a1bb87e484d68d649af9367c207713ea2
 - package: github.com/lib/pq
 - package: github.com/mattn/go-sqlite3
 - package: github.com/microcosm-cc/bluemonday
