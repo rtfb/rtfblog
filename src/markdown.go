@@ -22,6 +22,7 @@ func mdToHTML(md string) []byte {
 	extensions |= blackfriday.EXTENSION_STRIKETHROUGH
 	extensions |= blackfriday.EXTENSION_SPACE_HEADERS
 	extensions |= blackfriday.EXTENSION_HEADER_IDS
+	extensions |= blackfriday.EXTENSION_FOOTNOTES
 	return blackfriday.Markdown([]byte(md), renderer, extensions)
 }
 
