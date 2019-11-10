@@ -139,4 +139,4 @@ clean:
 	rm -r $(ASSETS_PKG)
 	rm -r ${BUILDDIR}
 
-.PHONY: all clean run vet fmt gobuild gotest
+.PHONY: all clean run vet fmt
