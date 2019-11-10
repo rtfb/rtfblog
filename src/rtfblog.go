@@ -1,4 +1,4 @@
-package main
+package rtfblog
 
 import (
 	"bufio"
@@ -702,7 +702,7 @@ func insertUser(db *DbData, args map[string]interface{}) {
 	return
 }
 
-func main() {
+func Main() {
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
 		panic("Can't docopt.Parse!")

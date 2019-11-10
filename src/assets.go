@@ -1,6 +1,4 @@
-// +build !go_get
-
-package main
+package rtfblog
 
 import (
 	"fmt"
@@ -9,10 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	// This is a generated package that's being put under $GOPATH by Makefile
-	"generated_res_dir.com/rtfb/rtfblog_resources"
-
 	"github.com/rtfb/cachedir"
+	"github.com/rtfb/rtfblog/src/rtfblog_resources"
 )
 
 type AssetBin struct {

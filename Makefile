@@ -43,22 +43,18 @@ endif
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
 BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
-ASSETS_PKG = $(GOPATH_HEAD)/src/generated_res_dir.com/rtfb/rtfblog_resources
+ASSETS_PKG = src/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: vendor $(NODE_DEPS) $(BOWER_DEPS) \
-                     $(GOFILES) $(TARGETS) $(ASSETS_PKG)
-	go vet ${GOFILES}
+${BUILDDIR}/rtfblog: $(NODE_DEPS) $(BOWER_DEPS) \
+                     $(GOFILES) $(ASSETS_PKG)
+	go vet ./src/...
 	${GOFMT} ${GOFILES}
 	grunt
-	go build -i -o ${BUILDDIR}/rtfblog \
-		-ldflags "-X main.genVer=$(shell scripts/version.sh)" ./src/...
+	go build -i -o ${BUILDDIR} \
+		-ldflags "-X main.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
 	go test ./src/...
-
-vendor:
-	@echo "Running 'glide install', this will take a few minutes..."
-	@glide install
 
 $(NODE_DEPS):
 	npm install
@@ -66,9 +62,12 @@ $(NODE_DEPS):
 $(BOWER_DEPS):
 	bower install --config.interactive=false
 
-$(ASSETS_PKG):
-	mkdir -p $(ASSETS_PKG)
-	go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ./${BUILDDIR}/ ./${BUILDDIR}/...
+$(ASSETS_PKG): $(TARGETS)
+	go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ${BUILDDIR} \
+		${BUILDDIR}/l10n \
+		${BUILDDIR}/default.db \
+		${BUILDDIR}/static/... \
+		${BUILDDIR}/tmpl
 
 run: all
 	./${BUILDDIR}/rtfblog

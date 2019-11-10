@@ -6,4 +6,4 @@ priv_key
 node_modules
 bower_components
 profile.cov
-/vendor
+/src/rtfblog_resources

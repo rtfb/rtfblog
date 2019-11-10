@@ -1,4 +1,4 @@
-package main
+package rtfblog
 
 import (
 	"encoding/json"

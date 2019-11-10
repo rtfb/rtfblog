@@ -4,16 +4,14 @@
 language: go
 
 go:
-    - 1.7
-    - 1.8
+    - 1.13
     - tip
 
 before_install:
-    - go get -v github.com/Masterminds/glide
     - go get -v golang.org/x/tools/cmd/cover
     - go get -v github.com/mattn/goveralls
     - go get -v github.com/steinbacher/goose/cmd/goose
-    - go get -v github.com/jteeuwen/go-bindata/...
+    - go get -v github.com/go-bindata/go-bindata/...
     - npm install -g grunt-cli bower browserify json
     - sudo apt-get purge postgresql-client-9.5
     - sudo apt-get install postgresql-server-dev-9.4

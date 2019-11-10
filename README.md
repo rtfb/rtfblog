@@ -46,10 +46,10 @@ server, you would need to do essentially the same. Get it at:
 
     go get github.com/steinbacher/goose/cmd/goose
 
-You will need [go-bindata](https://github.com/jteeuwen/go-bindata) to build
+You will need [go-bindata](https://github.com/go-bindata/go-bindata) to build
 embedded resources. Get it at:
 
-    go get -u github.com/jteeuwen/go-bindata/...
+    go get -u github.com/go-bindata/go-bindata/...
 
 ## Configuration
 
