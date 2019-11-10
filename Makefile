@@ -1,10 +1,10 @@
 GOFMT=gofmt -l -w -s
 
 NODE_DEPS_CMD=\
-	cat package.json | json devDependencies | json -ka | xargs
+	cat package.json | jq '.devDependencies | keys[]' | xargs
 
 BOWER_DEPS_CMD=\
-	cat bower.json | json dependencies | json -ka | xargs
+	cat bower.json | jq '.dependencies | keys[]' | xargs
 
 GOFILES=\
 	src/*.go
