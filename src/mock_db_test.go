@@ -60,7 +60,7 @@ func getCallSig(call CallSpec) string {
 func (td *TestData) expect(t *testing.T, f interface{}, paramStr string) {
 	sig := getCallSig(CallSpec{f, paramStr})
 	if td.calls() != sig {
-		t.Fatalf("%s() exptected, but got %s", sig, testData.calls())
+		t.Fatalf("%s() expected, but got %s", sig, testData.calls())
 	}
 }
 
@@ -71,7 +71,7 @@ func (td *TestData) expectChain(t *testing.T, series []CallSpec) {
 	}
 	seriesWithPackageStr := strings.Join(seriesWithPackage, "\n")
 	if td.calls() != seriesWithPackageStr {
-		t.Fatalf("%s exptected, but got %s", seriesWithPackageStr, testData.calls())
+		t.Fatalf("%s expected, but got %s", seriesWithPackageStr, testData.calls())
 	}
 }
 
@@ -81,7 +81,7 @@ func (td *TestData) post(url string, includeHidden bool) (*Entry, error) {
 			return e, nil
 		}
 	}
-	return nil, fmt.Errorf("post %q not found", url)
+	return nil, gorm.ErrRecordNotFound
 }
 
 func (td *TestData) postID(url string) (id int64, err error) {
