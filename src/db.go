@@ -110,6 +110,9 @@ func (dd *DbData) post(url string, includeHidden bool) (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(posts) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
 	if len(posts) != 1 {
 		msg := "DbData.post(%q) should return 1 post, but returned %d"
 		return nil, fmt.Errorf(msg, url, len(posts))

@@ -123,7 +123,7 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 			}
 			postID = newPostID
 		} else {
-			return -1, logger.LogIff(idErr, "db.postID() failed")
+			return -1, logger.LogIff(idErr, "db.post() failed")
 		}
 	} else {
 		postID = oldPost.ID
