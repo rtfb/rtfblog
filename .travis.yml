@@ -8,6 +8,8 @@ go:
     - tip
 
 before_install:
+    - nvm install 15.8
+    - nvm use 15.8
     - go get -v golang.org/x/tools/cmd/cover
     - go get -v github.com/mattn/goveralls
     - go get -v github.com/steinbacher/goose/cmd/goose
