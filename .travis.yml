@@ -7,6 +7,9 @@ go:
     - 1.13
     - tip
 
+addons:
+    postgresql: "9.4"
+
 before_install:
     - nvm install 15.8
     - nvm use 15.8
@@ -15,8 +18,6 @@ before_install:
     - go get -v github.com/steinbacher/goose/cmd/goose
     - go get -v github.com/go-bindata/go-bindata/...
     - npm install -g grunt-cli bower browserify json
-    - sudo apt-get purge postgresql-client-9.5
-    - sudo apt-get install postgresql-server-dev-9.4
     - sudo /etc/init.d/postgresql stop
 
 script:
