@@ -18,7 +18,7 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/lib/pq v0.0.0-20161129221428-4a82388ebc51
+	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v0.0.0-20170127000238-ce9149a3c941
 	github.com/microcosm-cc/bluemonday v0.0.0-20161202143824-e79763773ab6
 	github.com/nicksnyder/go-i18n v0.0.0-20170120160056-64786dc4f56b
