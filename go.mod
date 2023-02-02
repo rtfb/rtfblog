@@ -18,6 +18,7 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kylelemons/go-gypsy v1.0.0 // indirect
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v0.0.0-20170127000238-ce9149a3c941
 	github.com/microcosm-cc/bluemonday v0.0.0-20161202143824-e79763773ab6
@@ -33,7 +34,9 @@ require (
 	github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634
 	github.com/russross/blackfriday v0.0.0-20161003162722-5f33e7b78783
 	github.com/shurcooL/sanitized_anchor_name v0.0.0-20160918041101-1dba4b3954bc // indirect
+	github.com/steinbacher/goose v0.0.0-20160725131629-dc457c319503 // indirect
 	github.com/stretchr/testify v1.2.2
+	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20170126200616-854ae91cdcbf
 	golang.org/x/net v0.0.0-20180724234803-3673e40ba225
 	golang.org/x/sys v0.0.0-20161214190518-d75a52659825 // indirect

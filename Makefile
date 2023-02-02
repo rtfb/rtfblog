@@ -139,3 +139,24 @@ clean:
 	rm -r ${BUILDDIR}
 
 .PHONY: all clean run vet fmt
+
+APPNAME := rtfblog-dev
+
+# builds the docker image
+.PHONY: dbuild
+dbuild:
+	docker build -t ${APPNAME} .
+
+# runs the container
+.PHONY: drun
+drun:
+	docker run -it --name ${APPNAME} --rm \
+    --mount type=bind,source="$(shell pwd)",target=/home/rtfb/dev \
+    --net=host ${APPNAME}:latest
+
+# override entrypoint to gain interactive shell
+.PHONY: dshell
+dshell:
+	docker run --entrypoint /bin/bash -it --name ${APPNAME} --rm \
+    --mount type=bind,source="$(shell pwd)",target=/host \
+    --net=host ${APPNAME}:latest

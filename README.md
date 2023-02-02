@@ -24,19 +24,18 @@ tried running it on Linux, but in theory it should run everywhere where Go runs.
 
 ## Building
 
-Build instructions on Ubuntu 14.04 (older versions might differ a bit):
+Building is done from within a docker container, as I don't want to have any npm
+present on my dev box. So first, build the building container, then run it,
+which calls make in its entry point.
 
-* `$ cat scripts/dev-packages.txt | xargs sudo apt-get install -y`
-  * Note: make sure your $GOPATH and $GOBIN are set up (see the
-    [docs](https://golang.org/cmd/go/#hdr-GOPATH_environment_variable))
-* Node JS (you will need to use http://nodejs.org/download/ or follow
-  [these](https://github.com/joyent/node/wiki/installing-node.js-via-package-manager)
-  instructions, it doesn't work with the one provided by the package manager)
-  * Note: make sure `node/bin/` dir is in `PATH`, build scripts assume that
-* `$ npm install -g grunt-cli bower browserify`
-* `$ make`
-  * Note: don't get surprised when make will take a lot of time and network
-    activity on the first run, it's downloading dependencies.
+* `make dbuild`
+* `make drun`
+
+Alternatively, you can shell into the container and call make manually:
+
+* `     host $ make dbuild`
+* `     host $ make dshell`
+* `container $ make all`
 
 ## Installing
 
