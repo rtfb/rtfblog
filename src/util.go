@@ -12,25 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func fileExistsNoErr(path string) bool {
-	exists, err := fileExists(path)
-	if err != nil {
-		return false
-	}
-	return exists
-}
-
-func fileExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
-
 func pathToFullPath(path string) string {
 	if filepath.IsAbs(path) {
 		return path

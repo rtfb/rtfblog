@@ -10,12 +10,13 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/httpbuf"
+	"github.com/rtfb/rtfblog/src/assets"
 )
 
 type globalContext struct {
 	Router *pat.Router
 	Db     Data
-	assets *AssetBin
+	assets *assets.AssetBin
 	Store  sessions.Store
 }
 

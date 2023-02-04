@@ -6,6 +6,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/rtfb/rtfblog/src/assets"
 	"gopkg.in/yaml.v2"
 )
 
@@ -82,7 +83,7 @@ func hardcodedConf() Config {
 	}
 }
 
-func readConfigs(assets *AssetBin) Config {
+func readConfigs(assets *assets.AssetBin) Config {
 	homeDir := ""
 	usr, err := user.Current()
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rtfb/rtfblog/src/assets"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
@@ -66,7 +67,7 @@ func assertElem(t *testing.T, node *html.Node, elem string) {
 }
 
 func mkTempFile(t *testing.T, name, content string) func() {
-	exists, err := fileExists(name)
+	exists, err := assets.FileExists(name)
 	if err != nil {
 		t.Fatal(err)
 	}

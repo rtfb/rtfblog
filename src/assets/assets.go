@@ -1,4 +1,4 @@
-package rtfblog
+package assets
 
 import (
 	"fmt"
@@ -12,19 +12,19 @@ import (
 )
 
 type AssetBin struct {
-	root   string // root path of physical assets in filesystem
+	Root   string // root path of physical assets in filesystem
 	fsOnly bool   // only consider FS files, don't fallback to baked
 }
 
 func NewAssetBin(binaryDir string) *AssetBin {
 	return &AssetBin{
-		root: binaryDir,
+		Root: binaryDir,
 	}
 }
 
 func (a *AssetBin) FSOnly() *AssetBin {
 	return &AssetBin{
-		root:   a.root,
+		Root:   a.Root,
 		fsOnly: true,
 	}
 }
@@ -32,9 +32,9 @@ func (a *AssetBin) FSOnly() *AssetBin {
 func (a *AssetBin) Load(path string) ([]byte, error) {
 	fullPath := path
 	if fullPath[0] != '/' {
-		fullPath = filepath.Join(a.root, path)
+		fullPath = filepath.Join(a.Root, path)
 	}
-	exists, err := fileExists(fullPath)
+	exists, err := FileExists(fullPath)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func MustExtractDBAsset(defaultDB string) string {
 	}
 	dbPath := filepath.Join(path, defaultDB)
 	// Extract it only in case there isn't one already from the last time
-	if !fileExistsNoErr(dbPath) {
+	if !FileExistsNoErr(dbPath) {
 		err = rtfblog_resources.RestoreAsset(path, defaultDB)
 		if err != nil {
 			panic(fmt.Sprintf("Failed to RestoreAsset(%q, %q)", path, defaultDB))
@@ -71,7 +71,7 @@ func MustExtractDBAsset(defaultDB string) string {
 }
 
 func (a *AssetBin) Open(name string) (http.File, error) {
-	d := http.Dir(a.root)
+	d := http.Dir(a.Root)
 	f, err := d.Open(name)
 	if err == nil {
 		return f, err
@@ -158,4 +158,23 @@ func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
 
 func (af *AssetFile) Stat() (os.FileInfo, error) {
 	return rtfblog_resources.AssetInfo(af.name)
+}
+
+func FileExistsNoErr(path string) bool {
+	exists, err := FileExists(path)
+	if err != nil {
+		return false
+	}
+	return exists
+}
+
+func FileExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }

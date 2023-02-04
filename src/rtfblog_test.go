@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/h5"
+	"github.com/rtfb/rtfblog/src/assets"
 	"github.com/rtfb/rtfblog/src/htmltest"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
@@ -117,7 +118,7 @@ func forgeTestUser(s server, uname, passwd string) {
 var tserver htmltest.HT
 
 func init() {
-	assets := NewAssetBin(buildRoot)
+	assets := assets.NewAssetBin(buildRoot)
 	conf := readConfigs(assets)
 	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
@@ -458,7 +459,7 @@ func mkFakeFileUploadRequest(ht htmltest.HT, uri string, params map[string]strin
 
 func TestUploadImage(t *testing.T) {
 	tempDir := t.TempDir()
-	assets := NewAssetBin(tempDir)
+	assets := assets.NewAssetBin(tempDir)
 	conf := readConfigs(assets)
 	err := os.MkdirAll(filepath.Join(tempDir, conf.Server.StaticDir), 0750)
 	require.NoError(t, err)
@@ -761,7 +762,7 @@ func TestVersionString(t *testing.T) {
 func TestReadConfigs(t *testing.T) {
 	del := mkTempFile(t, ".rtfblogrc", "server:\n    port: 666")
 	defer del()
-	config := readConfigs(NewAssetBin(".").FSOnly())
+	config := readConfigs(assets.NewAssetBin(".").FSOnly())
 	T{t}.assertEqual("666", config.Server.Port)
 }
 

@@ -29,6 +29,7 @@ import (
 	email "github.com/rtfb/go-mail"
 	"github.com/rtfb/gopass"
 	"github.com/rtfb/httputil"
+	"github.com/rtfb/rtfblog/src/assets"
 )
 
 var (
@@ -358,7 +359,7 @@ func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Cont
 		if name := part.FormName(); name != "" {
 			if part.FileName() != "" {
 				files += fmt.Sprintf("[foo]: /static/%s", part.FileName())
-				s.handleUpload(req, part, ctx.assets.root)
+				s.handleUpload(req, part, ctx.assets.Root)
 			}
 		}
 		part, err = mr.NextPart()
@@ -640,7 +641,7 @@ func (s *server) runForever(handlers *pat.Router) {
 	tlsPort := s.conf.Server.TLSPort
 	cert := s.conf.Server.TLSCert
 	key := s.conf.Server.TLSKey
-	if tlsPort != "" && fileExistsNoErr(cert) && fileExistsNoErr(key) {
+	if tlsPort != "" && assets.FileExistsNoErr(cert) && assets.FileExistsNoErr(key) {
 		tlsAddr := httputil.JoinHostAndPort(host, tlsPort)
 		go serveAndLogTLS(tlsAddr, cert, key, handlers)
 	}
@@ -698,7 +699,7 @@ func Main() {
 		panic("Can't docopt.Parse!")
 	}
 	rand.Seed(time.Now().UnixNano())
-	assets := NewAssetBin(bindir())
+	assets := assets.NewAssetBin(bindir())
 	conf := readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)

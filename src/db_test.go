@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"github.com/rtfb/bark"
+	"github.com/rtfb/rtfblog/src/assets"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +19,7 @@ var (
 
 func init() {
 	config := "$RTFBLOG_DB_TEST_URL"
-	conf := readConfigs(NewAssetBin(""))
+	conf := readConfigs(assets.NewAssetBin(""))
 	conf.Server.DBConn = config
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {

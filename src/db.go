@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/rtfb/rtfblog/src/assets"
 )
 
 type Data interface {
@@ -43,10 +44,10 @@ type DbData struct {
 
 func prepareDefaultDB(root string) (dialect, conn string) {
 	dbFile := filepath.Join(root, "default.db")
-	if fileExistsNoErr(dbFile) {
+	if assets.FileExistsNoErr(dbFile) {
 		return "sqlite3", dbFile
 	}
-	return "sqlite3", MustExtractDBAsset("default.db")
+	return "sqlite3", assets.MustExtractDBAsset("default.db")
 }
 
 func InitDB(conf Config, root string) *DbData {
