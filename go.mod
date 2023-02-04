@@ -6,6 +6,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/google/go-cmp v0.2.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
