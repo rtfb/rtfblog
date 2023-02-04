@@ -357,7 +357,7 @@ func uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	for err == nil {
 		if name := part.FormName(); name != "" {
 			if part.FileName() != "" {
-				files += fmt.Sprintf("[foo]: /%s", part.FileName())
+				files += fmt.Sprintf("[foo]: /static/%s", part.FileName())
 				handleUpload(req, part, ctx.assets.root)
 			}
 		}
@@ -375,20 +375,22 @@ func handleUpload(r *http.Request, p *multipart.Part, root string) {
 	}()
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
 	filename := filepath.Join(root, conf.Server.StaticDir, p.FileName())
+	logger.Printf("attempt to upload %s to %s\n", p.FileName(), filename)
 	fo, err := os.Create(filename)
 	if err != nil {
 		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
+		return
 	}
 	defer fo.Close()
 	w := bufio.NewWriter(fo)
-	_, err = io.Copy(w, lr)
+	nwritten, err := io.Copy(w, lr)
 	if err != nil {
 		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
 	}
 	if err = w.Flush(); err != nil {
 		logger.Printf("err flushing writer for %q!, err = %s\n", filename, err.Error())
 	}
-	return
+	logger.Printf("ok, num bytes written to %s: %d\n", filename, nwritten)
 }
 
 func prepareCommenter(req *http.Request) *Commenter {

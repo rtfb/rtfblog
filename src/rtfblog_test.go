@@ -483,7 +483,7 @@ func TestUploadImage(t *testing.T) {
 	}
 	resp.Body.Close()
 	T{t}.assertEqual("200", fmt.Sprintf("%d", resp.StatusCode))
-	T{t}.assertEqual("[foo]: /testupload.md", string(body.Bytes()))
+	T{t}.assertEqual("[foo]: /static/testupload.md", string(body.Bytes()))
 	fileBytes, err := ioutil.ReadFile(uploadedFile)
 	if err != nil {
 		t.Fatal(err)
