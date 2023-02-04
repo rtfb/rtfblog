@@ -158,5 +158,5 @@ drun:
 .PHONY: dshell
 dshell:
 	docker run --entrypoint /bin/bash -it --name ${APPNAME} --rm \
-    --mount type=bind,source="$(shell pwd)",target=/host \
+    --mount type=bind,source="$(shell pwd)",target=/home/rtfb/dev \
     --net=host ${APPNAME}:latest
