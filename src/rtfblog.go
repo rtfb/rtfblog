@@ -699,7 +699,7 @@ func Main() {
 		panic("Can't docopt.Parse!")
 	}
 	rand.Seed(time.Now().UnixNano())
-	assets := assets.NewAssetBin(bindir())
+	assets := assets.NewBin(bindir())
 	conf := readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)

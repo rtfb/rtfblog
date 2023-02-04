@@ -16,7 +16,7 @@ import (
 type globalContext struct {
 	Router *pat.Router
 	Db     Data
-	assets *assets.AssetBin
+	assets *assets.Bin
 	Store  sessions.Store
 }
 

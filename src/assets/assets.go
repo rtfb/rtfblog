@@ -11,25 +11,27 @@ import (
 	"github.com/rtfb/rtfblog/src/rtfblog_resources"
 )
 
-type AssetBin struct {
+// Bin wraps around all assets, both the baked-in, and on-disk.
+type Bin struct {
 	Root   string // root path of physical assets in filesystem
 	fsOnly bool   // only consider FS files, don't fallback to baked
 }
 
-func NewAssetBin(binaryDir string) *AssetBin {
-	return &AssetBin{
+// NewBin creates a new Bin.
+func NewBin(binaryDir string) *Bin {
+	return &Bin{
 		Root: binaryDir,
 	}
 }
 
-func (a *AssetBin) FSOnly() *AssetBin {
-	return &AssetBin{
+func (a *Bin) FSOnly() *Bin {
+	return &Bin{
 		Root:   a.Root,
 		fsOnly: true,
 	}
 }
 
-func (a *AssetBin) Load(path string) ([]byte, error) {
+func (a *Bin) Load(path string) ([]byte, error) {
 	fullPath := path
 	if fullPath[0] != '/' {
 		fullPath = filepath.Join(a.Root, path)
@@ -46,7 +48,7 @@ func (a *AssetBin) Load(path string) ([]byte, error) {
 	return rtfblog_resources.Asset(path)
 }
 
-func (a *AssetBin) MustLoad(path string) []byte {
+func (a *Bin) MustLoad(path string) []byte {
 	b, err := a.Load(path)
 	if err != nil {
 		panic("Failed to read asset '" + path + "'; " + err.Error())
@@ -70,7 +72,7 @@ func MustExtractDBAsset(defaultDB string) string {
 	return dbPath
 }
 
-func (a *AssetBin) Open(name string) (http.File, error) {
+func (a *Bin) Open(name string) (http.File, error) {
 	d := http.Dir(a.Root)
 	f, err := d.Open(name)
 	if err == nil {

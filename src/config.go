@@ -83,7 +83,7 @@ func hardcodedConf() Config {
 	}
 }
 
-func readConfigs(assets *assets.AssetBin) Config {
+func readConfigs(assets *assets.Bin) Config {
 	homeDir := ""
 	usr, err := user.Current()
 	if err != nil {
