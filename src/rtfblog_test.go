@@ -114,6 +114,8 @@ func forgeTestUser(s server, uname, passwd string) {
 	testAuthor.UserName = uname
 }
 
+var tserver htmltest.HT
+
 func init() {
 	assets := NewAssetBin(buildRoot)
 	conf := readConfigs(assets)
@@ -135,7 +137,7 @@ func init() {
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
 	}, conf)
 	forgeTestUser(s, "testuser", "testpasswd")
-	htmltest.Init(s.initRoutes())
+	tserver = htmltest.New(s.initRoutes())
 }
 
 func TestMainPage(t *testing.T) {
@@ -155,7 +157,7 @@ func TestMainPage(t *testing.T) {
 		{"", "vim_created.png"},
 	}
 	for _, test := range simpleTests {
-		mustContain(t, htmltest.Curl(test.url), test.out)
+		mustContain(t, tserver.Curl(test.url), test.out)
 	}
 }
 
@@ -164,7 +166,7 @@ func TestBasicStructure(t *testing.T) {
 		"#header", "#subheader", "#content", "#footer", "#sidebar",
 	}
 	for _, block := range blocks {
-		node := htmltest.QueryOne(t, "", block)
+		node := tserver.QueryOne(t, "", block)
 		assertElem(t, node, "div")
 	}
 }
@@ -175,13 +177,13 @@ func TestEmptyDatasetGeneratesFriendlyError(t *testing.T) {
 	defer func() {
 		testPosts = tmpPosts
 	}()
-	html := htmltest.Curl("")
+	html := tserver.Curl("")
 	mustContain(t, html, "No entries")
 }
 
 func TestLogin(t *testing.T) {
 	ensureLogin()
-	html := htmltest.Curl(testPosts[0].URL)
+	html := tserver.Curl(testPosts[0].URL)
 	mustContain(t, html, "Logout")
 }
 
@@ -193,11 +195,11 @@ func TestBadLogin(t *testing.T) {
 }
 
 func TestNonEmptyDatasetHasEntries(t *testing.T) {
-	mustNotContain(t, htmltest.Curl(""), "No entries")
+	mustNotContain(t, tserver.Curl(""), "No entries")
 }
 
 func TestEntryListHasAuthor(t *testing.T) {
-	nodes := htmltest.Query(t, "", "+", ".author")
+	nodes := tserver.Query(t, "", "+", ".author")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
 		require.NotEmpty(t, h5.Children(node), "Empty author div!")
@@ -206,7 +208,7 @@ func TestEntryListHasAuthor(t *testing.T) {
 }
 
 func TestEntriesHaveTagsInList(t *testing.T) {
-	nodes := htmltest.Query(t, "", "+", ".tags")
+	nodes := tserver.Query(t, "", "+", ".tags")
 	for _, node := range nodes {
 		assertElem(t, node, "div")
 		require.NotEmpty(t, h5.Children(node), "Empty tags div!")
@@ -218,7 +220,7 @@ func checkTagsSection(t T, node *html.Node) {
 	if strings.Contains(h5.NewTree(node).String(), "&nbsp;") {
 		return
 	}
-	n2 := htmltest.CssSelect(t.T, node, "a")
+	n2 := tserver.CssSelect(t.T, node, "a")
 	t.failIf(len(n2) == 0, "Tags node not found in section: %q", h5.NewTree(node).String())
 }
 
@@ -227,20 +229,20 @@ func checkAuthorSection(t T, node *html.Node) {
 	dateRe, _ := regexp.Compile("[0-9]{4}-[0-9]{2}-[0-9]{2}")
 	m := dateRe.FindString(date)
 	t.failIf(m == "", "No date found in author section!")
-	n2 := htmltest.CssSelect(t.T, node, "strong")
+	n2 := tserver.CssSelect(t.T, node, "strong")
 	t.failIf(len(n2) != 1, "Author node not found in section: %q", h5.NewTree(node).String())
 	t.failIf(h5.Children(n2[0]) == nil, "Author node not found in section: %q", h5.NewTree(node).String())
 }
 
 func TestEveryEntryHasAuthor(t *testing.T) {
 	for _, e := range testPosts {
-		mustContain(t, htmltest.Curl(e.URL), "captcha-id")
+		mustContain(t, tserver.Curl(e.URL), "captcha-id")
 	}
 }
 
 func TestEveryEntryHasCaptchaSection(t *testing.T) {
 	for _, e := range testPosts {
-		node := htmltest.QueryOne(t, e.URL, ".author")
+		node := tserver.QueryOne(t, e.URL, ".author")
 		assertElem(t, node, "div")
 		require.NotEmpty(t, h5.Children(node), "Empty author div!")
 		checkAuthorSection(T{t}, node)
@@ -249,7 +251,7 @@ func TestEveryEntryHasCaptchaSection(t *testing.T) {
 
 func TestCommentsFormattingInPostPage(t *testing.T) {
 	for _, p := range testPosts {
-		nodes := htmltest.Query(t, p.URL, "*", "#comments")
+		nodes := tserver.Query(t, p.URL, "*", "#comments")
 		require.Len(t, nodes, 1, "There should be only one comments section!")
 		for _, node := range nodes {
 			assertElem(t, node, "div")
@@ -260,15 +262,15 @@ func TestCommentsFormattingInPostPage(t *testing.T) {
 }
 
 func checkCommentsSection(t T, node *html.Node) {
-	noComments := htmltest.CssSelect(t.T, node, "p")
-	comments := htmltest.CssSelect(t.T, node, "strong")
+	noComments := tserver.CssSelect(t.T, node, "p")
+	comments := tserver.CssSelect(t.T, node, "strong")
 	t.failIf(len(noComments) == 0 && len(comments) == 0,
 		"Comments node not found in section: %q", h5.NewTree(node).String())
 	if len(comments) > 0 {
-		headers := htmltest.CssSelect(t.T, node, ".comment-container")
+		headers := tserver.CssSelect(t.T, node, ".comment-container")
 		t.failIf(len(headers) == 0,
 			"Comment header not found in section: %q", h5.NewTree(node).String())
-		bodies := htmltest.CssSelect(t.T, node, ".bubble-container")
+		bodies := tserver.CssSelect(t.T, node, ".bubble-container")
 		t.failIf(len(bodies) == 0,
 			"Comment body not found in section: %q", h5.NewTree(node).String())
 	}
@@ -287,7 +289,7 @@ func emptyChildren(node *html.Node) bool {
 
 func TestTagFormattingInPostPage(t *testing.T) {
 	for _, e := range testPosts {
-		nodes := htmltest.Query(t, e.URL, "*", ".tags")
+		nodes := tserver.Query(t, e.URL, "*", ".tags")
 		if len(nodes) > 0 {
 			for _, node := range nodes {
 				assertElem(t, node, "div")
@@ -300,18 +302,18 @@ func TestTagFormattingInPostPage(t *testing.T) {
 
 func TestPostPageHasCommentEditor(t *testing.T) {
 	for _, p := range testPosts {
-		node := htmltest.QueryOne(t, p.URL, "#comment")
+		node := tserver.QueryOne(t, p.URL, "#comment")
 		assertElem(t, node, "form")
 	}
 }
 
 func TestLoginPage(t *testing.T) {
-	node := htmltest.QueryOne(t, "login", "#login_form")
+	node := tserver.QueryOne(t, "login", "#login_form")
 	assertElem(t, node, "form")
 }
 
 func TestOnlyOnePageOfPostsAppearsOnMainPage(t *testing.T) {
-	nodes := htmltest.Query(t, "", "*", ".post-title")
+	nodes := tserver.Query(t, "", "*", ".post-title")
 	require.Len(t, nodes, PostsPerPage, "Not all posts have been rendered!")
 }
 
@@ -319,17 +321,17 @@ func TestArchiveContainsAllEntries(t *testing.T) {
 	if len(testPosts) <= NumRecentPosts {
 		t.Fatalf("This test only makes sense if len(testPosts) > NUM_RECENT_POSTS")
 	}
-	nodes := htmltest.Query(t, "archive", "*", ".post-title")
+	nodes := tserver.Query(t, "archive", "*", ".post-title")
 	require.Len(t, nodes, len(testPosts), "Not all posts rendered in archive!")
 }
 
 func TestPostPager(t *testing.T) {
-	mustContain(t, htmltest.Curl(""), "/page/2")
+	mustContain(t, tserver.Curl(""), "/page/2")
 }
 
 func TestInvalidPageDefaultsToPageOne(t *testing.T) {
-	page1 := htmltest.Curl("/page/1")
-	pageFoo := htmltest.Curl("/page/foo")
+	page1 := tserver.Curl("/page/1")
+	pageFoo := tserver.Curl("/page/foo")
 	T{t}.failIf(page1 != pageFoo, "Invalid page did not produce /page/1")
 }
 
@@ -344,7 +346,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 		"delete_post",
 	}
 	for _, u := range urls {
-		html := htmltest.Curl(u)
+		html := tserver.Curl(u)
 		mustContain(t, html, "Verboten")
 	}
 	postUrls := []string{
@@ -353,7 +355,7 @@ func TestNonAdminCantAccessAdminPages(t *testing.T) {
 		"upload_images",
 	}
 	for _, u := range postUrls {
-		html := htmltest.CurlPost(u)
+		html := tserver.CurlPost(u)
 		mustContain(t, html, "Verboten")
 	}
 }
@@ -381,7 +383,7 @@ func TestModerateCommentIgnoresWrongAction(t *testing.T) {
 
 func TestLoadComments(t *testing.T) {
 	ensureLogin()
-	json := htmltest.Curl("/load_comments?post=hello1")
+	json := tserver.Curl("/load_comments?post=hello1")
 	mustContain(t, json, `"Comments":[{"Name":"N","Email":"@"`)
 }
 
@@ -446,7 +448,7 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", htmltest.PathToURL(uri), body)
+	req, err := http.NewRequest("POST", tserver.PathToURL(uri), body)
 	if err != nil {
 		return nil, err
 	}
@@ -473,7 +475,7 @@ func TestUploadImage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, err := htmltest.Client().Do(request)
+	resp, err := tserver.Client().Do(request)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -508,26 +510,26 @@ func TestExplodeTags(t *testing.T) {
 
 func TestMainPageHasEditPostButtonWhenLoggedIn(t *testing.T) {
 	ensureLogin()
-	nodes := htmltest.Query(t, "", "+", ".edit-post-button")
+	nodes := tserver.Query(t, "", "+", ".edit-post-button")
 	require.Len(t, nodes, PostsPerPage, "Not all posts have Edit button!")
 }
 
 func TestEveryCommentHasEditFormWhenLoggedId(t *testing.T) {
 	ensureLogin()
-	node := htmltest.QueryOne(t, testPosts[0].URL, "#edit-comment-form")
+	node := tserver.QueryOne(t, testPosts[0].URL, "#edit-comment-form")
 	assertElem(t, node, "form")
 }
 
 func TestAdminPageHasAllCommentsButton(t *testing.T) {
 	ensureLogin()
-	node := htmltest.QueryOne(t, "/admin", "#display-all-comments")
+	node := tserver.QueryOne(t, "/admin", "#display-all-comments")
 	assertElem(t, node, "input")
 }
 
 func TestAllCommentsPageHasAllComments(t *testing.T) {
 	defer testData.reset()
 	ensureLogin()
-	nodes := htmltest.Query(t, "/all_comments", "+", "#comment")
+	nodes := tserver.Query(t, "/all_comments", "+", "#comment")
 	if len(nodes) != len(testComm) {
 		t.Fatalf("Not all comments in /all_comments!")
 	}
@@ -550,12 +552,12 @@ func TestHiddenPosts(t *testing.T) {
 	}
 	ensureLogin()
 	for _, i := range positiveTests {
-		html := htmltest.Curl(i.url)
+		html := tserver.Curl(i.url)
 		mustContain(t, html, i.content)
 	}
 	doLogout()
 	for _, i := range negativeTests {
-		html := htmltest.Curl(i.url)
+		html := tserver.Curl(i.url)
 		mustNotContain(t, html, i.content)
 	}
 }
@@ -567,31 +569,31 @@ func TestHiddenPostDoesNotAppearInRss(t *testing.T) {
 	testPosts = append(testPosts, mkTestEntry(1000, true))
 	testPosts = append(testPosts, mkTestEntry(2, false))
 	ensureLogin()
-	xml := htmltest.Curl("feeds/rss.xml")
+	xml := tserver.Curl("feeds/rss.xml")
 	mustNotContain(t, xml, "hello1000")
 	testPosts = bak
 }
 
 func TestHiddenPostAccess(t *testing.T) {
 	ensureLogin()
-	html := htmltest.Curl("hello1001")
+	html := tserver.Curl("hello1001")
 	mustContain(t, html, "Body")
 	doLogout()
-	html = htmltest.Curl("hello1001")
+	html = tserver.Curl("hello1001")
 	mustContain(t, html, "Page Not Found")
 }
 
 func TestEditPost(t *testing.T) {
 	ensureLogin()
 	// test with non-hidden post
-	html := htmltest.Curl("edit_post?post=hello3")
+	html := tserver.Curl("edit_post?post=hello3")
 	mustContain(t, html, "Body3")
 	mustContain(t, html, "Hi3")
 	mustContain(t, html, "u3")
 	mustContain(t, html, "Delete!")
 	mustNotContain(t, html, "checked")
 	// now test with hidden post
-	html = htmltest.Curl("edit_post?post=hello1002")
+	html = tserver.Curl("edit_post?post=hello1002")
 	mustContain(t, html, "Body1002")
 	mustContain(t, html, "Hi1002")
 	mustContain(t, html, "u1002")
@@ -602,7 +604,7 @@ func TestEditPost(t *testing.T) {
 func TestTitleByTagGetsCalled(t *testing.T) {
 	defer testData.reset()
 	tag := "taaag"
-	html := htmltest.Curl("/tag/" + tag)
+	html := tserver.Curl("/tag/" + tag)
 	testData.expect(t, (*TestData).titlesByTag, tag)
 	mustContain(t, html, "Posts tagged ")
 	mustContain(t, html, tag)
@@ -610,13 +612,13 @@ func TestTitleByTagGetsCalled(t *testing.T) {
 
 func TestDeletePostCallsDbFunc(t *testing.T) {
 	defer testData.reset()
-	htmltest.Curl("delete_post?id=hello1001")
+	tserver.Curl("delete_post?id=hello1001")
 	testData.expect(t, (*TestData).deletePost, "hello1001")
 }
 
 func TestDeleteCommentCallsDbFunc(t *testing.T) {
 	defer testData.reset()
-	htmltest.Curl("delete_comment?id=1&action=delete")
+	tserver.Curl("delete_comment?id=1&action=delete")
 	testData.expect(t, (*TestData).deleteComment, "1")
 }
 
@@ -627,7 +629,7 @@ func TestShowCaptcha(t *testing.T) {
 		"email":   "snailmail",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, htmltest.Curl(url))
+	resp := mustUnmarshal(t, tserver.Curl(url))
 	T{t}.failIf(resp["status"] != "showcaptcha", "No captcha box")
 }
 
@@ -639,7 +641,7 @@ func TestReturningCommenterSkipsCaptcha(t *testing.T) {
 		"website": "w",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, htmltest.Curl(url))
+	resp := mustUnmarshal(t, tserver.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment by returning commenter not accepted")
 }
 
@@ -657,7 +659,7 @@ func TestDetectedLtLanguageCommentApprove(t *testing.T) {
 		"website": "w",
 		"text":    "cmmnt%20txt",
 	})
-	resp := mustUnmarshal(t, htmltest.Curl(url))
+	resp := mustUnmarshal(t, tserver.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment w/ detected language 'lt' not accepted")
 	testData.expectChain(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).postID, ""},
@@ -675,7 +677,7 @@ func TestUndetectedLanguageCommentDismiss(t *testing.T) {
 		"text":       "cmmnt%20txt",
 		"captcha-id": "666",
 	})
-	resp := mustUnmarshal(t, htmltest.Curl(url))
+	resp := mustUnmarshal(t, tserver.Curl(url))
 	T{t}.failIf(resp["status"] != "rejected", "Comment with undetected language not rejected")
 	testData.expect(t, (*TestData).postID, "")
 }
@@ -693,27 +695,27 @@ func TestCorrectCaptchaReply(t *testing.T) {
 		"text":       "cmmnt%20txt",
 		"captcha-id": task.ID,
 	})
-	resp := mustUnmarshal(t, htmltest.Curl(url))
+	resp := mustUnmarshal(t, tserver.Curl(url))
 	T{t}.failIf(resp["status"] != "accepted", "Comment with correct captcha reply not accepted")
 	testData.expectChain(t, []CallSpec{{(*TestData).postID, ""},
 		{(*TestData).insertCommenter, "UnknownCommenter"}})
 }
 
 func TestRssFeed(t *testing.T) {
-	xml := htmltest.Curl("feeds/rss.xml")
-	url := htmltest.PathToURL("")
+	xml := tserver.Curl("feeds/rss.xml")
+	url := tserver.PathToURL("")
 	mustContain(t, xml, fmt.Sprintf("<link>%s</link>", url))
 	mustContain(t, xml, "<title>Hi3</title>")
 	mustContain(t, xml, fmt.Sprintf("<link>%s/%s</link>", url, "hello3"))
 }
 
 func TestRobotsTxtGetsServed(t *testing.T) {
-	robots := htmltest.Curl("robots.txt")
+	robots := tserver.Curl("robots.txt")
 	mustContain(t, robots, "Disallow")
 }
 
 func TestPagination(t *testing.T) {
-	nodes := htmltest.Query(t, "page/2", "*", ".post-title")
+	nodes := tserver.Query(t, "page/2", "*", ".post-title")
 	T{t}.failIf(len(nodes) != PostsPerPage, "Not all posts have been rendered!")
 	if nodes[0].Attr[1].Val != "/hello6" {
 		t.Fatalf("Wrong post!")
@@ -721,14 +723,14 @@ func TestPagination(t *testing.T) {
 	if nodes[4].Attr[1].Val != "/hello10" {
 		t.Fatalf("Wrong post!")
 	}
-	html := htmltest.Curl("page/2")
+	html := tserver.Curl("page/2")
 	mustContain(t, html, "<a href=\"/page/1\">1</a>\n2\n<a href=\"/page/3\">3</a>\n")
 }
 
 func TestNewPostShowsEmptyForm(t *testing.T) {
-	titleInput := htmltest.QueryOne(t, "edit_post", "#post_title")
+	titleInput := tserver.QueryOne(t, "edit_post", "#post_title")
 	assertElem(t, titleInput, "input")
-	bodyTextArea := htmltest.QueryOne(t, "edit_post", "#wmd-input")
+	bodyTextArea := tserver.QueryOne(t, "edit_post", "#wmd-input")
 	assertElem(t, bodyTextArea, "textarea")
 }
 
@@ -796,13 +798,13 @@ func TestMd5(t *testing.T) {
 }
 
 func TestAdminPageHasEditAuthorButton(t *testing.T) {
-	mustContain(t, htmltest.Curl("/admin"), "Edit Author Profile")
+	mustContain(t, tserver.Curl("/admin"), "Edit Author Profile")
 }
 
 func TestMainPageShowsCreateAuthorPage(t *testing.T) {
 	tmp := testAuthor
 	testAuthor = nil
-	html := htmltest.Curl("/")
+	html := tserver.Curl("/")
 	mustContain(t, html, "New Password")
 	mustContain(t, html, "Confirm Password")
 	mustNotContain(t, html, "Old Password")
@@ -811,7 +813,7 @@ func TestMainPageShowsCreateAuthorPage(t *testing.T) {
 
 func TestEditAuthor(t *testing.T) {
 	ensureLogin()
-	html := htmltest.Curl("/edit_author")
+	html := tserver.Curl("/edit_author")
 	mustContain(t, html, "New Password")
 	mustContain(t, html, "Confirm Password")
 	mustContain(t, html, "Old Password")

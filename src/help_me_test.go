@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rtfb/rtfblog/src/htmltest"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
@@ -33,7 +32,7 @@ func mustNotContain(t *testing.T, page, what string) {
 func postForm(t *testing.T, path string, values *url.Values, testFunc func(html string)) {
 	defer testData.reset()
 	ensureLogin()
-	body, err := htmltest.PostForm(path, values)
+	body, err := tserver.PostForm(path, values)
 	if err != nil {
 		t.Error(err)
 	}
@@ -41,7 +40,7 @@ func postForm(t *testing.T, path string, values *url.Values, testFunc func(html 
 }
 
 func loginWithCred(username, passwd string) string {
-	body, err := htmltest.PostForm("login", &url.Values{
+	body, err := tserver.PostForm("login", &url.Values{
 		"uname":  {username},
 		"passwd": {passwd},
 	})
@@ -57,7 +56,7 @@ func ensureLogin() {
 }
 
 func doLogout() {
-	htmltest.Curl("logout")
+	tserver.Curl("logout")
 }
 
 func assertElem(t *testing.T, node *html.Node, elem string) {

@@ -13,35 +13,37 @@ import (
 	"golang.org/x/net/html"
 )
 
-var (
-	tclient *http.Client
-	tserver *httptest.Server
-)
+type HT struct {
+	client *http.Client
+	server *httptest.Server
+}
 
-func initClient() {
+func initClient() *http.Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		panic(err)
 	}
-	tclient = &http.Client{
+	return &http.Client{
 		Jar: jar,
 	}
 }
 
-func initServer(router http.Handler) {
-	tserver = httptest.NewServer(router)
+func initServer(router http.Handler) *httptest.Server {
+	return httptest.NewServer(router)
 }
 
-func Init(router http.Handler) {
-	initClient()
-	initServer(router)
+func New(router http.Handler) HT {
+	return HT{
+		client: initClient(),
+		server: initServer(router),
+	}
 }
 
-func Client() *http.Client {
-	return tclient
+func (ht *HT) Client() *http.Client {
+	return ht.client
 }
 
-func CssSelect(t *testing.T, node *html.Node, query string) []*html.Node {
+func (ht *HT) CssSelect(t *testing.T, node *html.Node, query string) []*html.Node {
 	chain, err := selector.Selector(query)
 	if err != nil {
 		t.Fatalf("Error: query=%q, err=%s", query, err.Error())
@@ -49,14 +51,14 @@ func CssSelect(t *testing.T, node *html.Node, query string) []*html.Node {
 	return chain.Find(node)
 }
 
-func Query(t *testing.T, url, method, query string) []*html.Node {
+func (ht *HT) Query(t *testing.T, url, method, query string) []*html.Node {
 	switch method {
 	case "+":
-		return queryPlus(t, url, query)
+		return ht.queryPlus(t, url, query)
 	case "*":
-		return queryStar(t, url, query)
+		return ht.queryStar(t, url, query)
 	case "1":
-		return []*html.Node{QueryOne(t, url, query)}
+		return []*html.Node{ht.QueryOne(t, url, query)}
 	default:
 		t.Fatalf("Error: unknown query method: %q", method)
 	}
@@ -64,8 +66,8 @@ func Query(t *testing.T, url, method, query string) []*html.Node {
 }
 
 // QueryOne ensures there's only one thing that matches.
-func QueryOne(t *testing.T, url, q string) *html.Node {
-	nodes := queryPlus(t, url, q)
+func (ht *HT) QueryOne(t *testing.T, url, q string) *html.Node {
+	nodes := ht.queryPlus(t, url, q)
 	if len(nodes) > 1 {
 		t.Fatalf("Too many matches (%d) for node: %q", len(nodes), q)
 	}
@@ -73,8 +75,8 @@ func QueryOne(t *testing.T, url, q string) *html.Node {
 }
 
 // queryPlus is like + in regular expressions: requires one or more matches.
-func queryPlus(t *testing.T, url, query string) []*html.Node {
-	nodes := queryStar(t, url, query)
+func (ht *HT) queryPlus(t *testing.T, url, query string) []*html.Node {
+	nodes := ht.queryStar(t, url, query)
 	if len(nodes) == 0 {
 		t.Fatalf("No nodes found: %q", query)
 	}
@@ -82,13 +84,13 @@ func queryPlus(t *testing.T, url, query string) []*html.Node {
 }
 
 // queryStar is like * in regular expressions: requires zero or more matches.
-func queryStar(t *testing.T, url, query string) []*html.Node {
-	html := Curl(url)
+func (ht *HT) queryStar(t *testing.T, url, query string) []*html.Node {
+	html := ht.Curl(url)
 	doctree, err := h5.NewFromString(html)
 	if err != nil {
 		t.Fatalf("h5.NewFromString(%s) = err %q", html, err.Error())
 	}
-	return CssSelect(t, doctree.Top(), query)
+	return ht.CssSelect(t, doctree.Top(), query)
 }
 
 func curlParam(url string, method func(string) (*http.Response, error)) string {
@@ -105,16 +107,16 @@ func curlParam(url string, method func(string) (*http.Response, error)) string {
 	return ""
 }
 
-func Curl(url string) string {
-	return curlParam(url, tclientGet)
+func (ht *HT) Curl(url string) string {
+	return curlParam(url, ht.clientGet)
 }
 
-func CurlPost(url string) string {
-	return curlParam(url, tclientPostForm)
+func (ht *HT) CurlPost(url string) string {
+	return curlParam(url, ht.clientPostForm)
 }
 
-func PostForm(path string, values *url.Values) (string, error) {
-	resp, err := tclient.PostForm(PathToURL(path), *values)
+func (ht *HT) PostForm(path string, values *url.Values) (string, error) {
+	resp, err := ht.client.PostForm(ht.PathToURL(path), *values)
 	if err != nil {
 		return "", err
 	}
@@ -123,20 +125,20 @@ func PostForm(path string, values *url.Values) (string, error) {
 	return string(body), err
 }
 
-func PathToURL(path string) string {
+func (ht *HT) PathToURL(path string) string {
 	if path == "" {
-		return tserver.URL
+		return ht.server.URL
 	} else if path[0] == '/' {
-		return tserver.URL + path
+		return ht.server.URL + path
 	} else {
-		return tserver.URL + "/" + path
+		return ht.server.URL + "/" + path
 	}
 }
 
-func tclientGet(rqURL string) (*http.Response, error) {
-	return tclient.Get(PathToURL(rqURL))
+func (ht *HT) clientGet(rqURL string) (*http.Response, error) {
+	return ht.client.Get(ht.PathToURL(rqURL))
 }
 
-func tclientPostForm(rqURL string) (*http.Response, error) {
-	return tclient.PostForm(PathToURL(rqURL), url.Values{})
+func (ht *HT) clientPostForm(rqURL string) (*http.Response, error) {
+	return ht.client.PostForm(ht.PathToURL(rqURL), url.Values{})
 }
