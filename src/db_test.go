@@ -19,7 +19,8 @@ var (
 
 func init() {
 	config := "$RTFBLOG_DB_TEST_URL"
-	conf := readConfigs(assets.NewBin(""))
+	assets, _ := assets.NewBin("", "", bark.Create())
+	conf := readConfigs(assets)
 	conf.Server.DBConn = config
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {

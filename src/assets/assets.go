@@ -6,46 +6,78 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/rtfb/bark"
 	"github.com/rtfb/cachedir"
 	"github.com/rtfb/rtfblog/src/rtfblog_resources"
 )
 
 // Bin wraps around all assets, both the baked-in, and on-disk.
 type Bin struct {
-	Root   string // root path of physical assets in filesystem
-	fsOnly bool   // only consider FS files, don't fallback to baked
+	// root path of physical assets in filesystem. These files will only be read
+	roDir string
+
+	// writable path. This is where files will be written, as well
+	// as read. Writable files will take precedence over read-only when looking
+	// up files.
+	wrDir string
+
+	// only consider FS files, don't fallback to baked
+	fsOnly bool
 }
 
 // NewBin creates a new Bin.
-func NewBin(binaryDir string) *Bin {
+func NewBin(roDir, wrDir string, logger *bark.Logger) (*Bin, error) {
+	logger.Printf("assets.NewBin: roDir=%s, wrDir=%s\n", roDir, wrDir)
+	err := os.MkdirAll(wrDir, 0750)
 	return &Bin{
-		Root: binaryDir,
-	}
+		roDir: roDir,
+		wrDir: wrDir,
+	}, err
 }
 
 func (a *Bin) FSOnly() *Bin {
 	return &Bin{
-		Root:   a.Root,
+		roDir:  a.roDir,
+		wrDir:  a.wrDir,
 		fsOnly: true,
 	}
 }
 
+func (a *Bin) WriteRoot() string {
+	return a.wrDir
+}
+
 func (a *Bin) Load(path string) ([]byte, error) {
-	fullPath := path
-	if fullPath[0] != '/' {
-		fullPath = filepath.Join(a.Root, path)
-	}
-	exists, err := FileExists(fullPath)
+	fullPath, wrExists, err := fileExistsAt(path, a.wrDir)
 	if err != nil {
 		return nil, err
 	}
-	// Physical file takes precedence
-	if exists || a.fsOnly {
+	// Physical writable file takes highest precedence
+	if wrExists {
+		return ioutil.ReadFile(fullPath)
+	}
+	fullPath, roExists, err := fileExistsAt(path, a.roDir)
+	if err != nil {
+		return nil, err
+	}
+	// Physical read-only file takes lower precedence, and it's the last thing
+	// to try if fsOnly is set to true
+	if roExists || a.fsOnly {
 		return ioutil.ReadFile(fullPath)
 	}
 	// Fall back to baked asset
 	return rtfblog_resources.Asset(path)
+}
+
+func fileExistsAt(filePath, root string) (string, bool, error) {
+	path := filePath
+	if !strings.HasPrefix(path, "/") {
+		path = filepath.Join(root, filePath)
+	}
+	ok, err := FileExists(path)
+	return path, ok, err
 }
 
 func (a *Bin) MustLoad(path string) []byte {
@@ -73,10 +105,13 @@ func MustExtractDBAsset(defaultDB string) string {
 }
 
 func (a *Bin) Open(name string) (http.File, error) {
-	d := http.Dir(a.Root)
-	f, err := d.Open(name)
+	f, err := http.Dir(a.wrDir).Open(name)
 	if err == nil {
-		return f, err
+		return f, nil
+	}
+	f, err = http.Dir(a.roDir).Open(name)
+	if err == nil {
+		return f, nil
 	}
 	if name[0] == '/' {
 		name = name[1:]

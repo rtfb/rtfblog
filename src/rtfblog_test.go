@@ -33,7 +33,8 @@ type T struct {
 }
 
 const (
-	buildRoot = "../build"
+	buildRoot      = "../build"
+	testUploadsDir = "uploaded"
 )
 
 var (
@@ -117,8 +118,11 @@ func forgeTestUser(s server, uname, passwd string) {
 
 var tserver htmltest.HT
 
-func init() {
-	assets := assets.NewBin(buildRoot)
+func initTests(uploadsDir string) server {
+	assets, err := assets.NewBin(buildRoot, uploadsDir, bark.Create())
+	if err != nil {
+		panic(err)
+	}
 	conf := readConfigs(assets)
 	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
@@ -138,6 +142,11 @@ func init() {
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
 	}, conf)
 	forgeTestUser(s, "testuser", "testpasswd")
+	return s
+}
+
+func init() {
+	s := initTests(filepath.Join(buildRoot, testUploadsDir))
 	tserver = htmltest.New(s.initRoutes())
 }
 
@@ -449,7 +458,7 @@ func mkFakeFileUploadRequest(ht htmltest.HT, uri string, params map[string]strin
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", ht.PathToURL(uri), body)
+	req, err := http.NewRequest(http.MethodPost, ht.PathToURL(uri), body)
 	if err != nil {
 		return nil, err
 	}
@@ -459,29 +468,18 @@ func mkFakeFileUploadRequest(ht htmltest.HT, uri string, params map[string]strin
 
 func TestUploadImage(t *testing.T) {
 	tempDir := t.TempDir()
-	assets := assets.NewBin(tempDir)
-	conf := readConfigs(assets)
-	err := os.MkdirAll(filepath.Join(tempDir, conf.Server.StaticDir), 0750)
-	require.NoError(t, err)
-	testData := TestData{}
-	s := newServer(&TestCryptoHelper{}, globalContext{
-		Router: pat.New(),
-		Db:     &testData,
-		assets: assets,
-		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
-	}, conf)
-	const username = "testuser"
-	const passwd = "testpasswd"
-	forgeTestUser(s, username, passwd)
+	s := initTests(tempDir)
 	tserver := htmltest.New(s.initRoutes())
 
-	_, err = tserver.PostForm("login", &url.Values{
+	const username = "testuser"
+	const passwd = "testpasswd"
+	_, err := tserver.PostForm("login", &url.Values{
 		"uname":  {username},
 		"passwd": {passwd},
 	})
 	require.NoError(t, err)
 
-	uploadedFile := filepath.Join(tempDir, conf.Server.StaticDir, "testupload.md")
+	uploadedFile := filepath.Join(s.gctx.assets.WriteRoot(), "testupload.md")
 	testContent := "Foobarbaz"
 	extraParams := map[string]string{
 		"title":       "My Document",
@@ -754,15 +752,22 @@ func TestPathToFullPath(t *testing.T) {
 
 func TestVersionString(t *testing.T) {
 	expected := "foobar"
+	// tmp := t.TempDir()
+	// err := ioutil.WriteFile(path.Join(tmp, "VERSION"), expected)
+	// require.NoError(t, err)
 	del := mkTempFile(t, "VERSION", expected)
 	defer del()
 	T{t}.assertEqual(expected, versionString())
 }
 
 func TestReadConfigs(t *testing.T) {
-	del := mkTempFile(t, ".rtfblogrc", "server:\n    port: 666")
+	del := mkTempFile(t, ".rtfblogrc", `server:
+    port: 666
+`)
 	defer del()
-	config := readConfigs(assets.NewBin(".").FSOnly())
+	assets, err := assets.NewBin(".", t.TempDir(), bark.Create())
+	require.NoError(t, err)
+	config := readConfigs(assets.FSOnly())
 	T{t}.assertEqual("666", config.Server.Port)
 }
 

@@ -49,12 +49,12 @@ all: ${BUILDDIR}/rtfblog
 
 ${BUILDDIR}/rtfblog: $(NODE_DEPS) $(BOWER_DEPS) \
                      $(GOFILES) $(ASSETS_PKG)
-	go vet ./src/...
 	${GOFMT} ${GOFILES}
 	grunt
 	go build -i -o ${BUILDDIR} \
 		-ldflags "-X github.com/rtfb/rtfblog/src.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
 	go test ./src/...
+	go vet ./src/...
 
 $(NODE_DEPS):
 	npm install

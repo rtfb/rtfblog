@@ -359,7 +359,7 @@ func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Cont
 		if name := part.FormName(); name != "" {
 			if part.FileName() != "" {
 				files += fmt.Sprintf("[foo]: /static/%s", part.FileName())
-				s.handleUpload(req, part, ctx.assets.Root)
+				s.handleUpload(req, part, ctx.assets.WriteRoot())
 			}
 		}
 		part, err = mr.NextPart()
@@ -369,13 +369,8 @@ func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Cont
 }
 
 func (s *server) handleUpload(r *http.Request, p *multipart.Part, root string) {
-	defer func() {
-		if rec := recover(); rec != nil {
-			logger.Println(rec)
-		}
-	}()
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
-	filename := filepath.Join(root, s.conf.Server.StaticDir, p.FileName())
+	filename := filepath.Join(root, p.FileName())
 	logger.Printf("attempt to upload %s to %s\n", p.FileName(), filename)
 	fo, err := os.Create(filename)
 	if err != nil {
@@ -699,7 +694,10 @@ func Main() {
 		panic("Can't docopt.Parse!")
 	}
 	rand.Seed(time.Now().UnixNano())
-	assets := assets.NewBin(bindir())
+	assets, err := assets.NewBin(bindir(), "/host/rtfblog-uploaded-assets", logger)
+	if err != nil {
+		panic(err)
+	}
 	conf := readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)
