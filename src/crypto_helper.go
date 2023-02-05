@@ -11,10 +11,6 @@ type CryptoHelper interface {
 
 type BcryptHelper struct{}
 
-var (
-	cryptoHelper CryptoHelper = new(BcryptHelper)
-)
-
 func (h BcryptHelper) Encrypt(passwd string) (hash string, err error) {
 	cost := bcrypt.DefaultCost
 	hashBytes, err := bcrypt.GenerateFromPassword([]byte(passwd), cost)

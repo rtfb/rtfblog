@@ -83,7 +83,7 @@ func mkTestEntry(i int, hidden bool) *Entry {
 type TestCryptoHelper struct{}
 
 func (h TestCryptoHelper) Encrypt(passwd string) (hash string, err error) {
-	return "", nil
+	return passwd, nil
 }
 
 func (h TestCryptoHelper) Decrypt(hash, passwd []byte) error {
@@ -105,8 +105,8 @@ func (d LTLangDetector) Detect(text string) string {
 	return `"lt"`
 }
 
-func forgeTestUser(uname, passwd string) {
-	passwdHash, err := cryptoHelper.Encrypt(passwd)
+func forgeTestUser(s server, uname, passwd string) {
+	passwdHash, err := s.cryptoHelper.Encrypt(passwd)
 	if err != nil {
 		panic(fmt.Sprintf("Error in Encrypt(): %s\n", err))
 	}
@@ -120,7 +120,6 @@ func init() {
 	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
 	logger = bark.CreateFile("tests.log")
-	forgeTestUser("testuser", "testpasswd")
 	for i := 1; i <= 11; i++ {
 		testPosts = append(testPosts, mkTestEntry(i, false))
 	}
@@ -128,14 +127,15 @@ func init() {
 		testPosts = append(testPosts, mkTestEntry(i+1000, true))
 	}
 	langDetector = TestLangDetector{}
-	cryptoHelper = TestCryptoHelper{}
 	testData = TestData{}
-	htmltest.Init(initRoutes(&globalContext{
+	s := newServer(&TestCryptoHelper{}, globalContext{
 		Router: pat.New(),
 		Db:     &testData,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
-	}))
+	})
+	forgeTestUser(s, "testuser", "testpasswd")
+	htmltest.Init(s.initRoutes())
 }
 
 func TestMainPage(t *testing.T) {
@@ -809,6 +809,7 @@ func TestMainPageShowsCreateAuthorPage(t *testing.T) {
 }
 
 func TestEditAuthor(t *testing.T) {
+	ensureLogin()
 	html := htmltest.Curl("/edit_author")
 	mustContain(t, html, "New Password")
 	mustContain(t, html, "Confirm Password")

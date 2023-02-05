@@ -242,7 +242,7 @@ func rssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-func login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	// TODO: should not be already logged in, add check
 	a, err := ctx.Db.author() // Pick default author
 	if err == gorm.ErrRecordNotFound {
@@ -259,7 +259,7 @@ func login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	}
 	passwd := req.FormValue("passwd")
 	req.Form["passwd"] = []string{"***"} // Avoid spilling password to log
-	err = cryptoHelper.Decrypt([]byte(a.Passwd), []byte(passwd))
+	err = s.cryptoHelper.Decrypt([]byte(a.Passwd), []byte(passwd))
 	if err == nil {
 		ctx.Session.Values["adminlogin"] = "yes"
 		redir := req.FormValue("redirect_to")
@@ -525,7 +525,7 @@ func editAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 	return tmpl(ctx, "edit_author.html").Execute(w, tmplData)
 }
 
-func submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	username := req.FormValue("username")
 	displayname := req.FormValue("display_name")
 	email := req.FormValue("email")
@@ -537,7 +537,7 @@ func submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	if err != gorm.ErrRecordNotFound {
 		oldPasswd := req.FormValue("old_password")
 		req.Form["old_password"] = []string{"***"} // Avoid spilling password to log
-		err = cryptoHelper.Decrypt([]byte(a.Passwd), []byte(oldPasswd))
+		err = s.cryptoHelper.Decrypt([]byte(a.Passwd), []byte(oldPasswd))
 		if err != nil {
 			ctx.Session.AddFlash(L10n("Incorrect password."))
 			return editAuthorForm(w, req, ctx)
@@ -571,14 +571,14 @@ func submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	return err
 }
 
-func initRoutes(gctx *globalContext) *pat.Router {
+func (s *server) initRoutes() *pat.Router {
 	const (
 		G = "GET"
 		P = "POST"
 	)
-	r := gctx.Router
+	r := s.gctx.Router
 	mkHandler := func(f handlerFunc) *handler {
-		return &handler{h: f, c: gctx, logRq: true}
+		return &handler{h: f, c: &s.gctx, logRq: true}
 	}
 	mkAdminHandler := func(f handlerFunc) *handler {
 		return &handler{
@@ -589,13 +589,13 @@ func initRoutes(gctx *globalContext) *pat.Router {
 				}
 				return f(w, req, ctx)
 			},
-			c:     gctx,
+			c:     &s.gctx,
 			logRq: true,
 		}
 	}
-	r.Add(G, "/static/", http.FileServer(gctx.assets)).Name("static")
+	r.Add(G, "/static/", http.FileServer(s.gctx.assets)).Name("static")
 	r.Add(G, "/login", mkHandler(loginForm)).Name("login")
-	r.Add(P, "/login", mkHandler(login))
+	r.Add(P, "/login", mkHandler(s.login))
 	r.Add(G, "/logout", mkHandler(logout)).Name("logout")
 	r.Add(G, "/admin", mkAdminHandler(admin)).Name("admin")
 	r.Add(G, "/page/{pageNo:.*}", mkHandler(pageNum))
@@ -605,7 +605,7 @@ func initRoutes(gctx *globalContext) *pat.Router {
 	r.Add(G, "/edit_post", mkAdminHandler(editPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(loadComments)).Name("load_comments")
 	r.Add(G, "/feeds/rss.xml", mkHandler(rssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &handler{serveFavicon, gctx, false}).Name("favicon")
+	r.Add(G, "/favicon.ico", &handler{serveFavicon, &s.gctx, false}).Name("favicon")
 	r.Add(G, "/comment_submit", mkHandler(commentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(deleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(deletePost)).Name("delete_post")
@@ -614,7 +614,7 @@ func initRoutes(gctx *globalContext) *pat.Router {
 
 	r.Add(P, "/moderate_comment", mkAdminHandler(moderateComment)).Name("moderate_comment")
 	r.Add(P, "/submit_post", mkAdminHandler(submitPost)).Name("submit_post")
-	r.Add(P, "/submit_author", mkAdminHandler(submitAuthor)).Name("submit_author")
+	r.Add(P, "/submit_author", mkAdminHandler(s.submitAuthor)).Name("submit_author")
 	r.Add(P, "/upload_images", mkAdminHandler(uploadImage)).Name("upload_image")
 
 	r.Add(G, "/", mkHandler(home)).Name("home_page")
@@ -716,14 +716,15 @@ func Main() {
 	logger = bark.AppendFile(conf.Server.Log)
 	db := InitDB(getDBConnString(), bindir())
 	defer db.db.Close()
-	if args["--adduser"].(bool) {
-		insertUser(db, args)
-		return
-	}
-	runForever(initRoutes(&globalContext{
+	s := newServer(new(BcryptHelper), globalContext{
 		Router: pat.New(),
 		Db:     db,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),
-	}))
+	})
+	if args["--adduser"].(bool) {
+		insertUser(db, args)
+		return
+	}
+	runForever(s.initRoutes())
 }
