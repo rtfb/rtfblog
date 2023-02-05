@@ -69,10 +69,10 @@ func listOfPages(numPosts, currPage int) template.HTML {
 	return template.HTML(list)
 }
 
-func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ctx *Context) {
+func (s *server) produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ctx *Context) {
 	url := httputil.AddProtocol(httputil.GetHost(req), "http")
-	blogTitle := conf.Interface.BlogTitle
-	descr := conf.Interface.BlogDescr
+	blogTitle := s.conf.Interface.BlogTitle
+	descr := s.conf.Interface.BlogDescr
 	author, err := ctx.Db.author()
 	logger.LogIf(err)
 	feed := &feeds.Feed{
@@ -100,21 +100,21 @@ func produceFeedXML(w http.ResponseWriter, req *http.Request, posts []*Entry, ct
 	w.Write([]byte(rss))
 }
 
-func home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	if req.URL.Path == "/" {
 		_, err := ctx.Db.author() // Pick default author
 		if err == gorm.ErrRecordNotFound {
 			// Author was not configured yet, so pretend this is an admin
 			// session and show the Edit Author form:
 			ctx.Session.Values["adminlogin"] = "yes"
-			return editAuthorForm(w, req, ctx)
+			return s.editAuthorForm(w, req, ctx)
 		}
-		return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0))
+		return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, 0, 0, s.conf))
 	}
 	post, err := ctx.Db.post(req.URL.Path[1:], ctx.AdminLogin)
 	if err == nil && post != nil {
 		ctx.Captcha.SetNextTask(-1)
-		tmplData := MkBasicData(ctx, 0, 0)
+		tmplData := MkBasicData(ctx, 0, 0, s.conf)
 		tmplData["PageTitle"] = post.Title
 		tmplData["entry"] = post
 		task := *ctx.Captcha.NextTask()
@@ -127,25 +127,25 @@ func home(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return performStatus(ctx, w, req, http.StatusNotFound)
 }
 
-func pageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) pageNum(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	pgNo, err := strconv.Atoi(req.URL.Query().Get(":pageNo"))
 	if err != nil {
 		pgNo = 1
 	}
 	pgNo--
 	offset := pgNo * PostsPerPage
-	return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset))
+	return tmpl(ctx, "main.html").Execute(w, MkBasicData(ctx, pgNo, offset, s.conf))
 }
 
-func admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	if conf.Server.CookieSecret == defaultCookieSecret {
+func (s *server) admin(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	if s.conf.Server.CookieSecret == defaultCookieSecret {
 		ctx.Session.AddFlash(L10n("You are using default cookie secret, consider changing."))
 	}
-	return tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0))
+	return tmpl(ctx, "admin.html").Execute(w, MkBasicData(ctx, 0, 0, s.conf))
 }
 
-func loginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	return tmpl(ctx, "login.html").Execute(w, MkBasicData(ctx, 0, 0))
+func (s *server) loginForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	return tmpl(ctx, "login.html").Execute(w, MkBasicData(ctx, 0, 0, s.conf))
 }
 
 func logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -154,10 +154,10 @@ func logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-func postsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) postsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	tag := req.URL.Query().Get(":tag")
 	heading := fmt.Sprintf(L10n("Posts tagged '%s'"), tag)
-	tmplData := MkBasicData(ctx, 0, 0)
+	tmplData := MkBasicData(ctx, 0, 0, s.conf)
 	tmplData["PageTitle"] = heading
 	tmplData["HeadingText"] = heading + ":"
 	titles, err := ctx.Db.titlesByTag(tag, ctx.AdminLogin)
@@ -168,8 +168,8 @@ func postsWithTag(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	return tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
-func archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tmplData := MkBasicData(ctx, 0, 0)
+func (s *server) archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	tmplData := MkBasicData(ctx, 0, 0, s.conf)
 	tmplData["PageTitle"] = L10n("Archive")
 	tmplData["HeadingText"] = L10n("All posts:")
 	titles, err := ctx.Db.titles(-1, ctx.AdminLogin)
@@ -180,8 +180,8 @@ func archive(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return tmpl(ctx, "archive.html").Execute(w, tmplData)
 }
 
-func allComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tmplData := MkBasicData(ctx, 0, 0)
+func (s *server) allComments(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	tmplData := MkBasicData(ctx, 0, 0, s.conf)
 	comm, err := ctx.Db.allComments()
 	if err != nil {
 		return err
@@ -198,8 +198,8 @@ func makeTagList(tags []*Tag) []string {
 	return strTags
 }
 
-func editPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tmplData := MkBasicData(ctx, 0, 0)
+func (s *server) editPost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	tmplData := MkBasicData(ctx, 0, 0, s.conf)
 	tmplData["PageTitle"] = L10n("Edit Post")
 	tmplData["IsHidden"] = true // Assume hidden for a new post
 	tags, err := ctx.Db.queryAllTags()
@@ -233,12 +233,12 @@ func loadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	return nil
 }
 
-func rssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) rssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	posts, err := ctx.Db.posts(NumFeedItems, 0, false)
 	if err != nil {
 		return logger.LogIf(err)
 	}
-	produceFeedXML(w, req, posts, ctx)
+	s.produceFeedXML(w, req, posts, ctx)
 	return nil
 }
 
@@ -247,7 +247,7 @@ func (s *server) login(w http.ResponseWriter, req *http.Request, ctx *Context) e
 	a, err := ctx.Db.author() // Pick default author
 	if err == gorm.ErrRecordNotFound {
 		ctx.Session.AddFlash(L10n("Login failed."))
-		return loginForm(w, req, ctx)
+		return s.loginForm(w, req, ctx)
 	}
 	if err != nil {
 		return logger.LogIf(err)
@@ -255,7 +255,7 @@ func (s *server) login(w http.ResponseWriter, req *http.Request, ctx *Context) e
 	uname := req.FormValue("uname")
 	if uname != a.UserName {
 		ctx.Session.AddFlash(L10n("Login failed."))
-		return loginForm(w, req, ctx)
+		return s.loginForm(w, req, ctx)
 	}
 	passwd := req.FormValue("passwd")
 	req.Form["passwd"] = []string{"***"} // Avoid spilling password to log
@@ -269,7 +269,7 @@ func (s *server) login(w http.ResponseWriter, req *http.Request, ctx *Context) e
 		http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
 	} else {
 		ctx.Session.AddFlash(L10n("Login failed."))
-		return loginForm(w, req, ctx)
+		return s.loginForm(w, req, ctx)
 	}
 	return nil
 }
@@ -347,7 +347,7 @@ func explodeTags(tagsStr string) []*Tag {
 	return tags
 }
 
-func uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	mr, err := req.MultipartReader()
 	if err != nil {
 		return logger.LogIf(err)
@@ -358,7 +358,7 @@ func uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		if name := part.FormName(); name != "" {
 			if part.FileName() != "" {
 				files += fmt.Sprintf("[foo]: /static/%s", part.FileName())
-				handleUpload(req, part, ctx.assets.root)
+				s.handleUpload(req, part, ctx.assets.root)
 			}
 		}
 		part, err = mr.NextPart()
@@ -367,14 +367,14 @@ func uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	return nil
 }
 
-func handleUpload(r *http.Request, p *multipart.Part, root string) {
+func (s *server) handleUpload(r *http.Request, p *multipart.Part, root string) {
 	defer func() {
 		if rec := recover(); rec != nil {
 			logger.Println(rec)
 		}
 	}()
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
-	filename := filepath.Join(root, conf.Server.StaticDir, p.FileName())
+	filename := filepath.Join(root, s.conf.Server.StaticDir, p.FileName())
 	logger.Printf("attempt to upload %s to %s\n", p.FileName(), filename)
 	fo, err := os.Create(filename)
 	if err != nil {
@@ -423,7 +423,7 @@ func captchaNewCommenter(w http.ResponseWriter, req *http.Request, ctx *Context)
 	return true
 }
 
-func commentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+func (s *server) commentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	refURL := httputil.ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
@@ -450,19 +450,19 @@ func commentHandler(w http.ResponseWriter, req *http.Request, ctx *Context) erro
 		return err
 	}
 	redir := "/" + refURL + commentURL
-	sendNewCommentNotif(req, redir, commenter)
+	s.sendNewCommentNotif(req, redir, commenter)
 	return RightCaptchaReply(w, redir)
 }
 
-func sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
-	if !conf.Notifications.SendEmail {
+func (s *server) sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
+	if !s.conf.Notifications.SendEmail {
 		return
 	}
 	refURL := httputil.ExtractReferer(req)
 	url := httputil.GetHost(req) + redir
 	text := req.FormValue("text")
 	subj, body := mkCommentNotifEmail(commenter, text, url, refURL)
-	go sendEmail(subj, body)
+	go s.sendEmail(subj, body)
 }
 
 func mkCommentNotifEmail(commenter *Commenter, rawBody, url, postTitle string) (subj, body string) {
@@ -490,10 +490,10 @@ URL: {{.URL}}
 	return subj, buff.String()
 }
 
-func sendEmail(subj, body string) {
-	gmailSenderAcct := conf.Notifications.SenderAcct
-	gmailSenderPasswd := conf.Notifications.SenderPasswd
-	notifee := conf.Notifications.AdminEmail
+func (s *server) sendEmail(subj, body string) {
+	gmailSenderAcct := s.conf.Notifications.SenderAcct
+	gmailSenderPasswd := s.conf.Notifications.SenderPasswd
+	notifee := s.conf.Notifications.AdminEmail
 	err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
 	if err != nil {
 		logger.LogIff(err, "err initing gmail")
@@ -507,8 +507,8 @@ func sendEmail(subj, body string) {
 	}
 }
 
-func editAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	tmplData := MkBasicData(ctx, 0, 0)
+func (s *server) editAuthorForm(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+	tmplData := MkBasicData(ctx, 0, 0, s.conf)
 	author, err := ctx.Db.author()
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
@@ -540,7 +540,7 @@ func (s *server) submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Con
 		err = s.cryptoHelper.Decrypt([]byte(a.Passwd), []byte(oldPasswd))
 		if err != nil {
 			ctx.Session.AddFlash(L10n("Incorrect password."))
-			return editAuthorForm(w, req, ctx)
+			return s.editAuthorForm(w, req, ctx)
 		}
 	}
 	passwd := req.FormValue("password")
@@ -549,7 +549,7 @@ func (s *server) submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Con
 	req.Form["confirm_password"] = []string{"***"} // Avoid spilling password to log
 	if passwd != passwd2 {
 		ctx.Session.AddFlash(L10n("Passwords should match."))
-		return editAuthorForm(w, req, ctx)
+		return s.editAuthorForm(w, req, ctx)
 	}
 	crypt, err := encryptBcrypt([]byte(passwd))
 	if err != nil {
@@ -594,30 +594,30 @@ func (s *server) initRoutes() *pat.Router {
 		}
 	}
 	r.Add(G, "/static/", http.FileServer(s.gctx.assets)).Name("static")
-	r.Add(G, "/login", mkHandler(loginForm)).Name("login")
+	r.Add(G, "/login", mkHandler(s.loginForm)).Name("login")
 	r.Add(P, "/login", mkHandler(s.login))
 	r.Add(G, "/logout", mkHandler(logout)).Name("logout")
-	r.Add(G, "/admin", mkAdminHandler(admin)).Name("admin")
-	r.Add(G, "/page/{pageNo:.*}", mkHandler(pageNum))
-	r.Add(G, "/tag/{tag:.+}", mkHandler(postsWithTag))
-	r.Add(G, "/archive", mkHandler(archive)).Name("archive")
-	r.Add(G, "/all_comments", mkAdminHandler(allComments)).Name("all_comments")
-	r.Add(G, "/edit_post", mkAdminHandler(editPost)).Name("edit_post")
+	r.Add(G, "/admin", mkAdminHandler(s.admin)).Name("admin")
+	r.Add(G, "/page/{pageNo:.*}", mkHandler(s.pageNum))
+	r.Add(G, "/tag/{tag:.+}", mkHandler(s.postsWithTag))
+	r.Add(G, "/archive", mkHandler(s.archive)).Name("archive")
+	r.Add(G, "/all_comments", mkAdminHandler(s.allComments)).Name("all_comments")
+	r.Add(G, "/edit_post", mkAdminHandler(s.editPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(loadComments)).Name("load_comments")
-	r.Add(G, "/feeds/rss.xml", mkHandler(rssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &handler{serveFavicon, &s.gctx, false}).Name("favicon")
-	r.Add(G, "/comment_submit", mkHandler(commentHandler)).Name("comment")
+	r.Add(G, "/feeds/rss.xml", mkHandler(s.rssFeed)).Name("rss_feed")
+	r.Add(G, "/favicon.ico", &handler{s.serveFavicon, &s.gctx, false}).Name("favicon")
+	r.Add(G, "/comment_submit", mkHandler(s.commentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(deleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(deletePost)).Name("delete_post")
-	r.Add(G, "/robots.txt", mkHandler(serveRobots))
-	r.Add(G, "/edit_author", mkAdminHandler(editAuthorForm)).Name("edit_author")
+	r.Add(G, "/robots.txt", mkHandler(s.serveRobots))
+	r.Add(G, "/edit_author", mkAdminHandler(s.editAuthorForm)).Name("edit_author")
 
 	r.Add(P, "/moderate_comment", mkAdminHandler(moderateComment)).Name("moderate_comment")
 	r.Add(P, "/submit_post", mkAdminHandler(submitPost)).Name("submit_post")
 	r.Add(P, "/submit_author", mkAdminHandler(s.submitAuthor)).Name("submit_author")
-	r.Add(P, "/upload_images", mkAdminHandler(uploadImage)).Name("upload_image")
+	r.Add(P, "/upload_images", mkAdminHandler(s.uploadImage)).Name("upload_image")
 
-	r.Add(G, "/", mkHandler(home)).Name("home_page")
+	r.Add(G, "/", mkHandler(s.home)).Name("home_page")
 	return r
 }
 
@@ -629,29 +629,17 @@ func versionString() string {
 	return strings.TrimSpace(string(ver))
 }
 
-func getDBConnString() string {
-	config := conf.Server.DBConn
-	if config != "" && config[0] == '$' {
-		envVar := os.ExpandEnv(config)
-		if envVar == "" {
-			logger.Println(fmt.Sprintf("Can't find env var %q", config))
-		}
-		return envVar
-	}
-	return config
-}
-
 func serveAndLogTLS(addr, cert, key string, h http.Handler) {
 	logger.LogIf(http.ListenAndServeTLS(addr, cert, key, h))
 }
 
-func runForever(handlers *pat.Router) {
+func (s *server) runForever(handlers *pat.Router) {
 	logger.Print("The server is listening...")
 	host := os.Getenv("HOST")
-	addr := httputil.JoinHostAndPort(host, conf.Server.Port)
-	tlsPort := conf.Server.TLSPort
-	cert := conf.Server.TLSCert
-	key := conf.Server.TLSKey
+	addr := httputil.JoinHostAndPort(host, s.conf.Server.Port)
+	tlsPort := s.conf.Server.TLSPort
+	cert := s.conf.Server.TLSCert
+	key := s.conf.Server.TLSKey
 	if tlsPort != "" && fileExistsNoErr(cert) && fileExistsNoErr(key) {
 		tlsAddr := httputil.JoinHostAndPort(host, tlsPort)
 		go serveAndLogTLS(tlsAddr, cert, key, handlers)
@@ -711,20 +699,20 @@ func Main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 	assets := NewAssetBin(bindir())
-	conf = readConfigs(assets.FSOnly())
+	conf := readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
 	logger = bark.AppendFile(conf.Server.Log)
-	db := InitDB(getDBConnString(), bindir())
+	db := InitDB(conf, bindir())
 	defer db.db.Close()
 	s := newServer(new(BcryptHelper), globalContext{
 		Router: pat.New(),
 		Db:     db,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),
-	})
+	}, conf)
 	if args["--adduser"].(bool) {
 		insertUser(db, args)
 		return
 	}
-	runForever(s.initRoutes())
+	s.runForever(s.initRoutes())
 }

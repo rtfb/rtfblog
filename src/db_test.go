@@ -17,8 +17,9 @@ var (
 )
 
 func init() {
-	conf = readConfigs(NewAssetBin(""))
 	config := "$RTFBLOG_DB_TEST_URL"
+	conf := readConfigs(NewAssetBin(""))
+	conf.Server.DBConn = config
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {
 		return
@@ -26,9 +27,8 @@ func init() {
 	if !strings.HasPrefix(envVar, "host=/tmp/PGSQL-") {
 		return
 	}
-	conf.Server.DBConn = config
 	logger = bark.CreateFile("tests.log")
-	realDB = InitDB(getDBConnString(), bindir())
+	realDB = InitDB(conf, bindir())
 }
 
 func testInsertAuthor(t *testing.T) {

@@ -46,7 +46,7 @@ func MkFlashes(ctx *Context) template.HTML {
 	return template.HTML(`<div class="six columns">` + html + "</div>")
 }
 
-func MkBasicData(ctx *Context, pageNo, offset int) tmplMap {
+func MkBasicData(ctx *Context, pageNo, offset int, conf Config) tmplMap {
 	numTotalPosts, err := ctx.Db.numPosts(ctx.AdminLogin)
 	logger.LogIf(err)
 	titles, err := ctx.Db.titles(NumRecentPosts, ctx.AdminLogin)

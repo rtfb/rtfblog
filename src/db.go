@@ -49,7 +49,8 @@ func prepareDefaultDB(root string) (dialect, conn string) {
 	return "sqlite3", MustExtractDBAsset("default.db")
 }
 
-func InitDB(conn, root string) *DbData {
+func InitDB(conf Config, root string) *DbData {
+	conn := conf.getDBConnString()
 	dialect := "postgres"
 	if conn == "" {
 		dialect, conn = prepareDefaultDB(root)

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"runtime/debug"
 	"time"
 
@@ -74,29 +73,6 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf.Apply(w)
 }
 
-func serveStaticFile(w http.ResponseWriter, req *http.Request, ctx *Context, fileName string) error {
-	filePath := filepath.Join(conf.Server.StaticDir, fileName)
-	file, err := ctx.assets.Open(filePath)
-	defer file.Close()
-	if err != nil {
-		return err
-	}
-	var zero time.Time
-	http.ServeContent(w, req, fileName, zero, file)
-	return nil
-}
-
-func serveRobots(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	return serveStaticFile(w, req, ctx, "robots.txt")
-}
-
-func serveFavicon(w http.ResponseWriter, req *http.Request, ctx *Context) error {
-	if conf.Server.Favicon == "" {
-		return performSimpleStatus(w, http.StatusNotFound)
-	}
-	return serveStaticFile(w, req, ctx, conf.Server.Favicon)
-}
-
 func internalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
 	logger.Printf("%s: %s", prefix, err.Error())
 	return performStatus(c, w, req, http.StatusInternalServerError)
@@ -112,7 +88,7 @@ func performStatus(c *Context, w http.ResponseWriter, req *http.Request, status 
 }
 
 func performSimpleStatus(w http.ResponseWriter, status int) error {
-	w.Write([]byte(fmt.Sprintf(L10n("HTTP Error %d\n"), status)))
+	fmt.Fprintf(w, L10n("HTTP Error %d\n"), status)
 	return nil
 }
 

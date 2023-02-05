@@ -2,20 +2,29 @@ package rtfblog
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	conf *Config
-)
-
 type Config struct {
 	Server
 	Notifications
 	Interface
+}
+
+func (c *Config) getDBConnString() string {
+	config := c.Server.DBConn
+	if config != "" && config[0] == '$' {
+		envVar := os.ExpandEnv(config)
+		if envVar == "" {
+			logger.Println(fmt.Sprintf("Can't find env var %q", config))
+		}
+		return envVar
+	}
+	return config
 }
 
 type Server struct {
@@ -44,7 +53,7 @@ type Interface struct {
 	Language  string
 }
 
-func hardcodedConf() *Config {
+func hardcodedConf() Config {
 	userName := "user"
 	usr, err := user.Current()
 	if err != nil {
@@ -53,7 +62,7 @@ func hardcodedConf() *Config {
 	} else {
 		userName = usr.Name
 	}
-	return &Config{
+	return Config{
 		Server{
 			DBConn:       "$RTFBLOG_DB_TEST_URL",
 			StaticDir:    "static",
@@ -73,7 +82,7 @@ func hardcodedConf() *Config {
 	}
 }
 
-func readConfigs(assets *AssetBin) *Config {
+func readConfigs(assets *AssetBin) Config {
 	homeDir := ""
 	usr, err := user.Current()
 	if err != nil {
@@ -97,7 +106,7 @@ func readConfigs(assets *AssetBin) *Config {
 			fmt.Println(err.Error())
 			continue
 		}
-		err = yaml.Unmarshal([]byte(yml), conf)
+		err = yaml.Unmarshal([]byte(yml), &conf)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue

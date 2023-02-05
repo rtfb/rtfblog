@@ -116,7 +116,7 @@ func forgeTestUser(s server, uname, passwd string) {
 
 func init() {
 	assets := NewAssetBin(buildRoot)
-	conf = readConfigs(assets)
+	conf := readConfigs(assets)
 	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
 	logger = bark.CreateFile("tests.log")
@@ -133,7 +133,7 @@ func init() {
 		Db:     &testData,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
-	})
+	}, conf)
 	forgeTestUser(s, "testuser", "testpasswd")
 	htmltest.Init(s.initRoutes())
 }
@@ -455,7 +455,8 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 }
 
 func TestUploadImage(t *testing.T) {
-	uploadedFile := filepath.Join(buildRoot, conf.Server.StaticDir, "testupload.md")
+	const staticDir = "static" // TODO: unhardcode that, it should come from the config within the server struct
+	uploadedFile := filepath.Join(buildRoot, staticDir, "testupload.md")
 	testContent := "Foobarbaz"
 	defer func() {
 		err := os.Remove(uploadedFile)
