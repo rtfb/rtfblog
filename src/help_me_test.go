@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/rtfb/htmltest"
+	"github.com/rtfb/rtfblog/src/htmltest"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )

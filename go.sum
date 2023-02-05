@@ -60,8 +60,6 @@ github.com/rtfb/go-mail v0.0.0-20131203105311-c5b133ca19ba h1:KPeAJf3l+qLW24CmTD
 github.com/rtfb/go-mail v0.0.0-20131203105311-c5b133ca19ba/go.mod h1:C5XREvb5YM1Oi/IMmgIjQj0otwjENgtPaJhUHyLB7sc=
 github.com/rtfb/gopass v0.0.0-20160210183552-88d06c8eecdb h1:XWhwvxSF0NbfD/7Hd8zI960GmuVNzlVe583AWlRqqls=
 github.com/rtfb/gopass v0.0.0-20160210183552-88d06c8eecdb/go.mod h1:lAdar0B1eTN6HDP4JEir0crY9rUBY/QvuksC2sT2EiY=
-github.com/rtfb/htmltest v0.0.0-20160102123457-1beff41c127a h1:V6Uy6w3RAqB97DnIUOAQ64VMDolJigi1mWrdLVl4euA=
-github.com/rtfb/htmltest v0.0.0-20160102123457-1beff41c127a/go.mod h1:soxAPdyXUOUTo03i3SiciL8y7jYg4o5HKWKEBWKnfdg=
 github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c h1:ligsLytdI3kWgbBM6XpUOEk0NVPpRGtiY4autrjcDRM=
 github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c/go.mod h1:ySpBdjufJe587UmCN1YJCb5TZIBF2Lirc43RK41U5DY=
 github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634 h1:yRTPyQVkCAhyc2L/vq3XjjE14HpauEZKBSI32ufHxtg=

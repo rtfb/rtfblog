@@ -22,7 +22,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/h5"
-	"github.com/rtfb/htmltest"
+	"github.com/rtfb/rtfblog/src/htmltest"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )

@@ -30,7 +30,6 @@ require (
 	github.com/rtfb/go-html-transform v0.0.0-20141112201209-3f75658770a7
 	github.com/rtfb/go-mail v0.0.0-20131203105311-c5b133ca19ba
 	github.com/rtfb/gopass v0.0.0-20160210183552-88d06c8eecdb
-	github.com/rtfb/htmltest v0.0.0-20160102123457-1beff41c127a
 	github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c
 	github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634
 	github.com/russross/blackfriday v0.0.0-20161003162722-5f33e7b78783
