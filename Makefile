@@ -82,8 +82,8 @@ ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
 	cp $< $@
 
-${BUILDDIR}/default.db: db/sqlite/dbconf.yml db/sqlite/migrations/*.sql
-	RTFBLOG_DB_URL=$@ RTFBLOG_DB_DRIVER=sqlite3 goose -path=db/sqlite/ -env=production up
+${BUILDDIR}/default.db: db/sqlite/migrations/*.sql
+	migrate -path=db/sqlite/migrations -database="sqlite3://$@" up
 
 ${BUILDDIR}/static/%.png: static/%.png
 	cp $< $@

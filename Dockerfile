@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 # puppeteer:
 # libnss3, libgbm-dev, libasound2
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     git \
     golang \
@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     make \
     npm \
+    postgresql \
+    sqlite3 \
     sudo \
     vim \
     wget
@@ -34,7 +36,7 @@ RUN mkdir /home/rtfb/.npm-global && \
 
 RUN npm install -g grunt-cli bower browserify
 
-RUN go install github.com/steinbacher/goose/cmd/goose@latest && \
+RUN go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 && \
     go install github.com/go-bindata/go-bindata/go-bindata@latest
 
 ENV PATH="$PATH:/home/rtfb/.npm-global/bin"

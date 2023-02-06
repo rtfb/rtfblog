@@ -15,7 +15,7 @@ before_install:
     - nvm use 15.8
     - go get -v golang.org/x/tools/cmd/cover
     - go get -v github.com/mattn/goveralls
-    - go get -v github.com/steinbacher/goose/cmd/goose
+    - go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
     - go get -v github.com/go-bindata/go-bindata/...
     - npm install -g grunt-cli bower browserify json
     - sudo /etc/init.d/postgresql stop

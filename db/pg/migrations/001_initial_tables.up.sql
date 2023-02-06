@@ -1,4 +1,3 @@
--- +goose Up
 create table tag (
     id serial primary key,
     name text,
@@ -40,11 +39,3 @@ create table comment (
     timestamp bigint,
     body text
 );
-
--- +goose Down
-drop table comment;
-drop table tagmap;
-drop table tag;
-drop table post;
-drop table author;
-drop table commenter;

@@ -105,7 +105,7 @@ func MustExtractDBAsset(defaultDB string) string {
 }
 
 func (a *Bin) Open(name string) (http.File, error) {
-	f, err := http.Dir(a.wrDir).Open(name)
+	f, err := http.Dir(a.wrDir).Open(filepath.Base(name))
 	if err == nil {
 		return f, nil
 	}

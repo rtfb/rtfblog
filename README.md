@@ -39,16 +39,15 @@ Alternatively, you can shell into the container and call make manually:
 
 ## Installing
 
-You will need [goose](https://github.com/steinbacher/goose) for DB migration.
-Read [deploy.sh][deploy-sh-url] to get an overview of how I install it on my
-server, you would need to do essentially the same. Get it at:
+You will need [migrate][migrate-url] for DB migration. Read
+[Dockerfile](./Dockerfile) to get an overview of how to install it. Get it at:
 
-    go get github.com/steinbacher/goose/cmd/goose
+    go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
 
-You will need [go-bindata](https://github.com/go-bindata/go-bindata) to build
-embedded resources. Get it at:
+You will need [go-bindata][go-bindata-url] to build embedded resources. Get it
+at:
 
-    go get -u github.com/go-bindata/go-bindata/...
+    go install github.com/go-bindata/go-bindata/go-bindata@latest
 
 ## Configuration
 
@@ -90,6 +89,7 @@ BSD Simplified, see [LICENSE.md](LICENSE.md).
 [travis-url]: https://travis-ci.org/rtfb/rtfblog
 [coveralls-image]: https://coveralls.io/repos/rtfb/rtfblog/badge.png
 [coveralls-url]: https://coveralls.io/r/rtfb/rtfblog
-[deploy-sh-url]: https://github.com/rtfb/blog-rtfb-lt/blob/master/scripts/deploy.sh
 [baby-gopher-image]: https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png
 [postgres-config]: http://stackoverflow.com/questions/1471571/how-to-configure-postgresql-for-the-first-time
+[migrate-url]: https://github.com/golang-migrate/migrate
+[go-bindata-url]: https://github.com/go-bindata/go-bindata
