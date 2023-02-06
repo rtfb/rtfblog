@@ -433,7 +433,7 @@ func TestUploadImageHandlesWrongRequest(t *testing.T) {
 }
 
 // Creates a new file upload http request with optional extra params
-func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fileName, contents string) (*http.Request, error) {
+func mkFakeFileUploadRequest(ht htmltest.HT, uri string, params map[string]string, paramName, fileName, contents string) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile(paramName, fileName)
@@ -448,7 +448,7 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", tserver.PathToURL(uri), body)
+	req, err := http.NewRequest("POST", ht.PathToURL(uri), body)
 	if err != nil {
 		return nil, err
 	}
@@ -457,40 +457,48 @@ func mkFakeFileUploadRequest(uri string, params map[string]string, paramName, fi
 }
 
 func TestUploadImage(t *testing.T) {
-	const staticDir = "static" // TODO: unhardcode that, it should come from the config within the server struct
-	uploadedFile := filepath.Join(buildRoot, staticDir, "testupload.md")
+	tempDir := t.TempDir()
+	assets := NewAssetBin(tempDir)
+	conf := readConfigs(assets)
+	err := os.MkdirAll(filepath.Join(tempDir, conf.Server.StaticDir), 0750)
+	require.NoError(t, err)
+	testData := TestData{}
+	s := newServer(&TestCryptoHelper{}, globalContext{
+		Router: pat.New(),
+		Db:     &testData,
+		assets: assets,
+		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
+	}, conf)
+	const username = "testuser"
+	const passwd = "testpasswd"
+	forgeTestUser(s, username, passwd)
+	tserver := htmltest.New(s.initRoutes())
+
+	_, err = tserver.PostForm("login", &url.Values{
+		"uname":  {username},
+		"passwd": {passwd},
+	})
+	require.NoError(t, err)
+
+	uploadedFile := filepath.Join(tempDir, conf.Server.StaticDir, "testupload.md")
 	testContent := "Foobarbaz"
-	defer func() {
-		err := os.Remove(uploadedFile)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
 	extraParams := map[string]string{
 		"title":       "My Document",
 		"author":      "The Author",
 		"description": "The finest document",
 	}
-	request, err := mkFakeFileUploadRequest("upload_images", extraParams, "file", "testupload.md", testContent)
-	if err != nil {
-		t.Fatal(err)
-	}
+	request, err := mkFakeFileUploadRequest(tserver, "upload_images", extraParams, "file", "testupload.md", testContent)
+	require.NoError(t, err)
 	resp, err := tserver.Client().Do(request)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	body := &bytes.Buffer{}
 	_, err = body.ReadFrom(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	resp.Body.Close()
 	T{t}.assertEqual("200", fmt.Sprintf("%d", resp.StatusCode))
 	T{t}.assertEqual("[foo]: /static/testupload.md", string(body.Bytes()))
 	fileBytes, err := ioutil.ReadFile(uploadedFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	prefix := string(fileBytes)[:len(testContent)]
 	T{t}.assertEqual(testContent, prefix)
 }
