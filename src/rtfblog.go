@@ -696,7 +696,7 @@ func Main() {
 	rand.Seed(time.Now().UnixNano())
 	conf := readConfigs()
 	logger = bark.AppendFile(conf.Server.Log)
-	assets, err := assets.NewBin(bindir(), "/host/rtfblog-uploaded-assets", logger)
+	assets, err := assets.NewBin(bindir(), conf.Server.UploadsRoot, logger)
 	if err != nil {
 		panic(err)
 	}

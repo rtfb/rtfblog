@@ -33,8 +33,7 @@ type T struct {
 }
 
 const (
-	buildRoot      = "../build"
-	testUploadsDir = "uploaded"
+	buildRoot = "../build"
 )
 
 var (
@@ -122,6 +121,9 @@ func initTests(uploadsDir string) server {
 	conf := readConfigs()
 	conf.Server.StaticDir = "static"
 	logger = bark.CreateFile("tests.log")
+	if uploadsDir == "" {
+		uploadsDir = conf.Server.UploadsRoot
+	}
 	assets, err := assets.NewBin(buildRoot, uploadsDir, logger)
 	if err != nil {
 		panic(err)
@@ -146,7 +148,7 @@ func initTests(uploadsDir string) server {
 }
 
 func init() {
-	s := initTests(filepath.Join(buildRoot, testUploadsDir))
+	s := initTests("")
 	tserver = htmltest.New(s.initRoutes())
 }
 

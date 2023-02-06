@@ -38,7 +38,8 @@ type Server struct {
 	TLSKey       string `yaml:"tls_key"`
 	CookieSecret string `yaml:"cookie_secret"`
 	Log          string
-	LogSQL       bool `yaml:"log_sql"`
+	LogSQL       bool   `yaml:"log_sql"`
+	UploadsRoot  string `yaml:"uploads_root"`
 }
 
 type Notifications struct {
@@ -67,6 +68,7 @@ func hardcodedConf() Config {
 		Server{
 			DBConn:       "$RTFBLOG_DB_TEST_URL",
 			StaticDir:    "static",
+			UploadsRoot:  "build/uploads",
 			Port:         ":8080",
 			CookieSecret: defaultCookieSecret,
 			Log:          "server.log",
