@@ -2,11 +2,11 @@ package rtfblog
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 
-	"github.com/rtfb/rtfblog/src/assets"
 	"gopkg.in/yaml.v2"
 )
 
@@ -83,7 +83,7 @@ func hardcodedConf() Config {
 	}
 }
 
-func readConfigs(assets *assets.Bin) Config {
+func readConfigs() Config {
 	homeDir := ""
 	usr, err := user.Current()
 	if err != nil {
@@ -102,7 +102,7 @@ func readConfigs(assets *assets.Bin) Config {
 		"server.conf",
 	}
 	for _, p := range confPaths {
-		yml, err := assets.Load(p)
+		yml, err := ioutil.ReadFile(p)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue

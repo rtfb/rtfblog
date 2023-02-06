@@ -119,14 +119,14 @@ func forgeTestUser(s server, uname, passwd string) {
 var tserver htmltest.HT
 
 func initTests(uploadsDir string) server {
-	assets, err := assets.NewBin(buildRoot, uploadsDir, bark.Create())
+	conf := readConfigs()
+	conf.Server.StaticDir = "static"
+	logger = bark.CreateFile("tests.log")
+	assets, err := assets.NewBin(buildRoot, uploadsDir, logger)
 	if err != nil {
 		panic(err)
 	}
-	conf := readConfigs(assets)
-	conf.Server.StaticDir = "static"
 	InitL10n(assets, "en-US")
-	logger = bark.CreateFile("tests.log")
 	for i := 1; i <= 11; i++ {
 		testPosts = append(testPosts, mkTestEntry(i, false))
 	}
@@ -765,9 +765,7 @@ func TestReadConfigs(t *testing.T) {
     port: 666
 `)
 	defer del()
-	assets, err := assets.NewBin(".", t.TempDir(), bark.Create())
-	require.NoError(t, err)
-	config := readConfigs(assets.FSOnly())
+	config := readConfigs()
 	T{t}.assertEqual("666", config.Server.Port)
 }
 

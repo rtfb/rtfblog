@@ -694,13 +694,13 @@ func Main() {
 		panic("Can't docopt.Parse!")
 	}
 	rand.Seed(time.Now().UnixNano())
+	conf := readConfigs()
+	logger = bark.AppendFile(conf.Server.Log)
 	assets, err := assets.NewBin(bindir(), "/host/rtfblog-uploaded-assets", logger)
 	if err != nil {
 		panic(err)
 	}
-	conf := readConfigs(assets.FSOnly())
 	InitL10n(assets, conf.Interface.Language)
-	logger = bark.AppendFile(conf.Server.Log)
 	db := InitDB(conf, bindir())
 	defer db.db.Close()
 	s := newServer(new(BcryptHelper), globalContext{

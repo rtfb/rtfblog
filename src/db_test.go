@@ -8,7 +8,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	"github.com/rtfb/bark"
-	"github.com/rtfb/rtfblog/src/assets"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,9 +18,9 @@ var (
 
 func init() {
 	config := "$RTFBLOG_DB_TEST_URL"
-	assets, _ := assets.NewBin("", "", bark.Create())
-	conf := readConfigs(assets)
+	conf := readConfigs()
 	conf.Server.DBConn = config
+	logger = bark.CreateFile("tests.log")
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {
 		return
@@ -29,7 +28,6 @@ func init() {
 	if !strings.HasPrefix(envVar, "host=/tmp/PGSQL-") {
 		return
 	}
-	logger = bark.CreateFile("tests.log")
 	realDB = InitDB(conf, bindir())
 }
 
