@@ -95,13 +95,18 @@ func readConfigs() Config {
 		homeDir = usr.HomeDir
 	}
 	conf := hardcodedConf()
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("Error from Getwd(), that can't be good: %v\n", err)
+		wd = "./"
+	}
 	// Read the most generic config first, then more specific, each latter will
 	// override the former values:
 	confPaths := []string{
 		"/etc/rtfblogrc",
 		filepath.Join(homeDir, ".rtfblogrc"),
-		".rtfblogrc",
-		"server.conf",
+		filepath.Join(wd, ".rtfblogrc"),
+		filepath.Join(wd, "server.conf"),
 	}
 	for _, p := range confPaths {
 		yml, err := ioutil.ReadFile(p)
