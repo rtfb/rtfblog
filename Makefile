@@ -7,7 +7,9 @@ BOWER_DEPS_CMD=\
 	cat bower.json | jq '.dependencies | keys[]' | xargs
 
 GOFILES=\
-	src/*.go
+	src/*.go \
+	src/assets/*.go \
+	src/htmltest/*.go
 
 BUILDDIR=build
 JSDIR=${BUILDDIR}/static/js
