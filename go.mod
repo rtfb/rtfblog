@@ -20,7 +20,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v0.0.0-20170127000238-ce9149a3c941
-	github.com/microcosm-cc/bluemonday v0.0.0-20161202143824-e79763773ab6
+	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/nicksnyder/go-i18n v0.0.0-20170120160056-64786dc4f56b
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59
