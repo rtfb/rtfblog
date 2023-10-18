@@ -55,7 +55,7 @@ ${BUILDDIR}/rtfblog: $(NODE_DEPS) $(BOWER_DEPS) \
 	grunt
 	go build -o ${BUILDDIR} \
 		-ldflags "-X github.com/rtfb/rtfblog/src.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
-	go test ./src/...
+	go test -v ./src/... -covermode=count -coverprofile=coverage.out
 	go vet ./src/...
 
 $(NODE_DEPS):
@@ -65,7 +65,7 @@ $(BOWER_DEPS):
 	bower install --config.interactive=false
 
 $(ASSETS_PKG): $(TARGETS)
-	go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ${BUILDDIR} \
+	$(GOPATH)/bin/go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ${BUILDDIR} \
 		${BUILDDIR}/l10n \
 		${BUILDDIR}/default.db \
 		${BUILDDIR}/static/... \
@@ -85,7 +85,7 @@ ${CSSDIR}/%.css: static/css/%.css
 	cp $< $@
 
 ${BUILDDIR}/default.db: db/sqlite/migrations/*.sql
-	migrate -path=db/sqlite/migrations -database="sqlite3://$@" up
+	$(GOPATH)/bin/migrate -path=db/sqlite/migrations -database="sqlite3://$@" up
 
 ${BUILDDIR}/static/%.png: static/%.png
 	cp $< $@

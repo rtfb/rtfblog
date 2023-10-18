@@ -1,5 +1,6 @@
 # rtfblog
 
+![GHA build status](../../workflows/test/badge.svg)
 [![Build status][travis-image]][travis-url]
 [![Test coverage][coveralls-image]][coveralls-url]
 

@@ -41,6 +41,7 @@ RUN go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd
 
 ENV PATH="$PATH:/home/rtfb/.npm-global/bin"
 ENV PATH="$PATH:/home/rtfb/go/bin"
+ENV GOPATH="/home/rtfb/go"
 
 WORKDIR /home/rtfb/dev
 

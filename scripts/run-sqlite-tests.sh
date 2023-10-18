@@ -3,7 +3,7 @@
 export RTFBLOG_DB_DRIVER=sqlite3
 export RTFBLOG_DB_TEST_URL="test.db"
 
-migrate -path=db/sqlite/migrations -database="sqlite3://$RTFBLOG_DB_TEST_URL" up
+$GOPATH/bin/migrate -path=db/sqlite/migrations -database="sqlite3://$RTFBLOG_DB_TEST_URL" up
 
 echo "Running tests on $RTFBLOG_DB_DRIVER..."
 go test -covermode=count -coverprofile=profile.cov -v ./src/...

@@ -25,10 +25,15 @@ ${PGSQL_PATH}/postgres -F -k ${PGSQL_DATA} -D ${PGSQL_DATA} &> ${PGSQL_DATA}/out
 # Wait for PostgreSQL to start listening to connections
 wait_for_line "database system is ready to accept connections" ${PGSQL_DATA}/out
 export RTFBLOG_DB_DRIVER=postgres
-export RTFBLOG_DB_TEST_URL="host=${PGSQL_DATA} dbname=template1 sslmode=disable"
+export RTFBLOG_DB_TEST_URL="postgres://localhost:5432/template1?sslmode=disable"
 
+echo "PGSQL_DATA = ${PGSQL_DATA}"
+echo "RTFBLOG_DB_TEST_URL = ${RTFBLOG_DB_TEST_URL}"
 echo "Running migrate up..."
-migrate -path=db/pg/migrations -database="postgres://$RTFBLOG_DB_TEST_URL" up
+$GOPATH/bin/migrate \
+    -path=db/pg/migrations \
+    -database="${RTFBLOG_DB_TEST_URL}" \
+    up
 
 echo "Running tests on $RTFBLOG_DB_DRIVER..."
 go test -covermode=count -coverprofile=profile.cov -v ./src/...
