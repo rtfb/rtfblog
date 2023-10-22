@@ -6,4 +6,5 @@ priv_key
 node_modules
 bower_components
 profile.cov
+coverage.out
 /src/rtfblog_resources

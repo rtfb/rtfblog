@@ -25,6 +25,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rtfb/bark"
 	email "github.com/rtfb/go-mail"
 	"github.com/rtfb/gopass"
@@ -574,12 +575,18 @@ func (s *server) initRoutes() *pat.Router {
 	)
 	r := s.gctx.Router
 	mkHandler := func(f handlerFunc) *handler {
-		return &handler{h: f, c: &s.gctx, logRq: true}
+		emitAndHandle := func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+			s.mets.numNonAdminRequests.Inc()
+			return f(w, req, ctx)
+		}
+		return &handler{h: emitAndHandle, c: &s.gctx, logRq: true}
 	}
 	mkAdminHandler := func(f handlerFunc) *handler {
 		return &handler{
 			h: func(w http.ResponseWriter, req *http.Request, ctx *Context) error {
+				s.mets.numAdminRequests.Inc()
 				if !ctx.AdminLogin {
+					s.mets.numForbiddenResponses.Inc()
 					performStatus(ctx, w, req, http.StatusForbidden)
 					return nil
 				}
@@ -589,6 +596,7 @@ func (s *server) initRoutes() *pat.Router {
 			logRq: true,
 		}
 	}
+
 	r.Add(G, "/static/", http.FileServer(s.gctx.assets)).Name("static")
 	r.Add(G, "/login", mkHandler(s.loginForm)).Name("login")
 	r.Add(P, "/login", mkHandler(s.login))
@@ -612,6 +620,10 @@ func (s *server) initRoutes() *pat.Router {
 	r.Add(P, "/submit_post", mkAdminHandler(submitPost)).Name("submit_post")
 	r.Add(P, "/submit_author", mkAdminHandler(s.submitAuthor)).Name("submit_author")
 	r.Add(P, "/upload_images", mkAdminHandler(s.uploadImage)).Name("upload_image")
+
+	r.Add(G, "/metrics", promhttp.HandlerFor(
+		s.mets.registry, promhttp.HandlerOpts{Registry: s.mets.registry},
+	))
 
 	r.Add(G, "/", mkHandler(s.home)).Name("home_page")
 	return r
