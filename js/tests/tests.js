@@ -1,4 +1,4 @@
-module("Basic Tests");
+QUnit.module("Basic Tests");
 
 function appendTestInputElem(id, name, value) {
     var fixture = document.getElementById("qunit-fixture");
@@ -9,39 +9,38 @@ function appendTestInputElem(id, name, value) {
     fixture.appendChild(input);
 }
 
-test("inputToUri", function() {
+QUnit.test("inputToUri", assert => {
     appendTestInputElem('id', 'website', 'http');
-    equal(inputToUri("website"), "website=http");
+    assert.equal(inputToUri("website"), "website=http");
 });
 
-module("form validation", {
-    setup: function() {
+QUnit.module("form validation", {
+    beforeEach: function(assert) {
         this.alertMsg = null;
         this.origAlert = myAlert;
-        var that = this;
         myAlert = function(msg) {
-            that.alertMsg = msg;
+            this.alertMsg = msg;
         }
     },
-    teardown: function() {
+    afterEach: function() {
         myAlert = this.origAlert;
         this.alertMsg = null;
         this.origAlert = null;
     }
 });
 
-test("completed comment form", function() {
+QUnit.test("completed comment form", assert => {
     appendTestInputElem('name', '', 'name');
     appendTestInputElem('email', '', 'email');
-    equal(validateCommentForm(), true);
+    assert.equal(validateCommentForm(), true);
 });
 
-test("incomplete comment form", function() {
+QUnit.test("incomplete comment form", assert => {
     appendTestInputElem('name', '', '');
-    equal(validateCommentForm(), false);
-    equal(this.alertMsg, "Name field is mandatory.");
+    assert.equal(validateCommentForm(), false);
+    assert.equal(this.alertMsg, "Name field is mandatory.");
     elt('name').value = 'xxx';
     appendTestInputElem('email', '', '');
-    equal(validateCommentForm(), false);
-    equal(this.alertMsg, "Email field is mandatory.");
+    assert.equal(validateCommentForm(), false);
+    assert.equal(this.alertMsg, "Email field is mandatory.");
 });

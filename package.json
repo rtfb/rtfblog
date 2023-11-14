@@ -7,8 +7,8 @@
   },
   "devDependencies": {
     "grunt": "~1.6.1",
-    "grunt-contrib-qunit": ">=0.2.1",
-    "qunitjs": "1.16.0",
+    "grunt-contrib-qunit": ">=8.0.1",
+    "qunit": ">=2.20.0",
     "pagedown": "~1.1.0",
     "pagedown-editor": "~0.0.4"
   }
