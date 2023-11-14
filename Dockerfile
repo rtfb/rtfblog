@@ -58,6 +58,10 @@ RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.39.5/install.sh | b
     && nvm use default \
     && npm install
 
+ADD --chown=rtfb:rtfb go.mod go.sum ./
+
+RUN go mod download
+
 RUN go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 && \
     go install github.com/go-bindata/go-bindata/go-bindata@latest
 
