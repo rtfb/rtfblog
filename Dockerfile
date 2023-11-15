@@ -79,6 +79,9 @@ RUN go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd
 ENV PATH="$PATH:/home/rtfb/go/bin"
 ENV GOPATH="/home/rtfb/go"
 
-# Explicitly call bash instead of the default sh, plus source nvm.sh to switch
-# to the correct node version, only then call make:
-ENTRYPOINT make all
+# Call entrypoint.sh on ENTRYPOINT in order to fixup permissions for use in the
+# container. CMD will be passed to entrypoint.sh, which will call it. These
+# shenanigans are needed to make my Dockerfile work on GH Actions. Solution
+# adapted from here: https://stackoverflow.com/a/39398511
+ENTRYPOINT ["/bin/bash", "scripts/entrypoint.sh"]
+CMD ["make all"]

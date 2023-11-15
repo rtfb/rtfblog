@@ -14,46 +14,44 @@ jobs:
     - name: checkout repo
       uses: actions/checkout@v3
 
-    - name: Prepare nvm
-      run: |
-        . $HOME/.nvm/nvm.sh > /dev/null 2>&1 || true
-        nvm install 18.18
-        nvm use 18.18
-
     - name: Set up Go 1.21
       uses: actions/setup-go@v3
       with:
         go-version: 1.21
 
-    - name: Install Go dependencies
+    - name: Diagnostics
       run: |
-        go get -v golang.org/x/tools/cmd/cover
-        go install github.com/mattn/goveralls@latest
-        go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-        go install github.com/go-bindata/go-bindata/go-bindata@latest
-
-    - name: Check Go dependencies
-      run: |
+        pwd
         go env
         ls $HOME/go/bin
         echo $GOPATH
         echo $GOBIN
         echo $PATH
+        echo $GITHUB_ACTIONS
+        id -u
+        id -un
+        id -g
+        id -gn
+        ls -la
 
-    # I used to do 'npm install -g grunt-cli' as well, but grunt already exists
-    # in GH runner:
-    #   npm ERR! File exists: /usr/local/bin/grunt
-    #   npm ERR! Remove the existing file and try again, or run npm
-    - name: Install bower, browserify
-      run: npm install -g bower browserify
+    - name: Build builder container
+      run: make dbuild
 
-    - name: Run make
-      run: make
-      env:
-        GOPATH: /home/runner/go
+    - name: Build the output
+      run: make drun
 
+    # chown back after 'make drun' has chown'ed it inside the container:
+    - run: sudo chown -R runner:docker .
+
+    # TODO: go tool cover -func=coverage.out | grep total: | awk '{ print $3 }' | tr -d %
     - name: Run go tool cover
       run: go tool cover -func=coverage.out -o=coverage.out
+
+    - name: Install Go dependencies for tests
+      run: |
+        go get -v golang.org/x/tools/cmd/cover
+        go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
+        go install github.com/go-bindata/go-bindata/go-bindata@latest
 
     - name: Stop postgres
       run: |

@@ -141,10 +141,17 @@ APPNAME := rtfblog-dev
 dbuild:
 	docker build -t ${APPNAME} .
 
+# Run with '-it' locally, but without it on GH Actions:
+ifeq ($(GITHUB_ACTIONS), true)
+    DASH_IT=
+else
+    DASH_IT=-it
+endif
+
 # runs the container
 .PHONY: drun
 drun:
-	docker run -it --name ${APPNAME} --rm \
+	docker run $(DASH_IT) --name ${APPNAME} --rm \
     --mount type=bind,source="$(shell pwd)",target=/home/rtfb/dev \
     --net=host ${APPNAME}:latest
 
