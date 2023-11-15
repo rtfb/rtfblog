@@ -1,11 +1,5 @@
 GOFMT=gofmt -l -w -s
 
-NODE_DEPS_CMD=\
-	cat package.json | jq '.devDependencies | keys[]' | xargs
-
-BOWER_DEPS_CMD=\
-	cat bower.json | jq '.dependencies | keys[]' | xargs
-
 GOFILES=\
 	src/*.go \
 	src/assets/*.go \
@@ -15,54 +9,51 @@ BUILDDIR=build
 JSDIR=${BUILDDIR}/static/js
 CSSDIR=${BUILDDIR}/static/css
 
-JS_FILES = $(notdir $(wildcard js/*.js))
 CSS_FILES = $(notdir $(wildcard static/css/*.css))
 PNG_FILES = $(notdir $(wildcard static/*.png))
 TMPL_FILES = $(notdir $(wildcard tmpl/*.html))
 L10N_FILES = $(notdir $(wildcard l10n/*.json))
+JS_TARGETS = \
+          ${JSDIR}/bundle.js \
+          ${JSDIR}/pagedown-bundle.js \
+          ${JSDIR}/tag-it.min.js \
+          ${JSDIR}/jquery.min.js \
+          ${JSDIR}/jquery-ui.min.js
+
+JS_STATIC = \
+          ${BUILDDIR}/static/wmd-buttons.png \
+          ${CSSDIR}/pagedown.css \
+          ${CSSDIR}/Ribs.css \
+          ${CSSDIR}/jquery.tagit.css \
+          ${CSSDIR}/tagit.ui-zendesk.css
+
 TARGETS = \
 		  $(addprefix $(CSSDIR)/, $(CSS_FILES)) \
 		  $(addprefix ${BUILDDIR}/static/, $(PNG_FILES)) \
 		  $(addprefix ${BUILDDIR}/tmpl/, $(TMPL_FILES)) \
 		  $(addprefix ${BUILDDIR}/l10n/, $(L10N_FILES)) \
 		  ${BUILDDIR}/static/robots.txt \
-		  ${BUILDDIR}/default.db \
-		  ${JSDIR}/bundle.js \
-		  ${JSDIR}/pagedown-bundle.js \
-		  ${JSDIR}/tag-it.min.js \
-		  ${JSDIR}/jquery.min.js \
-		  ${JSDIR}/jquery-ui.min.js \
-		  ${BUILDDIR}/static/wmd-buttons.png \
-		  ${CSSDIR}/pagedown.css \
-		  ${CSSDIR}/jquery.tagit.css \
-		  ${CSSDIR}/tagit.ui-zendesk.css \
-		  ${CSSDIR}/Ribs.css
+		  ${BUILDDIR}/default.db
 
 ifneq ($(wildcard server.conf),)
 	TARGETS += ${BUILDDIR}/server.conf
 endif
 
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
-NODE_DEPS = $(addprefix node_modules/, ${shell ${NODE_DEPS_CMD}})
-BOWER_DEPS = $(addprefix bower_components/, ${shell ${BOWER_DEPS_CMD}})
 ASSETS_PKG = src/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(NODE_DEPS) $(BOWER_DEPS) \
-                     $(GOFILES) $(ASSETS_PKG)
+${BUILDDIR}/rtfblog: $(GOFILES) $(ASSETS_PKG)
 	${GOFMT} ${GOFILES}
-	grunt
 	go build -o ${BUILDDIR} \
 		-ldflags "-X github.com/rtfb/rtfblog/src.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
 	go test -v ./src/... -covermode=count -coverprofile=coverage.out
 	go vet ./src/...
+	cp -r ../jsbuild/* build/
 
-$(NODE_DEPS):
-	npm install
-
-$(BOWER_DEPS):
-	bower install --config.interactive=false
+jsbundles: ${JS_TARGETS} ${JS_STATIC}
+	@echo "Done"
 
 $(ASSETS_PKG): $(TARGETS)
 	$(GOPATH)/bin/go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ${BUILDDIR} \
@@ -144,7 +135,8 @@ clean:
 
 APPNAME := rtfblog-dev
 
-# builds the docker image
+# builds the docker image. Add '--target=dev-env' or similar to build
+# intermediate image
 .PHONY: dbuild
 dbuild:
 	docker build -t ${APPNAME} .
