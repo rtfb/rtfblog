@@ -73,7 +73,6 @@ RUN go mod download
 RUN go mod verify
 
 RUN go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 \
-    && go install github.com/go-bindata/go-bindata/go-bindata@latest \
     && go install github.com/mattn/go-sqlite3
 
 ENV PATH="$PATH:/home/rtfb/go/bin"

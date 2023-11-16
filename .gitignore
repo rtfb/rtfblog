@@ -4,4 +4,3 @@ tests.log
 vim-session
 profile.cov
 coverage.out
-/src/rtfblog_resources

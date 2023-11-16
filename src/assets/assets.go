@@ -10,7 +10,7 @@ import (
 
 	"github.com/rtfb/bark"
 	"github.com/rtfb/cachedir"
-	"github.com/rtfb/rtfblog/src/rtfblog_resources"
+	embedded "github.com/rtfb/rtfblog"
 )
 
 // Bin wraps around all assets, both the baked-in, and on-disk.
@@ -68,7 +68,7 @@ func (a *Bin) Load(path string) ([]byte, error) {
 		return ioutil.ReadFile(fullPath)
 	}
 	// Fall back to baked asset
-	return rtfblog_resources.Asset(path)
+	return embedded.Assets.ReadFile(path)
 }
 
 func fileExistsAt(filePath, root string) (string, bool, error) {
@@ -96,7 +96,11 @@ func MustExtractDBAsset(defaultDB string) string {
 	dbPath := filepath.Join(path, defaultDB)
 	// Extract it only in case there isn't one already from the last time
 	if !FileExistsNoErr(dbPath) {
-		err = rtfblog_resources.RestoreAsset(path, defaultDB)
+		data, err := embedded.Assets.ReadFile(defaultDB)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to ReadFile(%q): %v", defaultDB, err))
+		}
+		err = ioutil.WriteFile(dbPath, data, 0666)
 		if err != nil {
 			panic(fmt.Sprintf("Failed to RestoreAsset(%q, %q)", path, defaultDB))
 		}
@@ -116,7 +120,7 @@ func (a *Bin) Open(name string) (http.File, error) {
 	if name[0] == '/' {
 		name = name[1:]
 	}
-	data, err := rtfblog_resources.Asset(name)
+	data, err := embedded.Assets.ReadFile(name)
 	return &AssetFile{
 		name: name,
 		data: data,
@@ -149,7 +153,7 @@ func len64(b []byte) int64 {
 
 func (af *AssetFile) Read(p []byte) (n int, err error) {
 	if af.data == nil {
-		af.data, err = rtfblog_resources.Asset(af.name)
+		af.data, err = embedded.Assets.ReadFile(af.name)
 	}
 	n64 := min(len64(p), len64(af.data)-af.seekIndex)
 	copy(p, af.data[af.seekIndex:af.seekIndex+n64])
@@ -175,7 +179,7 @@ func (af *AssetFile) Seek(offset int64, whence int) (int64, error) {
 }
 
 func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
-	dir, err := rtfblog_resources.AssetDir(af.name)
+	dir, err := embedded.Assets.ReadDir(af.name)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +187,7 @@ func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
 		if i == n {
 			break
 		}
-		df := &AssetFile{name: d}
+		df := &AssetFile{name: d.Name()}
 		stat, err2 := df.Stat()
 		if err2 != nil {
 			return nil, err
@@ -194,7 +198,11 @@ func (af *AssetFile) Readdir(n int) (fi []os.FileInfo, err error) {
 }
 
 func (af *AssetFile) Stat() (os.FileInfo, error) {
-	return rtfblog_resources.AssetInfo(af.name)
+	f, err := embedded.Assets.Open(af.name)
+	if err != nil {
+		return nil, err
+	}
+	return f.Stat()
 }
 
 func FileExistsNoErr(path string) bool {

@@ -44,11 +44,6 @@ You will need [migrate][migrate-url] for DB migration. Read
 
     go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
 
-You will need [go-bindata][go-bindata-url] to build embedded resources. Get it
-at:
-
-    go install github.com/go-bindata/go-bindata/go-bindata@latest
-
 ## Configuration
 
 ### DB
@@ -92,4 +87,3 @@ BSD Simplified, see [LICENSE.md](LICENSE.md).
 [baby-gopher-image]: https://raw.github.com/drnic/babygopher-site/gh-pages/images/babygopher-badge.png
 [postgres-config]: http://stackoverflow.com/questions/1471571/how-to-configure-postgresql-for-the-first-time
 [migrate-url]: https://github.com/golang-migrate/migrate
-[go-bindata-url]: https://github.com/go-bindata/go-bindata

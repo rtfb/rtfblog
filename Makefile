@@ -1,6 +1,7 @@
 GOFMT=gofmt -l -w -s
 
-GOFILES=\
+GOFILES= \
+	embed.go \
 	src/*.go \
 	src/assets/*.go \
 	src/htmltest/*.go
@@ -40,11 +41,10 @@ ifneq ($(wildcard server.conf),)
 endif
 
 GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
-ASSETS_PKG = src/rtfblog_resources
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(GOFILES) $(ASSETS_PKG)
+${BUILDDIR}/rtfblog: $(TARGETS) $(GOFILES)
 	${GOFMT} ${GOFILES}
 	go build -o ${BUILDDIR} \
 		-ldflags "-X github.com/rtfb/rtfblog/src.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
@@ -54,13 +54,6 @@ ${BUILDDIR}/rtfblog: $(GOFILES) $(ASSETS_PKG)
 
 jsbundles: ${JS_TARGETS} ${JS_STATIC}
 	@echo "Done"
-
-$(ASSETS_PKG): $(TARGETS)
-	$(GOPATH)/bin/go-bindata -pkg rtfblog_resources -o $@/res.go -prefix ${BUILDDIR} \
-		${BUILDDIR}/l10n \
-		${BUILDDIR}/default.db \
-		${BUILDDIR}/static/... \
-		${BUILDDIR}/tmpl
 
 run: all
 	./${BUILDDIR}/rtfblog

@@ -51,7 +51,6 @@ jobs:
       run: |
         go get -v golang.org/x/tools/cmd/cover
         go install -tags 'postgres,sqlite3' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2
-        go install github.com/go-bindata/go-bindata/go-bindata@latest
 
     - name: Stop postgres
       run: |
