@@ -8,8 +8,7 @@ require (
 	github.com/gorilla/feeds v1.1.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/pat v1.0.2
-	github.com/gorilla/securecookie v0.0.0-20161003051601-fa5329f91370 // indirect
-	github.com/gorilla/sessions v0.0.0-20161128192017-52389059572b
+	github.com/gorilla/sessions v1.2.2
 	github.com/jinzhu/gorm v0.0.0-20170222002820-5409931a1bb8
 	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
