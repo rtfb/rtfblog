@@ -31,12 +31,12 @@ import (
 	email "github.com/rtfb/go-mail"
 	"github.com/rtfb/gopass"
 	"github.com/rtfb/httputil"
+	embedded "github.com/rtfb/rtfblog"
 	"github.com/rtfb/rtfblog/src/assets"
 )
 
 var (
 	logger *bark.Logger
-	genVer string
 )
 
 const (
@@ -633,7 +633,7 @@ func (s *server) initRoutes() *pat.Router {
 func versionString() string {
 	ver, err := ioutil.ReadFile("VERSION")
 	if err != nil {
-		return genVer
+		return embedded.Version
 	}
 	return strings.TrimSpace(string(ver))
 }

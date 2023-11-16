@@ -44,10 +44,9 @@ GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(TARGETS) $(GOFILES)
+${BUILDDIR}/rtfblog: $(TARGETS) ${BUILDDIR}/version $(GOFILES)
 	${GOFMT} ${GOFILES}
-	go build -o ${BUILDDIR} \
-		-ldflags "-X github.com/rtfb/rtfblog/src.genVer=$(shell scripts/version.sh)" ./cmd/rtfblog/...
+	go build -o ${BUILDDIR} ./cmd/rtfblog/...
 	go test -v ./src/... -covermode=count -coverprofile=coverage.out
 	go vet ./src/...
 	cp -r ../jsbuild/* build/
@@ -63,6 +62,9 @@ vet:
 
 fmt:
 	${GOFMT} ${GOFILES}
+
+${BUILDDIR}/version:
+	./scripts/version.sh > $@
 
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
