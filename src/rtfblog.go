@@ -20,6 +20,7 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"github.com/gorilla/feeds"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
@@ -716,7 +717,7 @@ func Main() {
 	db := InitDB(conf, bindir())
 	defer db.db.Close()
 	s := newServer(new(BcryptHelper), globalContext{
-		Router: pat.New(),
+		Router: &pat.Router{Router: *mux.NewRouter()},
 		Db:     db,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),

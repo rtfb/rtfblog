@@ -5,10 +5,9 @@ require (
 	github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
-	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/feeds v1.1.2
-	github.com/gorilla/mux v0.0.0-20160920230813-757bef944d0f // indirect
-	github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c
+	github.com/gorilla/mux v1.8.1
+	github.com/gorilla/pat v1.0.2
 	github.com/gorilla/securecookie v0.0.0-20161003051601-fa5329f91370 // indirect
 	github.com/gorilla/sessions v0.0.0-20161128192017-52389059572b
 	github.com/jinzhu/gorm v0.0.0-20170222002820-5409931a1bb8

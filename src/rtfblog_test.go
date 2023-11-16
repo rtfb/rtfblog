@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/bark"
@@ -138,7 +139,7 @@ func initTests(uploadsDir string) server {
 	langDetector = TestLangDetector{}
 	testData = TestData{}
 	s := newServer(&TestCryptoHelper{}, globalContext{
-		Router: pat.New(),
+		Router: &pat.Router{Router: *mux.NewRouter()},
 		Db:     &testData,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
