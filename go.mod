@@ -16,7 +16,7 @@ require (
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.16
-	github.com/microcosm-cc/bluemonday v1.0.20
+	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/nicksnyder/go-i18n v0.0.0-20170120160056-64786dc4f56b
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59
