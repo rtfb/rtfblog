@@ -1,7 +1,6 @@
 module github.com/rtfb/rtfblog
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
@@ -16,11 +15,10 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
 	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/lib/pq v1.10.7
-	github.com/mattn/go-sqlite3 v0.0.0-20170127000238-ce9149a3c941
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/nicksnyder/go-i18n v0.0.0-20170120160056-64786dc4f56b
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.17.0 // indirect
+	github.com/prometheus/client_golang v1.17.0
 	github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59
 	github.com/rtfb/cachedir v0.0.0-20160212172605-7a0b1f3dd8f6
 	github.com/rtfb/go-html-transform v0.0.0-20141112201209-3f75658770a7
