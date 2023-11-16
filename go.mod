@@ -6,7 +6,7 @@ require (
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gorilla/context v1.1.1 // indirect
-	github.com/gorilla/feeds v0.0.0-20160207162205-441264de03a8
+	github.com/gorilla/feeds v1.1.2
 	github.com/gorilla/mux v0.0.0-20160920230813-757bef944d0f // indirect
 	github.com/gorilla/pat v0.0.0-20160413041632-cf955c3d1f2c
 	github.com/gorilla/securecookie v0.0.0-20161003051601-fa5329f91370 // indirect
