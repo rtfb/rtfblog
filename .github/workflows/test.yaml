@@ -44,8 +44,8 @@ jobs:
     - run: sudo chown -R runner:docker .
 
     # TODO: go tool cover -func=coverage.out | grep total: | awk '{ print $3 }' | tr -d %
-    - name: Run go tool cover
-      run: go tool cover -func=coverage.out -o=coverage.out
+    # - name: Run go tool cover
+    #   run: go tool cover -func=coverage.out -o=coverage.out
 
     - name: Install Go dependencies for tests
       run: |
