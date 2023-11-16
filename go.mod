@@ -1,17 +1,12 @@
 module github.com/rtfb/rtfblog
 
 require (
-	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
 	github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536
-	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/gorilla/feeds v1.1.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/pat v1.0.2
 	github.com/gorilla/sessions v1.2.2
 	github.com/jinzhu/gorm v0.0.0-20170222002820-5409931a1bb8
-	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
-	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/microcosm-cc/bluemonday v1.0.26
@@ -25,11 +20,37 @@ require (
 	github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c
 	github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634
 	github.com/russross/blackfriday v0.0.0-20161003162722-5f33e7b78783
-	github.com/shurcooL/sanitized_anchor_name v0.0.0-20160918041101-1dba4b3954bc // indirect
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.14.0
 	golang.org/x/net v0.17.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-go 1.13
+require (
+	cloud.google.com/go v0.110.10 // indirect
+	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/denisenkom/go-mssqldb v0.0.0-20181014144952-4e0d7dc8888f // indirect
+	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
+	github.com/go-sql-driver/mysql v1.4.1 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/gorilla/context v1.1.2 // indirect
+	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75 // indirect
+	github.com/jinzhu/now v0.0.0-20181116074157-8ec929ed50c3 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
+	github.com/prometheus/procfs v0.11.1 // indirect
+	github.com/shurcooL/sanitized_anchor_name v0.0.0-20160918041101-1dba4b3954bc // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+go 1.18
