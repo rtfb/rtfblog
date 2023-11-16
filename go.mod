@@ -34,3 +34,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/gorilla/pat => github.com/rtfb/pat v0.0.0-20231116100433-f089da3311bc

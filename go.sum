@@ -156,8 +156,6 @@ github.com/gorilla/feeds v1.1.2 h1:pxzZ5PD3RJdhFH2FsJJ4x6PqMqbgFk1+Vez4XWBW8Iw=
 github.com/gorilla/feeds v1.1.2/go.mod h1:WMib8uJP3BbY+X8Szd1rA5Pzhdfh+HCCAYT2z7Fza6Y=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
-github.com/gorilla/pat v1.0.2 h1:TDh/RulbnPxMQACcwbgMF5Bf00jaGoeYBNu+XUFuwtE=
-github.com/gorilla/pat v1.0.2/go.mod h1:ioQ7dFQ2KXmOmWLJs6vZAfRikcm2D2JyuLrL9b5wVCg=
 github.com/gorilla/securecookie v0.0.0-20161003051601-fa5329f91370 h1:L61M97EuplKMDbzSOprplYNMAupmFn0i6gki9NjeltQ=
 github.com/gorilla/securecookie v0.0.0-20161003051601-fa5329f91370/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v0.0.0-20161128192017-52389059572b h1:L5cFs1AIXAEDNagiWEc9V3ddZQmLq/Q9UcV7OEWQMkE=
@@ -268,6 +266,8 @@ github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c h1:ligsLytdI3kWgbBM6X
 github.com/rtfb/httpbuf v0.0.0-20120503183857-5709e9bb814c/go.mod h1:ySpBdjufJe587UmCN1YJCb5TZIBF2Lirc43RK41U5DY=
 github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634 h1:yRTPyQVkCAhyc2L/vq3XjjE14HpauEZKBSI32ufHxtg=
 github.com/rtfb/httputil v0.0.0-20150217190924-9649b2ef6634/go.mod h1:24HD0XNiv+ewXewb1Y+IVT4OtWRanfRA/9o44Em/IVM=
+github.com/rtfb/pat v0.0.0-20231116100433-f089da3311bc h1:+Q5eUcJ0BEncuQEf2tr3n2Sn948zRV/3E5F/KcLwBk8=
+github.com/rtfb/pat v0.0.0-20231116100433-f089da3311bc/go.mod h1:ioQ7dFQ2KXmOmWLJs6vZAfRikcm2D2JyuLrL9b5wVCg=
 github.com/russross/blackfriday v0.0.0-20161003162722-5f33e7b78783 h1:1eSLYLjro0wlXBMziLBPhM5mBmMi1Fo4bB1N2ku+hO4=
 github.com/russross/blackfriday v0.0.0-20161003162722-5f33e7b78783/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 github.com/shurcooL/sanitized_anchor_name v0.0.0-20160918041101-1dba4b3954bc h1:3wIrJvFb3Pf6B/2mDBnN1G5IfUVev4X5apadQlWOczE=
