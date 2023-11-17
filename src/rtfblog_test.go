@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -150,7 +151,7 @@ func initTests(uploadsDir string) server {
 
 func init() {
 	s := initTests("")
-	tserver = htmltest.New(s.initRoutes())
+	tserver = htmltest.New(s.initRoutes(slog.Default()))
 }
 
 func TestMainPage(t *testing.T) {
@@ -472,7 +473,7 @@ func mkFakeFileUploadRequest(ht htmltest.HT, uri string, params map[string]strin
 func TestUploadImage(t *testing.T) {
 	tempDir := t.TempDir()
 	s := initTests(tempDir)
-	tserver := htmltest.New(s.initRoutes())
+	tserver := htmltest.New(s.initRoutes(slog.Default()))
 
 	const username = "testuser"
 	const passwd = "testpasswd"

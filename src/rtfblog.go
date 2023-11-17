@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
+	"log/slog"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
@@ -569,7 +570,7 @@ func (s *server) submitAuthor(w http.ResponseWriter, req *http.Request, ctx *Con
 	return err
 }
 
-func (s *server) initRoutes() *pat.Router {
+func (s *server) initRoutes(logger *slog.Logger) *pat.Router {
 	const (
 		G = "GET"
 		P = "POST"
@@ -580,7 +581,7 @@ func (s *server) initRoutes() *pat.Router {
 			s.mets.numNonAdminRequests.Inc()
 			return f(w, req, ctx)
 		}
-		return &handler{h: emitAndHandle, c: &s.gctx, logRq: true}
+		return &handler{h: emitAndHandle, c: &s.gctx, logRq: true, log: logger}
 	}
 	mkAdminHandler := func(f handlerFunc) *handler {
 		return &handler{
@@ -595,6 +596,7 @@ func (s *server) initRoutes() *pat.Router {
 			},
 			c:     &s.gctx,
 			logRq: true,
+			log:   logger,
 		}
 	}
 
@@ -610,7 +612,7 @@ func (s *server) initRoutes() *pat.Router {
 	r.Add(G, "/edit_post", mkAdminHandler(s.editPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(loadComments)).Name("load_comments")
 	r.Add(G, "/feeds/rss.xml", mkHandler(s.rssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &handler{s.serveFavicon, &s.gctx, false}).Name("favicon")
+	r.Add(G, "/favicon.ico", &handler{s.serveFavicon, &s.gctx, false, nil}).Name("favicon")
 	r.Add(G, "/comment_submit", mkHandler(s.commentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(deleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(deletePost)).Name("delete_post")
@@ -709,6 +711,13 @@ func Main() {
 	rand.Seed(time.Now().UnixNano())
 	conf := readConfigs()
 	logger = bark.AppendFile(conf.Server.Log)
+
+	f, err := os.OpenFile(conf.Server.Log, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		panic("os.OpenFile: " + err.Error())
+	}
+	slogger := slog.New(slog.NewJSONHandler(f, nil))
+
 	assets, err := assets.NewBin(bindir(), conf.Server.UploadsRoot, logger)
 	if err != nil {
 		panic(err)
@@ -726,5 +735,5 @@ func Main() {
 		insertUser(db, args)
 		return
 	}
-	s.runForever(s.initRoutes())
+	s.runForever(s.initRoutes(slogger))
 }

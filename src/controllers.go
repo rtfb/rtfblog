@@ -3,6 +3,7 @@ package rtfblog
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -26,12 +27,18 @@ type handler struct {
 	h     handlerFunc
 	c     *globalContext
 	logRq bool
+	log   *slog.Logger
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	startTime := time.Now().UTC()
 	if h.logRq {
-		defer logger.LogRq(req, startTime)
+		defer h.log.Info("request served",
+			slog.String("method", req.Method),
+			slog.String("path", req.URL.Path),
+			slog.String("query", req.URL.RawQuery),
+			slog.Duration("duration", time.Now().Sub(startTime)),
+		)
 	}
 	//create the context
 	ctx, err := NewContext(req, h.c)
@@ -79,7 +86,7 @@ func internalError(c *Context, w http.ResponseWriter, req *http.Request, err err
 	return performStatus(c, w, req, http.StatusInternalServerError)
 }
 
-//PerformStatus runs the passed in status on the request and calls the appropriate block
+// PerformStatus runs the passed in status on the request and calls the appropriate block
 func performStatus(c *Context, w http.ResponseWriter, req *http.Request, status int) error {
 	if status == 404 || status == 403 {
 		html := fmt.Sprintf("%d.html", status)
