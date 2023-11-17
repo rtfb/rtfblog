@@ -40,15 +40,19 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-instal
     curl \
     git \
     gnupg \
-    golang \
     jq \
     libpq-dev \
     make \
     postgresql \
+    software-properties-common \
     sqlite3 \
     sudo \
     vim \
     wget
+
+RUN add-apt-repository ppa:longsleep/golang-backports \
+    && apt update \
+    && apt install golang-go -y
 
 RUN adduser --disabled-password --gecos '' rtfb --shell /bin/bash
 RUN adduser rtfb sudo
