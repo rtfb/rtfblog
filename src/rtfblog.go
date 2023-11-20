@@ -405,17 +405,17 @@ func captchaNewCommenter(w http.ResponseWriter, req *http.Request, ctx *Context)
 	body := req.FormValue("text")
 	captchaID := req.FormValue("captcha-id")
 	if captchaID == "" {
-		lang := DetectLanguageWithTimeout(body)
+		lang := DetectLanguageWithTimeout(body, ctx.Log)
 		log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
 		logger.Println(log)
 		if lang != `"lt"` {
-			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.NextTask())
+			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.NextTask(), ctx.Log)
 			return false
 		}
 	} else {
 		captchaTask := ctx.Captcha.GetTask(captchaID)
 		if !CheckCaptcha(captchaTask, req.FormValue("captcha")) {
-			WrongCaptchaReply(w, req, "rejected", captchaTask)
+			WrongCaptchaReply(w, req, "rejected", captchaTask, ctx.Log)
 			return false
 		}
 	}
@@ -443,14 +443,14 @@ func (s *server) commentHandler(w http.ResponseWriter, req *http.Request, ctx *C
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	default:
 		logger.LogIf(err)
-		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.NextTask())
+		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.NextTask(), s.gctx.Log)
 	}
 	if err != nil {
 		return err
 	}
 	redir := "/" + refURL + commentURL
 	s.sendNewCommentNotif(req, redir, commenter)
-	return RightCaptchaReply(w, redir)
+	return RightCaptchaReply(w, redir, s.gctx.Log)
 }
 
 func (s *server) sendNewCommentNotif(req *http.Request, redir string, commenter *Commenter) {
@@ -726,7 +726,7 @@ func Main() {
 	}
 	slogger := slog.New(slog.NewJSONHandler(f, nil))
 
-	assets, err := assets.NewBin(bindir(), conf.Server.UploadsRoot, logger)
+	assets, err := assets.NewBin(bindir(), conf.Server.UploadsRoot, slogger)
 	if err != nil {
 		panic(err)
 	}

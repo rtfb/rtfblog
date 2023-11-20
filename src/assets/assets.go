@@ -3,12 +3,12 @@ package assets
 import (
 	"fmt"
 	"io/ioutil"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/rtfb/bark"
 	"github.com/rtfb/cachedir"
 	embedded "github.com/rtfb/rtfblog"
 )
@@ -28,8 +28,8 @@ type Bin struct {
 }
 
 // NewBin creates a new Bin.
-func NewBin(roDir, wrDir string, logger *bark.Logger) (*Bin, error) {
-	logger.Printf("assets.NewBin: roDir=%s, wrDir=%s\n", roDir, wrDir)
+func NewBin(roDir, wrDir string, log *slog.Logger) (*Bin, error) {
+	log.Info("assets.NewBin", slog.String("roDir", roDir), slog.String("wrDir", wrDir))
 	err := os.MkdirAll(wrDir, 0750)
 	return &Bin{
 		roDir: roDir,

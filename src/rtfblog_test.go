@@ -98,13 +98,13 @@ func (h TestCryptoHelper) Decrypt(hash, passwd []byte) error {
 
 type TestLangDetector struct{}
 
-func (d TestLangDetector) Detect(text string) string {
+func (d TestLangDetector) Detect(text string, log *slog.Logger) string {
 	return "foo"
 }
 
 type LTLangDetector struct{}
 
-func (d LTLangDetector) Detect(text string) string {
+func (d LTLangDetector) Detect(text string, log *slog.Logger) string {
 	return `"lt"`
 }
 
@@ -126,7 +126,12 @@ func initTests(uploadsDir string) server {
 	if uploadsDir == "" {
 		uploadsDir = conf.Server.UploadsRoot
 	}
-	assets, err := assets.NewBin(buildRoot, uploadsDir, logger)
+	f, err := os.OpenFile("tests.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		panic("os.OpenFile: " + err.Error())
+	}
+	slogger := slog.New(slog.NewJSONHandler(f, nil))
+	assets, err := assets.NewBin(buildRoot, uploadsDir, slogger)
 	if err != nil {
 		panic(err)
 	}

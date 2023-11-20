@@ -3,6 +3,7 @@ package rtfblog
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
 )
@@ -75,7 +76,7 @@ func CheckCaptcha(task *CaptchaTask, input string) bool {
 	return input == task.Answer
 }
 
-func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask) error {
+func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, task *CaptchaTask, log *slog.Logger) error {
 	b, err := json.Marshal(map[string]interface{}{
 		"status":       status,
 		"captcha-id":   task.ID,
@@ -85,19 +86,23 @@ func WrongCaptchaReply(w http.ResponseWriter, req *http.Request, status string, 
 		"website":      req.FormValue("website"),
 		"body":         req.FormValue("text"),
 	})
-	if logger.LogIf(err) == nil {
-		w.Write(b)
+	if err != nil {
+		log.Error("WrongCaptchaReply json.Marshal", E(err))
+		return err
 	}
+	w.Write(b)
 	return nil
 }
 
-func RightCaptchaReply(w http.ResponseWriter, redir string) error {
+func RightCaptchaReply(w http.ResponseWriter, redir string, log *slog.Logger) error {
 	b, err := json.Marshal(map[string]interface{}{
 		"status": "accepted",
 		"redir":  redir,
 	})
-	if logger.LogIf(err) == nil {
-		w.Write(b)
+	if err != nil {
+		log.Error("RightCaptchaReply json.Marshal", E(err))
+		return err
 	}
+	w.Write(b)
 	return nil
 }
