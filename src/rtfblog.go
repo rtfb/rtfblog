@@ -703,6 +703,14 @@ func insertUser(db *DbData, args map[string]interface{}) {
 	return
 }
 
+// E is a syntax sugar helper to append an error to a log statement.
+func E(err error) slog.Attr {
+	return slog.Attr{
+		Key:   "error",
+		Value: slog.AnyValue(err),
+	}
+}
+
 func Main() {
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
@@ -723,7 +731,7 @@ func Main() {
 		panic(err)
 	}
 	InitL10n(assets, conf.Interface.Language)
-	db := InitDB(conf, bindir())
+	db := InitDB(conf, bindir(), slogger)
 	defer db.db.Close()
 	s := newServer(new(BcryptHelper), globalContext{
 		Router: &pat.Router{Router: *mux.NewRouter()},

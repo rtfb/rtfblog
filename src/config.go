@@ -16,18 +16,6 @@ type Config struct {
 	Interface
 }
 
-func (c *Config) getDBConnString() string {
-	config := c.Server.DBConn
-	if config != "" && config[0] == '$' {
-		envVar := os.ExpandEnv(config)
-		if envVar == "" {
-			logger.Println(fmt.Sprintf("Can't find env var %q", config))
-		}
-		return envVar
-	}
-	return config
-}
-
 type Server struct {
 	DBConn       string `yaml:"db_conn"`
 	StaticDir    string `yaml:"static_dir"`

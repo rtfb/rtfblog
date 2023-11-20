@@ -2,6 +2,8 @@ package rtfblog
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -38,8 +40,9 @@ type Data interface {
 }
 
 type DbData struct {
-	db *gorm.DB
-	tx *gorm.DB
+	db  *gorm.DB
+	tx  *gorm.DB
+	log *slog.Logger
 }
 
 func prepareDefaultDB(root string) (dialect, conn string) {
@@ -50,31 +53,42 @@ func prepareDefaultDB(root string) (dialect, conn string) {
 	return "sqlite3", assets.MustExtractDBAsset("default.db")
 }
 
-func InitDB(conf Config, root string) *DbData {
-	conn := conf.getDBConnString()
+func InitDB(conf Config, root string, log *slog.Logger) *DbData {
+	conn := conf.Server.DBConn
+	if conn != "" && conn[0] == '$' {
+		envVar := os.ExpandEnv(conn)
+		if envVar == "" {
+			log.Info("Can't resolve env var for connstr", slog.String("envvar", conn))
+		}
+		conn = envVar
+	}
 	dialect := "postgres"
 	if conn == "" {
 		dialect, conn = prepareDefaultDB(root)
 	}
-	logDbConn(dialect, conn)
+	logDbConn(dialect, conn, log)
 	db, err := gorm.Open(dialect, conn)
 	err = db.DB().Ping()
 	if err != nil {
 		panic(err)
 	}
 	db.LogMode(conf.LogSQL)
+	// TODO: this may be feasible after upgrading GORM to something more
+	// modern. Leave it commented out as a reminder for now:
+	// db.SetLogger(log)
 	db.SingularTable(true)
 	return &DbData{
-		db: db,
-		tx: nil,
+		db:  db,
+		tx:  nil,
+		log: log,
 	}
 }
 
-func logDbConn(dialect, conn string) {
+func logDbConn(dialect, conn string, log *slog.Logger) {
 	if dialect == "postgres" {
 		conn = censorPostgresConnStr(conn)
 	}
-	logger.Printf("Connecting to %q DB via conn %q\n", dialect, conn)
+	log.Info("DB connection", slog.String("dialect", dialect), slog.String("connstr", conn))
 }
 
 func notInXactionErr() error {
@@ -94,7 +108,9 @@ func (dd *DbData) begin() error {
 
 func (dd *DbData) commit() {
 	dd.tx.Commit()
-	logger.LogIf(dd.db.Error)
+	if dd.db.Error != nil {
+		dd.log.Error("Commit error", E(dd.db.Error))
+	}
 	dd.tx = nil
 }
 
@@ -103,12 +119,14 @@ func (dd *DbData) rollback() {
 		return
 	}
 	dd.tx.Rollback()
-	logger.LogIf(dd.db.Error)
+	if dd.db.Error != nil {
+		dd.log.Error("Rollback error", E(dd.db.Error))
+	}
 	dd.tx = nil
 }
 
 func (dd *DbData) post(url string, includeHidden bool) (*Entry, error) {
-	posts, err := queryPosts(dd, -1, -1, url, includeHidden)
+	posts, err := dd.queryPosts(-1, -1, url, includeHidden)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +148,7 @@ func (dd *DbData) postID(url string) (int64, error) {
 }
 
 func (dd *DbData) posts(limit, offset int, includeHidden bool) ([]*Entry, error) {
-	return queryPosts(dd, limit, offset, "", includeHidden)
+	return dd.queryPosts(limit, offset, "", includeHidden)
 }
 
 func (dd *DbData) numPosts(includeHidden bool) (int, error) {
@@ -246,6 +264,7 @@ func (dd *DbData) updateTags(tags []*Tag, postID int64) error {
 	for _, t := range tags {
 		tagID, err := insertOrGetTagID(dd.tx, t)
 		if err != nil {
+			dd.log.Error("insertOrGetTagID", E(err))
 			return err
 		}
 		err = updateTagMap(dd.tx, postID, tagID)
@@ -293,7 +312,7 @@ func (dd *DbData) updateComment(id, text string) error {
 	return dd.db.Model(CommentTable{}).Where("id=?", id).Update("body", text).Error
 }
 
-func queryPosts(dd *DbData, limit, offset int, url string,
+func (dd *DbData) queryPosts(limit, offset int, url string,
 	includeHidden bool) ([]*Entry, error) {
 	var results []*Entry
 	cols := `author.disp_name, post.id, post.title, post.date, post.body,
@@ -311,18 +330,20 @@ func queryPosts(dd *DbData, limit, offset int, url string,
 	for _, p := range results {
 		p.Body = sanitizeTrustedHTML(mdToHTML(p.RawBody))
 		p.Date = time.Unix(p.UnixDate, 0).Format("2006-01-02")
-		p.Tags = queryTags(dd.db, p.ID)
-		p.Comments = queryComments(dd.db, p.ID)
+		p.Tags = dd.queryTags(dd.db, p.ID)
+		p.Comments = dd.queryComments(dd.db, p.ID)
 	}
 	return results, err
 }
 
-func queryTags(db *gorm.DB, postID int64) []*Tag {
+func (dd *DbData) queryTags(db *gorm.DB, postID int64) []*Tag {
 	var results []*Tag
 	join := "inner join tagmap on tagmap.tag_id = tag.id"
 	tables := db.Table("tag").Select("tag.tag").Joins(join)
 	tables.Where("tagmap.post_id = ?", postID).Scan(&results)
-	logger.LogIff(db.Error, "error querying tags for post %d", postID)
+	if db.Error != nil {
+		dd.log.Error("error querying tags for post", slog.Int64("postID", postID), E(db.Error))
+	}
 	return results
 }
 
@@ -332,14 +353,16 @@ func (dd *DbData) queryAllTags() ([]*Tag, error) {
 	return tags, err
 }
 
-func queryComments(db *gorm.DB, postID int64) []*Comment {
+func (dd *DbData) queryComments(db *gorm.DB, postID int64) []*Comment {
 	var comments []*Comment
 	join := "inner join commenter on comment.commenter_id = commenter.id"
 	order := "timestamp asc"
 	tables := db.Table("comment").Select("*").Joins(join)
 	rows := tables.Where("post_id = ?", postID).Order(order)
 	err := rows.Scan(&comments).Error
-	logger.LogIff(err, "error querying comments")
+	if err != nil {
+		dd.log.Error("error querying comments", E(err))
+	}
 	for _, c := range comments {
 		c.EmailHash = md5Hash(c.Email)
 		c.Time = time.Unix(c.Timestamp, 0).Format("2006-01-02 15:04")
@@ -358,7 +381,6 @@ func insertOrGetTagID(db *gorm.DB, tag *Tag) (tagID int64, err error) {
 		err = db.Save(tag).Error
 		return tag.ID, err
 	default:
-		logger.Log(err)
 		return -1, err
 	}
 }

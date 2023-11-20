@@ -1,13 +1,13 @@
 package rtfblog
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-	"github.com/rtfb/bark"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +20,11 @@ func init() {
 	config := "$RTFBLOG_DB_TEST_URL"
 	conf := readConfigs()
 	conf.Server.DBConn = config
-	logger = bark.CreateFile("tests.log")
+	f, err := os.OpenFile("tests.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		panic("os.OpenFile: " + err.Error())
+	}
+	slogger := slog.New(slog.NewJSONHandler(f, nil))
 	envVar := os.ExpandEnv(config)
 	if envVar == "" {
 		return
@@ -28,7 +32,7 @@ func init() {
 	if !strings.HasPrefix(envVar, "host=/tmp/PGSQL-") {
 		return
 	}
-	realDB = InitDB(conf, bindir())
+	realDB = InitDB(conf, bindir(), slogger)
 }
 
 func testInsertAuthor(t *testing.T) {

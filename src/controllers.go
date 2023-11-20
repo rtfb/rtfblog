@@ -19,6 +19,7 @@ type globalContext struct {
 	Db     Data
 	assets *assets.Bin
 	Store  sessions.Store
+	Log    *slog.Logger
 }
 
 type handlerFunc func(http.ResponseWriter, *http.Request, *Context) error
@@ -43,7 +44,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//create the context
 	ctx, err := NewContext(req, h.c)
 	if err != nil {
-		internalError(ctx, w, req, err, "New context err")
+		h.internalError(ctx, w, req, err, "New context err")
 		return
 	}
 	defer func() {
@@ -58,8 +59,8 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			default:
 				err = errors.New("Unknown error")
 			}
-			logger.Printf("%s: %s\n", err, debug.Stack())
-			internalError(ctx, w, req, err, "Panic in handler")
+			h.log.Error("recovered panic", E(err), slog.String("stack", string(debug.Stack())))
+			h.internalError(ctx, w, req, err, "Panic in handler")
 		}
 	}()
 	//defer ctx.Close()
@@ -70,19 +71,19 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	buf := new(httpbuf.Buffer)
 	err = h.h(buf, req, ctx)
 	if err != nil {
-		internalError(ctx, w, req, err, "Error in handler")
+		h.internalError(ctx, w, req, err, "Error in handler")
 		return
 	}
 	//save the session
 	if err = sessions.Save(req, w); err != nil {
-		internalError(ctx, w, req, err, "Session save err")
+		h.internalError(ctx, w, req, err, "Session save err")
 		return
 	}
 	buf.Apply(w)
 }
 
-func internalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
-	logger.Printf("%s: %s", prefix, err.Error())
+func (h handler) internalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
+	h.log.Error(prefix, E(err))
 	return performStatus(c, w, req, http.StatusInternalServerError)
 }
 
@@ -109,7 +110,10 @@ func (c *Context) routeByName(name string, things ...interface{}) string {
 	//grab the route
 	u, err := c.Router.GetRoute(name).URL(strs...)
 	if err != nil {
-		logger.LogIff(err, "routeByName(%s %v)", name, things)
+		c.Log.Error("routeByName failed", E(err),
+			slog.String("name", name),
+			slog.Any("things", things),
+		)
 		return "#"
 	}
 	return u.Path
