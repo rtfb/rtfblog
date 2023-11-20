@@ -6,7 +6,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/pat v1.0.2
 	github.com/gorilla/sessions v1.2.2
-	github.com/jinzhu/gorm v0.0.0-20170222002820-5409931a1bb8
+	github.com/jinzhu/gorm v1.9.16
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/microcosm-cc/bluemonday v1.0.26
