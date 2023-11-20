@@ -12,7 +12,6 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/nicksnyder/go-i18n v0.0.0-20170120160056-64786dc4f56b
 	github.com/prometheus/client_golang v1.17.0
-	github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59
 	github.com/rtfb/cachedir v0.0.0-20160212172605-7a0b1f3dd8f6
 	github.com/rtfb/go-html-transform v0.0.0-20141112201209-3f75658770a7
 	github.com/rtfb/go-mail v0.0.0-20131203105311-c5b133ca19ba

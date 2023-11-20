@@ -8,6 +8,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/rtfb/httpbuf"
@@ -20,6 +21,16 @@ type globalContext struct {
 	assets *assets.Bin
 	Store  sessions.Store
 	Log    *slog.Logger
+}
+
+func newGlobalContext(db Data, assets *assets.Bin, cookieSecret string, log *slog.Logger) globalContext {
+	return globalContext{
+		Router: &pat.Router{Router: *mux.NewRouter()},
+		Db:     db,
+		assets: assets,
+		Store:  sessions.NewCookieStore([]byte(cookieSecret)),
+		Log:    log,
+	}
 }
 
 type handlerFunc func(http.ResponseWriter, *http.Request, *Context) error

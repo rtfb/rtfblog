@@ -80,8 +80,6 @@ github.com/prometheus/procfs v0.11.1 h1:xRC8Iq1yyca5ypa9n1EZnWZkt7dwcoRPQwX/5gwa
 github.com/prometheus/procfs v0.11.1/go.mod h1:eesXgaPo1q7lBpVMoMy0ZOFTth9hBn4W/y0/p/ScXhY=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
-github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59 h1:QQkjZcOG464KnkKB6r3Wr++VAmJP0qJG9UlQq049a/Y=
-github.com/rtfb/bark v0.0.0-20150422192901-07d6537e2e59/go.mod h1:Wl1zS3gFyPI2KRoeuGFl2L/5hSygMWhJVDiqYMl6dw0=
 github.com/rtfb/cachedir v0.0.0-20160212172605-7a0b1f3dd8f6 h1:vPU83Z9i3lbvN2dbh+Pixnq+pSgooBwLIMoSfGfCETU=
 github.com/rtfb/cachedir v0.0.0-20160212172605-7a0b1f3dd8f6/go.mod h1:8fzgaO3klYAfMf46amSe/VGtioh3ZcA7H1WQQuDXXnM=
 github.com/rtfb/go-html-transform v0.0.0-20141112201209-3f75658770a7 h1:sm7wpzP17hZ4OfUXeA9yTUQ8ApKgM8n7QuyQT9UhZP4=

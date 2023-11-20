@@ -19,10 +19,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/gorilla/pat"
-	"github.com/gorilla/sessions"
-	"github.com/rtfb/bark"
 	"github.com/rtfb/go-html-transform/h5"
 	"github.com/rtfb/rtfblog/src/assets"
 	"github.com/rtfb/rtfblog/src/htmltest"
@@ -122,15 +118,10 @@ var tserver htmltest.HT
 func initTests(uploadsDir string) server {
 	conf := readConfigs()
 	conf.Server.StaticDir = "static"
-	logger = bark.CreateFile("tests.log")
 	if uploadsDir == "" {
 		uploadsDir = conf.Server.UploadsRoot
 	}
-	f, err := os.OpenFile("tests.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-	if err != nil {
-		panic("os.OpenFile: " + err.Error())
-	}
-	slogger := slog.New(slog.NewJSONHandler(f, nil))
+	slogger := newMainLogger("tests.log")
 	assets, err := assets.NewBin(buildRoot, uploadsDir, slogger)
 	if err != nil {
 		panic(err)
@@ -144,12 +135,8 @@ func initTests(uploadsDir string) server {
 	}
 	langDetector = TestLangDetector{}
 	testData = TestData{}
-	s := newServer(&TestCryptoHelper{}, globalContext{
-		Router: &pat.Router{Router: *mux.NewRouter()},
-		Db:     &testData,
-		assets: assets,
-		Store:  sessions.NewCookieStore([]byte("aaabbbcccddd")),
-	}, conf)
+	gctx := newGlobalContext(&testData, assets, "aaabbbcccddd", slogger)
+	s := newServer(&TestCryptoHelper{}, gctx, conf)
 	forgeTestUser(s, "testuser", "testpasswd")
 	return s
 }

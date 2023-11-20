@@ -21,23 +21,16 @@ import (
 
 	"github.com/docopt/docopt-go"
 	"github.com/gorilla/feeds"
-	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
-	"github.com/gorilla/sessions"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rtfb/bark"
 	email "github.com/rtfb/go-mail"
 	"github.com/rtfb/gopass"
 	"github.com/rtfb/httputil"
 	embedded "github.com/rtfb/rtfblog"
 	"github.com/rtfb/rtfblog/src/assets"
-)
-
-var (
-	logger *bark.Logger
 )
 
 const (
@@ -78,7 +71,9 @@ func (s *server) produceFeedXML(w http.ResponseWriter, req *http.Request, posts 
 	blogTitle := s.conf.Interface.BlogTitle
 	descr := s.conf.Interface.BlogDescr
 	author, err := ctx.Db.author()
-	logger.LogIf(err)
+	if err != nil {
+		s.gctx.Log.Error("DB.author", E(err))
+	}
 	feed := &feeds.Feed{
 		Title:       blogTitle,
 		Link:        &feeds.Link{Href: url},
@@ -87,7 +82,8 @@ func (s *server) produceFeedXML(w http.ResponseWriter, req *http.Request, posts 
 	}
 	for _, p := range posts {
 		pubDate, err := time.Parse("2006-01-02", p.Date)
-		if logger.LogIff(err, "Error parsing date for RSS item %q\n", p.URL) != nil {
+		if err != nil {
+			s.gctx.Log.Error("Parse date for RSS item", slog.String("item", p.URL), E(err))
 			continue
 		}
 		item := feeds.Item{
@@ -100,7 +96,9 @@ func (s *server) produceFeedXML(w http.ResponseWriter, req *http.Request, posts 
 		feed.Items = append(feed.Items, &item)
 	}
 	rss, err := feed.ToRss()
-	logger.LogIf(err)
+	if err != nil {
+		s.gctx.Log.Error("Render RSS", E(err))
+	}
 	w.Write([]byte(rss))
 }
 
@@ -230,7 +228,7 @@ func loadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 	if err == nil && post != nil {
 		b, err := json.Marshal(post)
 		if err != nil {
-			return logger.LogIf(err)
+			return fmt.Errorf("loadComments json.Marshal: %w", err)
 		}
 		w.Write(b)
 	}
@@ -240,7 +238,7 @@ func loadComments(w http.ResponseWriter, req *http.Request, ctx *Context) error 
 func (s *server) rssFeed(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	posts, err := ctx.Db.posts(NumFeedItems, 0, false)
 	if err != nil {
-		return logger.LogIf(err)
+		return fmt.Errorf("rssFeed load posts: %w", err)
 	}
 	s.produceFeedXML(w, req, posts, ctx)
 	return nil
@@ -254,7 +252,7 @@ func (s *server) login(w http.ResponseWriter, req *http.Request, ctx *Context) e
 		return s.loginForm(w, req, ctx)
 	}
 	if err != nil {
-		return logger.LogIf(err)
+		return fmt.Errorf("login default author: %w", err)
 	}
 	uname := req.FormValue("uname")
 	if uname != a.UserName {
@@ -285,7 +283,7 @@ func deleteComment(w http.ResponseWriter, req *http.Request, ctx *Context) error
 	if action == "delete" {
 		err := ctx.Db.deleteComment(id)
 		if err != nil {
-			return logger.LogIff(err, "DeleteComment: failed to delete comment for id %q", id)
+			return fmt.Errorf("DeleteComment id=%s: %w", id, err)
 		}
 	}
 	http.Redirect(w, req, "/"+redir, http.StatusSeeOther)
@@ -296,7 +294,7 @@ func deletePost(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	id := req.FormValue("id")
 	err := ctx.Db.deletePost(id)
 	if err != nil {
-		return logger.LogIff(err, "DeletePost: failed to delete post for id %q", id)
+		return fmt.Errorf("DeletePost id=%s: %w", id, err)
 	}
 	http.Redirect(w, req, ctx.routeByName("admin"), http.StatusSeeOther)
 	return nil
@@ -309,7 +307,7 @@ func moderateComment(w http.ResponseWriter, req *http.Request, ctx *Context) err
 	if action == "edit" {
 		err := ctx.Db.updateComment(id, text)
 		if err != nil {
-			return logger.LogIff(err, "ModerateComment: failed to edit comment for id %q", id)
+			return fmt.Errorf("ModerateComment: can't updateComment for id=%s: %w", id, err)
 		}
 	}
 	redir := req.FormValue("redirect_to")
@@ -354,7 +352,7 @@ func explodeTags(tagsStr string) []*Tag {
 func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 	mr, err := req.MultipartReader()
 	if err != nil {
-		return logger.LogIf(err)
+		return fmt.Errorf("uploadImage MultipartReader: %w", err)
 	}
 	files := ""
 	part, err := mr.NextPart()
@@ -374,22 +372,23 @@ func (s *server) uploadImage(w http.ResponseWriter, req *http.Request, ctx *Cont
 func (s *server) handleUpload(r *http.Request, p *multipart.Part, root string) {
 	lr := &io.LimitedReader{R: p, N: MaxFileSize + 1}
 	filename := filepath.Join(root, p.FileName())
-	logger.Printf("attempt to upload %s to %s\n", p.FileName(), filename)
+	log := s.gctx.Log.With(slog.String("filename", filename))
+	log.Info("handleUpload attempt to upload image")
 	fo, err := os.Create(filename)
 	if err != nil {
-		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
+		log.Error("handleUpload can't os.Create", E(err))
 		return
 	}
 	defer fo.Close()
 	w := bufio.NewWriter(fo)
 	nwritten, err := io.Copy(w, lr)
 	if err != nil {
-		logger.Printf("err writing %q!, err = %s\n", filename, err.Error())
+		log.Error("handleUpload can't io.Copy", E(err))
 	}
 	if err = w.Flush(); err != nil {
-		logger.Printf("err flushing writer for %q!, err = %s\n", filename, err.Error())
+		log.Error("handleUpload can't w.Flush", E(err))
 	}
-	logger.Printf("ok, num bytes written to %s: %d\n", filename, nwritten)
+	log.Info("handleUpload ok, done", slog.Int64("num bytes written", nwritten))
 }
 
 func prepareCommenter(req *http.Request) *Commenter {
@@ -406,8 +405,7 @@ func captchaNewCommenter(w http.ResponseWriter, req *http.Request, ctx *Context)
 	captchaID := req.FormValue("captcha-id")
 	if captchaID == "" {
 		lang := DetectLanguageWithTimeout(body, ctx.Log)
-		log := fmt.Sprintf("Detected language: %q for text %q", lang, body)
-		logger.Println(log)
+		ctx.Log.Info("Detected language", slog.String("lang", lang), slog.String("text", body))
 		if lang != `"lt"` {
 			WrongCaptchaReply(w, req, "showcaptcha", ctx.Captcha.NextTask(), ctx.Log)
 			return false
@@ -426,7 +424,7 @@ func (s *server) commentHandler(w http.ResponseWriter, req *http.Request, ctx *C
 	refURL := httputil.ExtractReferer(req)
 	postID, err := ctx.Db.postID(refURL)
 	if err != nil {
-		return logger.LogIff(err, "ctx.Db.postID('%s') failed", refURL)
+		return fmt.Errorf("commentHandler postID for url=%s: %w", refURL, err)
 	}
 	commenter := prepareCommenter(req)
 	body := req.FormValue("text")
@@ -442,7 +440,13 @@ func (s *server) commentHandler(w http.ResponseWriter, req *http.Request, ctx *C
 		}
 		commentURL, err = PublishCommentAndCommenter(ctx.Db, postID, commenter, body)
 	default:
-		logger.LogIf(err)
+		s.gctx.Log.Error("DB.commenterID",
+			slog.String("name", commenter.Name),
+			slog.String("email", commenter.Email),
+			slog.String("website", commenter.Website),
+			slog.String("ip", commenter.IP),
+			E(err),
+		)
 		return WrongCaptchaReply(w, req, "rejected", ctx.Captcha.NextTask(), s.gctx.Log)
 	}
 	if err != nil {
@@ -461,7 +465,7 @@ func (s *server) sendNewCommentNotif(req *http.Request, redir string, commenter 
 	url := httputil.GetHost(req) + redir
 	text := req.FormValue("text")
 	subj, body := mkCommentNotifEmail(commenter, text, url, refURL)
-	go s.sendEmail(subj, body)
+	go s.sendEmail(subj, body, s.gctx.Log)
 }
 
 func mkCommentNotifEmail(commenter *Commenter, rawBody, url, postTitle string) (subj, body string) {
@@ -489,19 +493,19 @@ URL: {{.URL}}
 	return subj, buff.String()
 }
 
-func (s *server) sendEmail(subj, body string) {
+func (s *server) sendEmail(subj, body string, log *slog.Logger) {
 	gmailSenderAcct := s.conf.Notifications.SenderAcct
 	gmailSenderPasswd := s.conf.Notifications.SenderPasswd
 	notifee := s.conf.Notifications.AdminEmail
 	err := email.InitGmail(gmailSenderAcct, gmailSenderPasswd)
 	if err != nil {
-		logger.LogIff(err, "err initing gmail")
+		log.Error("sendEmail init gmail", E(err))
 		return
 	}
 	mess := email.NewBriefMessageFrom(subj, body, gmailSenderAcct, notifee)
 	err = mess.Send()
 	if err != nil {
-		logger.LogIff(err, "err sending email")
+		log.Error("sendEmail send message", E(err))
 		return
 	}
 }
@@ -640,12 +644,15 @@ func versionString() string {
 	return strings.TrimSpace(string(ver))
 }
 
-func serveAndLogTLS(addr, cert, key string, h http.Handler) {
-	logger.LogIf(http.ListenAndServeTLS(addr, cert, key, h))
+func serveAndLogTLS(addr, cert, key string, h http.Handler, log *slog.Logger) {
+	err := http.ListenAndServeTLS(addr, cert, key, h)
+	if err != nil {
+		log.Error("ListenAndServeTLS failed", E(err))
+	}
 }
 
 func (s *server) runForever(handlers *pat.Router) {
-	logger.Print("The server is listening...")
+	s.gctx.Log.Info("The server is listening...")
 	host := os.Getenv("HOST")
 	addr := httputil.JoinHostAndPort(host, s.conf.Server.Port)
 	tlsPort := s.conf.Server.TLSPort
@@ -653,9 +660,12 @@ func (s *server) runForever(handlers *pat.Router) {
 	key := s.conf.Server.TLSKey
 	if tlsPort != "" && assets.FileExistsNoErr(cert) && assets.FileExistsNoErr(key) {
 		tlsAddr := httputil.JoinHostAndPort(host, tlsPort)
-		go serveAndLogTLS(tlsAddr, cert, key, handlers)
+		go serveAndLogTLS(tlsAddr, cert, key, handlers, s.gctx.Log)
 	}
-	logger.LogIf(http.ListenAndServe(addr, handlers))
+	err := http.ListenAndServe(addr, handlers)
+	if err != nil {
+		s.gctx.Log.Error("ListenAndServe failed", E(err))
+	}
 }
 
 func promptPasswd(username string) (string, error) {
@@ -711,6 +721,14 @@ func E(err error) slog.Attr {
 	}
 }
 
+func newMainLogger(filename string) *slog.Logger {
+	logFile, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		panic("os.OpenFile: " + err.Error())
+	}
+	return slog.New(slog.NewJSONHandler(logFile, nil))
+}
+
 func Main() {
 	args, err := docopt.Parse(usage, nil, true, versionString(), false)
 	if err != nil {
@@ -718,14 +736,7 @@ func Main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 	conf := readConfigs()
-	logger = bark.AppendFile(conf.Server.Log)
-
-	f, err := os.OpenFile(conf.Server.Log, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
-	if err != nil {
-		panic("os.OpenFile: " + err.Error())
-	}
-	slogger := slog.New(slog.NewJSONHandler(f, nil))
-
+	slogger := newMainLogger(conf.Server.Log)
 	assets, err := assets.NewBin(bindir(), conf.Server.UploadsRoot, slogger)
 	if err != nil {
 		panic(err)
@@ -733,12 +744,8 @@ func Main() {
 	InitL10n(assets, conf.Interface.Language)
 	db := InitDB(conf, bindir(), slogger)
 	defer db.db.Close()
-	s := newServer(new(BcryptHelper), globalContext{
-		Router: &pat.Router{Router: *mux.NewRouter()},
-		Db:     db,
-		assets: assets,
-		Store:  sessions.NewCookieStore([]byte(conf.Server.CookieSecret)),
-	}, conf)
+	gctx := newGlobalContext(db, assets, conf.Server.CookieSecret, slogger)
+	s := newServer(new(BcryptHelper), gctx, conf)
 	if args["--adduser"].(bool) {
 		insertUser(db, args)
 		return
