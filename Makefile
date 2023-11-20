@@ -44,7 +44,8 @@ GOPATH_HEAD = $(firstword $(subst :, ,$(GOPATH)))
 
 all: ${BUILDDIR}/rtfblog
 
-${BUILDDIR}/rtfblog: $(TARGETS) ${BUILDDIR}/version $(GOFILES)
+${BUILDDIR}/rtfblog: $(TARGETS) $(GOFILES)
+	./scripts/version.sh > ${BUILDDIR}/version
 	${GOFMT} ${GOFILES}
 	go build -o ${BUILDDIR} ./cmd/rtfblog/...
 	go test -v ./src/... -covermode=count -coverprofile=coverage.out
@@ -62,9 +63,6 @@ vet:
 
 fmt:
 	${GOFMT} ${GOFILES}
-
-${BUILDDIR}/version:
-	./scripts/version.sh > $@
 
 ${CSSDIR}/%.css: static/css/%.css
 	@mkdir -p ${CSSDIR}
