@@ -18,7 +18,9 @@ type Context struct {
 
 func NewContext(req *http.Request, gctx *globalContext) (*Context, error) {
 	sess, err := gctx.Store.Get(req, "rtfblog")
-	logger.LogIf(err)
+	if err != nil {
+		return nil, err
+	}
 	ctx := &Context{
 		globalContext: *gctx,
 		Session:       sess,
@@ -48,11 +50,17 @@ func MkFlashes(ctx *Context) template.HTML {
 
 func MkBasicData(ctx *Context, pageNo, offset int, conf Config) tmplMap {
 	numTotalPosts, err := ctx.Db.numPosts(ctx.AdminLogin)
-	logger.LogIf(err)
+	if err != nil {
+		ctx.Log.Error("DB.numPosts", E(err))
+	}
 	titles, err := ctx.Db.titles(NumRecentPosts, ctx.AdminLogin)
-	logger.LogIf(err)
+	if err != nil {
+		ctx.Log.Error("DB.titles", E(err))
+	}
 	posts, err := ctx.Db.posts(PostsPerPage, offset, ctx.AdminLogin)
-	logger.LogIf(err)
+	if err != nil {
+		ctx.Log.Error("DB.posts", E(err))
+	}
 	return tmplMap{
 		"PageTitle":       L10n("Welcome"),
 		"BlogTitle":       conf.Interface.BlogTitle,
@@ -86,11 +94,11 @@ func PublishCommentAndCommenter(db Data, postID int64, commenter *Commenter, raw
 	err := withTransaction(db, func(db Data) error {
 		commenterID, err := db.insertCommenter(commenter)
 		if err != nil {
-			return logger.LogIff(err, "db.insertCommenter() failed")
+			return fmt.Errorf("db.insertCommenter: %w", err)
 		}
 		commentID, err = db.insertComment(commenterID, postID, rawBody)
 		if err != nil {
-			return logger.LogIff(err, "db.insertComment() failed")
+			return fmt.Errorf("db.insertComment: %w", err)
 		}
 		return nil
 	})
@@ -102,7 +110,10 @@ func PublishComment(db Data, postID, commenterID int64, body string) (string, er
 	err := withTransaction(db, func(db Data) error {
 		var insErr error
 		commentID, insErr = db.insertComment(commenterID, postID, body)
-		return logger.LogIff(insErr, "db.insertComment() failed")
+		if insErr != nil {
+			return fmt.Errorf("db.insertComment: %w", insErr)
+		}
+		return nil
 	})
 	return fmt.Sprintf("#comment-%d", commentID), err
 }
@@ -123,7 +134,7 @@ func InsertOrUpdatePost(db Data, post *EntryTable) (id int64, err error) {
 			}
 			postID = newPostID
 		} else {
-			return -1, logger.LogIff(idErr, "db.post() failed")
+			return -1, fmt.Errorf("db.post: %w", idErr)
 		}
 	} else {
 		postID = oldPost.ID
@@ -149,5 +160,5 @@ func InsertOrUpdateAuthor(db Data, newAuthor *Author) (id int64, err error) {
 		newAuthor.ID = id
 		err = db.updateAuthor(newAuthor)
 	}
-	return id, logger.LogIff(err, "Failed to insert author")
+	return id, fmt.Errorf("InsertOrUpdateAuthor: %w", err)
 }
