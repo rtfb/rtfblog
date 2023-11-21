@@ -4,9 +4,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 // server contains a collection of dependencies needed to run the HTTP server.
@@ -15,49 +12,6 @@ type server struct {
 	gctx         globalContext
 	conf         Config
 	mets         metrics
-}
-
-type metrics struct {
-	registry              *prometheus.Registry
-	numRobotsServed       prometheus.Counter
-	numForbiddenResponses prometheus.Counter
-	numAdminRequests      prometheus.Counter
-	numNonAdminRequests   prometheus.Counter
-}
-
-func initMetrics() metrics {
-	reg := prometheus.NewRegistry()
-	numRobotsServed := promauto.With(reg).NewCounter(prometheus.CounterOpts{
-		Namespace: "rtfblog",
-		Subsystem: "server",
-		Name:      "num_robots_txt_served",
-		Help:      "The total number of times robots.txt was served",
-	})
-	numForbiddenResponses := promauto.With(reg).NewCounter(prometheus.CounterOpts{
-		Namespace: "rtfblog",
-		Subsystem: "server",
-		Name:      "num_403s",
-		Help:      "The total number of Forbidden responses",
-	})
-	numAdminRequests := promauto.With(reg).NewCounter(prometheus.CounterOpts{
-		Namespace: "rtfblog",
-		Subsystem: "server",
-		Name:      "num_admin_reqs",
-		Help:      "The total number of requests to admin area",
-	})
-	numNonAdminRequests := promauto.With(reg).NewCounter(prometheus.CounterOpts{
-		Namespace: "rtfblog",
-		Subsystem: "server",
-		Name:      "num_non_admin_reqs",
-		Help:      "The total number of requests to public pages",
-	})
-	return metrics{
-		registry:              reg,
-		numRobotsServed:       numRobotsServed,
-		numForbiddenResponses: numForbiddenResponses,
-		numAdminRequests:      numAdminRequests,
-		numNonAdminRequests:   numNonAdminRequests,
-	}
 }
 
 func newServer(

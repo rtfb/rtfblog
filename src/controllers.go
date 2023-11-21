@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rtfb/httpbuf"
 	"github.com/rtfb/rtfblog/src/assets"
 )
@@ -40,17 +41,24 @@ type handler struct {
 	c     *globalContext
 	logRq bool
 	log   *slog.Logger
+	mets  metrics
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	startTime := time.Now().UTC()
+	timer := prometheus.NewTimer(h.mets.latenciesHist)
+	defer timer.ObserveDuration()
+	startTime := time.Now()
 	if h.logRq {
-		defer h.log.Info("request served",
-			slog.String("method", req.Method),
-			slog.String("path", req.URL.Path),
-			slog.String("query", req.URL.RawQuery),
-			slog.Duration("duration", time.Now().Sub(startTime)),
-		)
+		defer func() {
+			// wrap this log statement in a deferred func so that time.Since
+			// gets evaluated deferred instead of immediately
+			h.log.Info("request served",
+				slog.String("method", req.Method),
+				slog.String("path", req.URL.Path),
+				slog.String("query", req.URL.RawQuery),
+				slog.Duration("duration", time.Since(startTime)),
+			)
+		}()
 	}
 	//create the context
 	ctx, err := NewContext(req, h.c)
@@ -59,6 +67,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	defer func() {
+		h.mets.numPanics.Inc()
 		r := recover()
 		if r != nil {
 			var err error
@@ -94,6 +103,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h handler) internalError(c *Context, w http.ResponseWriter, req *http.Request, err error, prefix string) error {
+	h.mets.numInternalErrors.Inc()
 	h.log.Error(prefix, E(err))
 	return performStatus(c, w, req, http.StatusInternalServerError)
 }

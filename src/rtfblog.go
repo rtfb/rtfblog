@@ -585,7 +585,13 @@ func (s *server) initRoutes(logger *slog.Logger) *pat.Router {
 			s.mets.numNonAdminRequests.Inc()
 			return f(w, req, ctx)
 		}
-		return &handler{h: emitAndHandle, c: &s.gctx, logRq: true, log: logger}
+		return &handler{
+			h:     emitAndHandle,
+			c:     &s.gctx,
+			logRq: true,
+			log:   logger,
+			mets:  s.mets,
+		}
 	}
 	mkAdminHandler := func(f handlerFunc) *handler {
 		return &handler{
@@ -601,7 +607,15 @@ func (s *server) initRoutes(logger *slog.Logger) *pat.Router {
 			c:     &s.gctx,
 			logRq: true,
 			log:   logger,
+			mets:  s.mets,
 		}
+	}
+	faviconHangler := handler{
+		h:     s.serveFavicon,
+		c:     &s.gctx,
+		logRq: false,
+		log:   nil,
+		mets:  s.mets,
 	}
 
 	r.Add(G, "/static/", http.FileServer(s.gctx.assets)).Name("static")
@@ -616,7 +630,7 @@ func (s *server) initRoutes(logger *slog.Logger) *pat.Router {
 	r.Add(G, "/edit_post", mkAdminHandler(s.editPost)).Name("edit_post")
 	r.Add(G, "/load_comments", mkAdminHandler(loadComments)).Name("load_comments")
 	r.Add(G, "/feeds/rss.xml", mkHandler(s.rssFeed)).Name("rss_feed")
-	r.Add(G, "/favicon.ico", &handler{s.serveFavicon, &s.gctx, false, nil}).Name("favicon")
+	r.Add(G, "/favicon.ico", &faviconHangler).Name("favicon")
 	r.Add(G, "/comment_submit", mkHandler(s.commentHandler)).Name("comment")
 	r.Add(G, "/delete_comment", mkAdminHandler(deleteComment)).Name("delete_comment")
 	r.Add(G, "/delete_post", mkAdminHandler(deletePost)).Name("delete_post")
