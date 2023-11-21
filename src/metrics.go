@@ -2,6 +2,7 @@ package rtfblog
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
@@ -63,6 +64,12 @@ func initMetrics() metrics {
 		// 0.1ms, 2x on each bucket, 16 buckets
 		Buckets: prometheus.ExponentialBuckets(1e-4, 2, 16),
 	})
+	procCollector := collectors.NewProcessCollector(collectors.ProcessCollectorOpts{
+		Namespace: "rtfblog",
+	})
+	goCollector := collectors.NewGoCollector()
+	reg.Register(procCollector)
+	reg.Register(goCollector)
 	return metrics{
 		registry:              reg,
 		numRobotsServed:       numRobotsServed,
