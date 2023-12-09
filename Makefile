@@ -121,7 +121,6 @@ ${CSSDIR}/tagit.ui-zendesk.css: bower_components/tag-it/css/tagit.ui-zendesk.css
 	cp $< $@
 
 clean:
-	rm -r $(ASSETS_PKG)
 	rm -r ${BUILDDIR}
 
 .PHONY: all clean run vet fmt
