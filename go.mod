@@ -3,8 +3,7 @@ module github.com/rtfb/rtfblog
 require (
 	github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536
 	github.com/gorilla/feeds v1.1.2
-	github.com/gorilla/mux v1.8.1
-	github.com/gorilla/pat v1.0.2
+	github.com/gorilla/pat v1.0.3-0.20231207044425-b1685f4ea6bd
 	github.com/gorilla/sessions v1.2.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/lib/pq v1.10.7
@@ -31,11 +30,11 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
-	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

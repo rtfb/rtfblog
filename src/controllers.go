@@ -8,7 +8,6 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/pat"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,7 +25,7 @@ type globalContext struct {
 
 func newGlobalContext(db Data, assets *assets.Bin, cookieSecret string, log *slog.Logger) globalContext {
 	return globalContext{
-		Router: &pat.Router{Router: *mux.NewRouter()},
+		Router: pat.New(),
 		Db:     db,
 		assets: assets,
 		Store:  sessions.NewCookieStore([]byte(cookieSecret)),
