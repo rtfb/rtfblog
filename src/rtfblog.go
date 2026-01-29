@@ -688,7 +688,7 @@ func promptPasswd(username string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf(L10n("Confirm password: "))
+	fmt.Print(L10n("Confirm password: "))
 	passwd2, err := gopass.GetPasswd()
 	if err != nil {
 		return "", err
